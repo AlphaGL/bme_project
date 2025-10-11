@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            {% if student.profile_image %}
+                            <img src="{{ student.profile_image.url }}" alt="{{ student.full_name }}" 
+                                 class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 120px; height: 120px;">
+                                <i class="fas fa-user fa-4x text-primary"></i>
+                            </div>
+                            {% endif %}
+                            <h3 class="fw-bold">Edit Your Profile</h3>
+                            <p class="text-muted">Update your personal information</p>
+                        </div>
+
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-id-card me-2"></i>Registration Number
+                                </label>
+                                <input type="text" class="form-control" value="{{ student.reg_number }}" disabled>
+                                <small class="text-muted">Registration number cannot be changed</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_full_name" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2"></i>Full Name
+                                </label>
+                                {{ form.full_name }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-2"></i>Email
+                                </label>
+                                {{ form.email }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_phone" class="form-label fw-bold">
+                                    <i class="fas fa-phone me-2"></i>Phone Number
+                                </label>
+                                {{ form.phone }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_level" class="form-label fw-bold">
+                                    <i class="fas fa-graduation-cap me-2"></i>Current Level
+                                </label>
+                                {{ form.level }}
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="id_profile_image" class="form-label fw-bold">
+                                    <i class="fas fa-camera me-2"></i>Profile Picture
+                                </label>
+                                {{ form.profile_image }}
+                                <small class="text-muted d-block">Recommended: Square image, max 2MB</small>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                                <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <div class="alert alert-danger">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
+                            </h6>
+                            <p class="small mb-2">Deleting your account will permanently remove all your data including semesters, courses, and CGPA calculations.</p>
+                            <a href="{% url 'delete_student_account' %}" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash me-2"></i>Delete Account
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

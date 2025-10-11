@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col text-center">
+                <h1 class="fw-bold">Our Dedicated Staff</h1>
+                <p class="lead">Meet our experienced staff committed to providing quality education</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for member in staff %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if member.image %}
+                    <img src="{{ member.image.url }}" class="card-img-top" alt="{{ member.name }}" style="height: 300px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                        <i class="fas fa-user fa-5x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">{{ member.name }}</h5>
+                        <p class="text-primary mb-3">{{ member.position }}</p>
+                        <p class="card-text">{{ member.bio|truncatewords:30 }}</p>
+                        {% if member.email %}
+                        <p class="mb-1">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <a href="mailto:{{ member.email }}">{{ member.email }}</a>
+                        </p>
+                        {% endif %}
+                        {% if member.phone %}
+                        <p class="mb-0">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            <a href="tel:{{ member.phone }}">{{ member.phone }}</a>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <p class="text-muted">No staff members available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

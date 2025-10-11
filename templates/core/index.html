@@ -1,0 +1,477 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section with Carousel -->
+<section class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="row align-items-center py-4">
+                        <div class="col-lg-6">
+                            <h1 class="display-4 fw-bold mb-4">Welcome to BME FUTO</h1>
+                            <p class="lead mb-4">
+                                Integrating Biotechnology and Medical Technology to develop systems and devices for healthcare innovation.
+                            </p>
+                            <a href="{% url 'virtual_tour' %}" class="btn btn-light btn-lg me-2">
+                                <i class="fas fa-video me-2"></i>Take Virtual Tour
+                            </a>
+                            <a href="{% url 'past_questions' %}" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-file-alt me-2"></i>Resources
+                            </a>
+                        </div>
+                        <div class="col-lg-6 text-center">
+                            <i class="fas fa-heartbeat" style="font-size: 200px; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="row align-items-center py-4">
+                        <div class="col-lg-6">
+                            <h1 class="display-4 fw-bold mb-4">Excellence in Education</h1>
+                            <p class="lead mb-4">
+                                State-of-the-art facilities and world-class faculty committed to your success.
+                            </p>
+                            <a href="{% url 'staff_list' %}" class="btn btn-light btn-lg me-2">
+                                <i class="fas fa-users me-2"></i>Meet Our Staff
+                            </a>
+                            <a href="{% url 'library' %}" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-book me-2"></i>Visit Library
+                            </a>
+                        </div>
+                        <div class="col-lg-6 text-center">
+                            <i class="fas fa-graduation-cap" style="font-size: 200px; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <div class="row align-items-center py-4">
+                        <div class="col-lg-6">
+                            <h1 class="display-4 fw-bold mb-4">Research & Innovation</h1>
+                            <p class="lead mb-4">
+                                Pioneering research in medical devices, diagnostics, and healthcare technology.
+                            </p>
+                            <a href="{% url 'exco_list' %}" class="btn btn-light btn-lg me-2">
+                                <i class="fas fa-user-tie me-2"></i>Student Leaders
+                            </a>
+                            <a href="{% url 'submit_testimonial' %}" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-comment-dots me-2"></i>Testimonials
+                            </a>
+                        </div>
+                        <div class="col-lg-6 text-center">
+                            <i class="fas fa-microscope" style="font-size: 200px; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Announcements Ticker -->
+{% if announcements %}
+<section class="py-3 bg-warning bg-opacity-10 border-bottom border-warning">
+    <div class="container">
+        <div id="announcementCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+            <div class="carousel-inner">
+                {% for announcement in announcements %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="fas fa-bullhorn text-warning me-3 fa-2x"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">{{ announcement.title }}</h6>
+                            <p class="mb-0 small">{{ announcement.content|truncatewords:15 }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Quick Stats -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-users fa-3x text-primary mb-2"></i>
+                    <h3 class="fw-bold mb-0">{{ stats.total_staff }}+</h3>
+                    <p class="text-muted small mb-0">Expert Staff</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-user-graduate fa-3x text-success mb-2"></i>
+                    <h3 class="fw-bold mb-0">{{ stats.total_students }}+</h3>
+                    <p class="text-muted small mb-0">Active Students</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-book fa-3x text-info mb-2"></i>
+                    <h3 class="fw-bold mb-0">{{ stats.total_resources }}+</h3>
+                    <p class="text-muted small mb-0">Resources</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <i class="fas fa-file-alt fa-3x text-warning mb-2"></i>
+                    <h3 class="fw-bold mb-0">{{ stats.total_questions }}+</h3>
+                    <p class="text-muted small mb-0">Past Questions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center mb-4">
+                <h2 class="fw-bold">About Biomedical Engineering at FUTO</h2>
+                <p class="lead text-muted">
+                    The modern application which involves the design, analysis and synthesis of healthy human systems or its components.
+                </p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-primary mb-3">
+                            <i class="fas fa-bullseye fa-3x"></i>
+                        </div>
+                        <h4 class="card-title">Our Mission</h4>
+                        <p class="card-text">
+                            To provide students with a broad and balanced scientific and practical foundation to function as professional Biomedical Engineering/Technology practitioners capable of contributing meaningfully to the healthcare sector.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-primary mb-3">
+                            <i class="fas fa-lightbulb fa-3x"></i>
+                        </div>
+                        <h4 class="card-title">Our Vision</h4>
+                        <p class="card-text">
+                            To inculcate in students a sense of enthusiasm in the profession to enhance their capacity to apply skills in biomedical technology in solving theoretical and practical healthcare problems globally.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Staff -->
+{% if recent_staff %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">Meet Our Staff</h2>
+                <p class="text-muted">Experienced professionals dedicated to your academic excellence</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'staff_list' %}" class="btn btn-primary">
+                    View All Staff <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for member in recent_staff %}
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if member.image %}
+                    <img src="{{ member.image.url }}" class="card-img-top" alt="{{ member.name }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-user fa-5x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">{{ member.name }}</h5>
+                        <p class="text-primary mb-2">{{ member.position }}</p>
+                        <p class="card-text small">{{ member.bio|truncatewords:20 }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Quick Links Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-4">
+            <div class="col">
+                <h2 class="fw-bold">What We Offer</h2>
+                <p class="text-muted">Everything you need for academic success</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-video fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Virtual Tour</h5>
+                        <p class="card-text">
+                            Take a 360° virtual tour of our department facilities, labs, and lecture halls.
+                        </p>
+                        <a href="{% url 'virtual_tour' %}" class="btn btn-outline-primary">Take Tour</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-file-alt fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Past Questions</h5>
+                        <p class="card-text">
+                            Access comprehensive collection of past examination questions for your preparation.
+                        </p>
+                        <a href="{% url 'past_questions' %}" class="btn btn-outline-success">Browse Questions</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-book fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Digital Library</h5>
+                        <p class="card-text">
+                            Explore our extensive digital library with vast array of academic resources.
+                        </p>
+                        <a href="{% url 'library' %}" class="btn btn-outline-info">Visit Library</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Resources -->
+{% if recent_resources %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">Recent Library Resources</h2>
+                <p class="text-muted">Latest additions to our digital library</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'library' %}" class="btn btn-primary">
+                    View All Resources <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+        <div class="row g-3">
+            {% for resource in recent_resources %}
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <span class="badge bg-primary mb-2">{{ resource.category }}</span>
+                        <h6 class="card-title fw-bold">{{ resource.title|truncatewords:8 }}</h6>
+                        <p class="card-text small text-muted">{{ resource.author }}</p>
+                        <a href="{{ resource.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>Access
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Current Excos -->
+{% if current_excos %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">Student Leadership</h2>
+                <p class="text-muted">Meet your departmental executives</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'exco_list' %}" class="btn btn-primary">
+                    View All Excos <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for exco in current_excos %}
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    {% if exco.image %}
+                    <img src="{{ exco.image.url }}" class="card-img-top" alt="{{ exco.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-primary d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="fas fa-user-tie fa-4x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title fw-bold mb-1">{{ exco.name }}</h6>
+                        <p class="card-text small text-primary mb-0">{{ exco.position }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Recent Past Questions -->
+{% if recent_questions %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">Recent Past Questions</h2>
+                <p class="text-muted">Latest uploads to help with exam preparation</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'past_questions' %}" class="btn btn-primary">
+                    View All <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Course Title</th>
+                                <th>Level</th>
+                                <th>Year</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for question in recent_questions %}
+                            <tr>
+                                <td><strong>{{ question.course_code }}</strong></td>
+                                <td>{{ question.course_title }}</td>
+                                <td><span class="badge bg-primary">{{ question.level }}L</span></td>
+                                <td>{{ question.year }}</td>
+                                <td>
+                                    <a href="{{ question.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Testimonials Section -->
+{% if testimonials %}
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-4">
+            <div class="col">
+                <h2 class="fw-bold">What Students Say</h2>
+                <p class="text-muted">Hear from our satisfied students</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for testimonial in testimonials %}
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= testimonial.rating %}
+                                <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="card-text">"{{ testimonial.message|truncatewords:25 }}"</p>
+                        <footer class="blockquote-footer mt-3">{{ testimonial.name }}</footer>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'submit_testimonial' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-comment-dots me-2"></i>Submit Your Testimonial
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-3">Ready to Excel in Your Studies?</h2>
+                <p class="lead mb-md-0">Access all the resources you need for academic success at BME FUTO</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'past_questions' %}" class="btn btn-light btn-lg me-2 mb-2">
+                    <i class="fas fa-rocket me-2"></i>Get Started
+                </a>
+                <a href="{% url 'virtual_tour' %}" class="btn btn-outline-light btn-lg mb-2">
+                    <i class="fas fa-video me-2"></i>Take Tour
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;
+}
+
+.stat-card {
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: scale(1.1);
+}
+</style>
+{% endblock %}

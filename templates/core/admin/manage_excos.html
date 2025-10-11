@@ -1,0 +1,72 @@
+<!-- admin/manage_excos.html -->
+{% extends 'base.html' %}
+{% block title %}Manage Excos - BME FUTO{% endblock %}
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="fw-bold"><i class="fas fa-user-tie me-2"></i>Manage Excos</h1>
+                    <div>
+                        <a href="{% url 'add_exco' %}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Add New Exco
+                        </a>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        {% if excos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order</th>
+                                        <th>Name</th>
+                                        <th>Position</th>
+                                        <th>Session</th>
+                                        <th>Email</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for exco in excos %}
+                                    <tr>
+                                        <td>{{ exco.order }}</td>
+                                        <td>{{ exco.name }}</td>
+                                        <td>{{ exco.position }}</td>
+                                        <td>{{ exco.session }}</td>
+                                        <td>{{ exco.email|default:"-" }}</td>
+                                        <td>
+                                            <a href="{% url 'edit_exco' exco.pk %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'delete_exco' exco.pk %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-user-tie fa-4x text-muted mb-3"></i>
+                            <p class="text-muted">No excos yet. Click the button above to add one.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

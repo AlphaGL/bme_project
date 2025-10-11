@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Past Questions - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col text-center">
+                <h1 class="fw-bold">Past Examination Questions</h1>
+                <p class="lead">Access comprehensive past questions for your exam preparation</p>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Level</label>
+                                <select name="level" class="form-select">
+                                    <option value="">All Levels</option>
+                                    <option value="100" {% if selected_level == '100' %}selected{% endif %}>100 Level</option>
+                                    <option value="200" {% if selected_level == '200' %}selected{% endif %}>200 Level</option>
+                                    <option value="300" {% if selected_level == '300' %}selected{% endif %}>300 Level</option>
+                                    <option value="400" {% if selected_level == '400' %}selected{% endif %}>400 Level</option>
+                                    <option value="500" {% if selected_level == '500' %}selected{% endif %}>500 Level</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Semester</label>
+                                <select name="semester" class="form-select">
+                                    <option value="">All Semesters</option>
+                                    <option value="First" {% if selected_semester == 'First' %}selected{% endif %}>First Semester</option>
+                                    <option value="Second" {% if selected_semester == 'Second' %}selected{% endif %}>Second Semester</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Year</label>
+                                <select name="year" class="form-select">
+                                    <option value="">All Years</option>
+                                    {% for y in years %}
+                                    <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-2"></i>Filter
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions List -->
+        <div class="row">
+            <div class="col">
+                {% if questions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Course Title</th>
+                                <th>Level</th>
+                                <th>Semester</th>
+                                <th>Year</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for question in questions %}
+                            <tr>
+                                <td><strong>{{ question.course_code }}</strong></td>
+                                <td>{{ question.course_title }}</td>
+                                <td>{{ question.level }} Level</td>
+                                <td>{{ question.semester }}</td>
+                                <td>{{ question.year }}</td>
+                                <td>
+                                    <a href="{{ question.link }}" target="_blank" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-file-alt fa-4x text-muted mb-3"></i>
+                    <p class="text-muted">No past questions found matching your filters.</p>
+                    <a href="{% url 'past_questions' %}" class="btn btn-primary">Clear Filters</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

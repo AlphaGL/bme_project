@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% block title %}CGPA Result - BME FUTO{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="py-4 bg-success text-white d-print-none">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-trophy me-2"></i>CGPA Calculation Result
+                </h2>
+                <p class="mb-0">Your cumulative grade point average has been calculated</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button onclick="window.print()" class="btn btn-light me-2">
+                    <i class="fas fa-print me-2"></i>Print
+                </button>
+                <button onclick="downloadPDF()" class="btn btn-outline-light">
+                    <i class="fas fa-download me-2"></i>Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Result Content (Printable) -->
+<section class="py-5">
+    <div class="container">
+        <div id="printableArea">
+            <!-- Letterhead for Print -->
+            <div class="text-center mb-4 d-none d-print-block">
+                <h2 class="fw-bold text-primary">FEDERAL UNIVERSITY OF TECHNOLOGY, OWERRI</h2>
+                <h4>BIOMEDICAL ENGINEERING DEPARTMENT</h4>
+                <h5>CGPA CALCULATION REPORT</h5>
+                <hr>
+            </div>
+            
+            <!-- Student Info -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Student Name:</strong> {{ student.full_name }}</p>
+                            <p class="mb-2"><strong>Registration Number:</strong> {{ student.reg_number }}</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <p class="mb-2"><strong>Level:</strong> {{ student.level }}</p>
+                            <p class="mb-2"><strong>Date:</strong> {% now "F d, Y" %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CGPA Summary -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 {% if cgpa >= 4.5 %}bg-success{% elif cgpa >= 3.5 %}bg-primary{% elif cgpa >= 2.5 %}bg-warning{% else %}bg-danger{% endif %} text-white text-center p-4">
+                        <h6 class="text-uppercase mb-2">CGPA</h6>
+                        <h1 class="display-3 fw-bold mb-0">{{ cgpa }}</h1>
+                        <p class="mb-0">
+                            {% if cgpa >= 4.5 %}
+                                First Class
+                            {% elif cgpa >= 3.5 %}
+                                Second Class Upper
+                            {% elif cgpa >= 2.5 %}
+                                Second Class Lower
+                            {% elif cgpa >= 1.5 %}
+                                Third Class
+                            {% else %}
+                                Pass
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light text-center p-4">
+                        <h6 class="text-uppercase mb-2 text-muted">Total Credits</h6>
+                        <h1 class="display-4 fw-bold mb-0 text-primary">{{ total_credits }}</h1>
+                        <p class="mb-0 text-muted">Credit Units</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light text-center p-4">
+                        <h6 class="text-uppercase mb-2 text-muted">Total Points</h6>
+                        <h1 class="display-4 fw-bold mb-0 text-info">{{ total_points }}</h1>
+                        <p class="mb-0 text-muted">Grade Points</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CGPA Chart (Hide on print) -->
+            <div class="card border-0 shadow-sm mb-4 d-print-none">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">CGPA Visualization</h5>
+                    <canvas id="cgpaChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Semester Breakdown -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">Semester Breakdown</h5>
+                    
+                    {% for semester in semester_results %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0">{{ semester.name }}</h6>
+                            <span class="badge {% if semester.gpa >= 4.5 %}bg-success{% elif semester.gpa >= 3.5 %}bg-primary{% elif semester.gpa >= 2.5 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                GPA: {{ semester.gpa }}
+                            </span>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Course Code</th>
+                                        <th>Course Name</th>
+                                        <th>Credit Unit</th>
+                                        <th>Grade</th>
+                                        <th>Point</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for course in semester.courses %}
+                                    <tr>
+                                        <td><strong>{{ course.code }}</strong></td>
+                                        <td>{{ course.name }}</td>
+                                        <td>{{ course.credits }}</td>
+                                        <td>{{ course.grade }}</td>
+                                        <td>{{ course.grade_point }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="2"><strong>Semester Total</strong></td>
+                                        <td><strong>{{ semester.credits }}</strong></td>
+                                        <td colspan="2"><strong>GPA: {{ semester.gpa }}</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No semester data available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Footer for Print -->
+            <div class="text-center mt-5 d-none d-print-block">
+                <hr>
+                <p class="small text-muted">
+                    This is a computer-generated document. Generated on {% now "F d, Y g:i A" %}
+                </p>
+                <p class="small text-muted">
+                    BME FUTO Student Portal - www.bmefuto.edu.ng
+                </p>
+            </div>
+        </div>
+
+        <!-- Actions (Hide on print) -->
+        <div class="text-center mt-4 d-print-none">
+            <a href="{% url 'cgpa_calculator' %}" class="btn btn-primary me-2">
+                <i class="fas fa-arrow-left me-2"></i>Back to Calculator
+            </a>
+            <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-home me-2"></i>Dashboard
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+// CGPA Pie Chart
+const ctx = document.getElementById('cgpaChart').getContext('2d');
+const cgpa = {{ cgpa }};
+const remaining = Math.max(0, 5.0 - cgpa);
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Achieved CGPA', 'Remaining to 5.0'],
+        datasets: [{
+            data: [cgpa, remaining],
+            backgroundColor: [
+                cgpa >= 4.5 ? '#198754' : cgpa >= 3.5 ? '#0d6efd' : cgpa >= 2.5 ? '#ffc107' : '#dc3545',
+                '#e9ecef'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            },
+            title: {
+                display: true,
+                text: 'CGPA Progress',
+                font: {
+                    size: 16,
+                    weight: 'bold'
+                }
+            }
+        }
+    }
+});
+
+// Download PDF function
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const element = document.getElementById('printableArea');
+    
+    html2canvas(element, {
+        scale: 2,
+        logging: false,
+        useCORS: true
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+        const imgX = (pdfWidth - imgWidth * ratio) / 2;
+        const imgY = 10;
+        
+        pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+        pdf.save('CGPA_Result_{{ student.reg_number }}.pdf');
+    });
+}
+</script>
+
+<style>
+@media print {
+    body {
+        background: white;
+    }
+    
+    .container {
+        max-width: 100%;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+    
+    .badge {
+        border: 1px solid #000;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,32 @@
+<!-- admin/pastquestion_form.html -->
+{% extends 'base.html' %}
+{% block title %}{{ action }} Past Question - BME FUTO{% endblock %}
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="fw-bold">{{ action }} Past Question</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-info text-white">
+                                    <i class="fas fa-save me-2"></i>Save
+                                </button>
+                                <a href="{% url 'manage_pastquestions' %}" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

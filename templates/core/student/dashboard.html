@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard - BME FUTO{% endblock %}
+
+{% block content %}
+<!-- Welcome Header -->
+<section class="py-4 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-tachometer-alt me-2"></i>Student Dashboard
+                </h2>
+                <p class="mb-0">Welcome back, {{ student.full_name }}!</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'student_logout' %}" class="btn btn-light">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calculator fa-3x text-primary mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ cgpa }}</h3>
+                        <small class="text-muted">Current CGPA</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-book fa-3x text-success mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ semesters|length }}</h3>
+                        <small class="text-muted">Semesters</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list-alt fa-3x text-info mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ total_credits }}</h3>
+                        <small class="text-muted">Total Credits</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-graduation-cap fa-3x text-warning mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ student.level }}L</h3>
+                        <small class="text-muted">Current Level</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Quick Actions -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold mb-4">
+                            <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+                        </h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <a href="{% url 'cgpa_calculator' %}" class="text-decoration-none">
+                                    <div class="card border-primary h-100 hover-lift">
+                                        <div class="card-body text-center p-4">
+                                            <i class="fas fa-calculator fa-3x text-primary mb-3"></i>
+                                            <h5 class="fw-bold">CGPA Calculator</h5>
+                                            <p class="text-muted small mb-0">Calculate and manage your CGPA</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'student_profile' %}" class="text-decoration-none">
+                                    <div class="card border-success h-100 hover-lift">
+                                        <div class="card-body text-center p-4">
+                                            <i class="fas fa-user-edit fa-3x text-success mb-3"></i>
+                                            <h5 class="fw-bold">Edit Profile</h5>
+                                            <p class="text-muted small mb-0">Update your information</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'cgpa_history' %}" class="text-decoration-none">
+                                    <div class="card border-info h-100 hover-lift">
+                                        <div class="card-body text-center p-4">
+                                            <i class="fas fa-history fa-3x text-info mb-3"></i>
+                                            <h5 class="fw-bold">CGPA History</h5>
+                                            <p class="text-muted small mb-0">View past calculations</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'past_questions' %}" class="text-decoration-none">
+                                    <div class="card border-warning h-100 hover-lift">
+                                        <div class="card-body text-center p-4">
+                                            <i class="fas fa-file-alt fa-3x text-warning mb-3"></i>
+                                            <h5 class="fw-bold">Past Questions</h5>
+                                            <p class="text-muted small mb-0">Access exam materials</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Semester Overview -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold mb-4">
+                            <i class="fas fa-chart-line me-2 text-info"></i>Semester Overview
+                        </h4>
+                        {% if semesters %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Semester</th>
+                                        <th>Courses</th>
+                                        <th>Credits</th>
+                                        <th>GPA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sem_data in semesters %}
+                                    <tr>
+                                        <td><strong>{{ sem_data.semester.name }}</strong></td>
+                                        <td>{{ sem_data.courses_count }}</td>
+                                        <td>{{ sem_data.credits }}</td>
+                                        <td>
+                                            <span class="badge {% if sem_data.gpa >= 4.5 %}bg-success{% elif sem_data.gpa >= 3.5 %}bg-primary{% elif sem_data.gpa >= 2.5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ sem_data.gpa }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-graduation-cap fa-4x text-muted mb-3"></i>
+                            <p class="text-muted">No semesters added yet.</p>
+                            <a href="{% url 'cgpa_calculator' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Start Calculating CGPA
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Profile Card -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body text-center p-4">
+                        {% if student.profile_image %}
+                        <img src="{{ student.profile_image.url }}" alt="{{ student.full_name }}" 
+                             class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                             style="width: 100px; height: 100px;">
+                            <i class="fas fa-user fa-3x text-primary"></i>
+                        </div>
+                        {% endif %}
+                        <h5 class="fw-bold mb-1">{{ student.full_name }}</h5>
+                        <p class="text-muted small mb-2">{{ student.reg_number }}</p>
+                        <span class="badge bg-primary mb-3">{{ student.level }} Level</span>
+                        <div class="d-grid">
+                            <a href="{% url 'student_profile' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit me-2"></i>Edit Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Announcements -->
+                {% if announcements %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-bullhorn me-2 text-warning"></i>Announcements
+                        </h5>
+                        {% for announcement in announcements %}
+                        <div class="alert alert-info mb-2">
+                            <h6 class="fw-bold mb-1">{{ announcement.title }}</h6>
+                            <p class="small mb-0">{{ announcement.content|truncatewords:15 }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Latest CGPA -->
+                {% if latest_cgpa %}
+                <div class="card border-0 shadow-sm bg-success text-white">
+                    <div class="card-body p-4 text-center">
+                        <i class="fas fa-trophy fa-3x mb-3"></i>
+                        <h6 class="text-uppercase mb-2">Last Calculated CGPA</h6>
+                        <h2 class="fw-bold mb-2">{{ latest_cgpa.cgpa }}</h2>
+                        <small>{{ latest_cgpa.calculated_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.hover-lift {
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+</style>
+{% endblock %}

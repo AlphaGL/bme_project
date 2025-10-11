@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}CGPA Calculator - BME FUTO{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="py-4 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-calculator me-2"></i>CGPA Calculator
+                </h2>
+                <p class="mb-0">Calculate your Cumulative Grade Point Average</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'student_dashboard' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Add Semester -->
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-plus-circle me-2 text-success"></i>Add Semester
+                        </h5>
+                        <p class="text-muted small">Start by adding a semester, then add courses to it.</p>
+                        <a href="{% url 'add_semester' %}" class="btn btn-success w-100 mb-3">
+                            <i class="fas fa-plus me-2"></i>Add New Semester
+                        </a>
+                        
+                        {% if semesters %}
+                        <hr>
+                        <h6 class="fw-bold mb-3">Your Semesters</h6>
+                        <div class="list-group">
+                            {% for semester in semesters %}
+                            <a href="#semester-{{ semester.id }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>{{ semester.name }}</span>
+                                    <span class="badge bg-primary">{{ semester.courses.count }} courses</span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <hr>
+                        <button type="button" class="btn btn-primary w-100" onclick="calculateAllCGPA()">
+                            <i class="fas fa-calculator me-2"></i>Calculate CGPA
+                        </button>
+                        
+                        <div id="calculatingLoader" class="text-center mt-3" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Calculating...</span>
+                            </div>
+                            <p class="small text-muted mt-2">Calculating your CGPA...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Semesters List -->
+            <div class="col-lg-8">
+                {% if semesters %}
+                    {% for semester in semesters %}
+                    <div class="card border-0 shadow-sm mb-4" id="semester-{{ semester.id }}">
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-book me-2"></i>{{ semester.name }}
+                                </h5>
+                                <div>
+                                    <a href="{% url 'edit_semester' semester.id %}" class="btn btn-sm btn-light">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'delete_semester' semester.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Courses</h6>
+                                <a href="{% url 'add_course' semester.id %}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-plus me-1"></i>Add Course
+                                </a>
+                            </div>
+                            
+                            {% if semester.courses.all %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Course Name</th>
+                                            <th>Credit</th>
+                                            <th>Grade</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for course in semester.courses.all %}
+                                        <tr>
+                                            <td><strong>{{ course.course_code }}</strong></td>
+                                            <td>{{ course.course_name }}</td>
+                                            <td>{{ course.credit_unit }}</td>
+                                            <td>
+                                                <span class="badge {% if course.grade_point >= 4.5 %}bg-success{% elif course.grade_point >= 3.5 %}bg-primary{% elif course.grade_point >= 2.5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ course.get_grade_letter }} ({{ course.grade_point }})
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'edit_course' course.id %}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'delete_course' course.id %}" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <td colspan="2"><strong>Semester GPA:</strong></td>
+                                            <td><strong>{{ semester.courses.all|length }}</strong> courses</td>
+                                            <td colspan="2">
+                                                <span class="badge bg-primary fs-6">{{ semester.calculate_gpa }}</span>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4 bg-light rounded">
+                                <i class="fas fa-book-open fa-3x text-muted mb-2"></i>
+                                <p class="text-muted mb-2">No courses added yet</p>
+                                <a href="{% url 'add_course' semester.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-1"></i>Add First Course
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="card border-0 shadow-sm text-center p-5">
+                    <i class="fas fa-graduation-cap fa-5x text-muted mb-4"></i>
+                    <h4 class="fw-bold mb-3">Start Your CGPA Journey</h4>
+                    <p class="text-muted mb-4">
+                        Add your first semester to begin calculating your CGPA. 
+                        You can add multiple semesters and track your academic progress over time.
+                    </p>
+                    <a href="{% url 'add_semester' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>Add Your First Semester
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Info Section -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-info-circle me-2 text-info"></i>How to Use the CGPA Calculator
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center mb-3">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                                         style="width: 50px; height: 50px;">
+                                        <strong class="text-primary">1</strong>
+                                    </div>
+                                    <p class="small mb-0"><strong>Add Semester</strong><br>Create a semester (e.g., 100L First Semester)</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center mb-3">
+                                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                                         style="width: 50px; height: 50px;">
+                                        <strong class="text-success">2</strong>
+                                    </div>
+                                    <p class="small mb-0"><strong>Add Courses</strong><br>Add all courses with their credit units</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center mb-3">
+                                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                                         style="width: 50px; height: 50px;">
+                                        <strong class="text-warning">3</strong>
+                                    </div>
+                                    <p class="small mb-0"><strong>Enter Grades</strong><br>Select the grade you scored (A-F)</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center mb-3">
+                                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                                         style="width: 50px; height: 50px;">
+                                        <strong class="text-info">4</strong>
+                                    </div>
+                                    <p class="small mb-0"><strong>Calculate</strong><br>Click calculate to see your CGPA</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6 class="fw-bold mb-2">Grade Scale:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-success">A = 5.0</span>
+                            <span class="badge bg-primary">B = 4.0</span>
+                            <span class="badge bg-info">C = 3.0</span>
+                            <span class="badge bg-warning">D = 2.0</span>
+                            <span class="badge bg-secondary">E = 1.0</span>
+                            <span class="badge bg-danger">F = 0.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function calculateAllCGPA() {
+    const loader = document.getElementById('calculatingLoader');
+    loader.style.display = 'block';
+    
+    // Simulate calculation delay for user experience
+    setTimeout(function() {
+        window.location.href = "{% url 'calculate_cgpa' %}";
+    }, 2000);
+}
+</script>
+{% endblock %}

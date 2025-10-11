@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Excos - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col text-center">
+                <h1 class="fw-bold">Executive Council</h1>
+                <p class="lead">Meet the student leaders driving our department forward</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for exco in excos %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if exco.image %}
+                    <img src="{{ exco.image.url }}" class="card-img-top" alt="{{ exco.name }}" style="height: 300px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-primary d-flex align-items-center justify-content-center" style="height: 300px;">
+                        <i class="fas fa-user-tie fa-5x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">{{ exco.name }}</h5>
+                        <p class="text-primary mb-2">{{ exco.position }}</p>
+                        <p class="text-muted small mb-3">
+                            <i class="fas fa-calendar me-1"></i>{{ exco.session }}
+                        </p>
+                        <p class="card-text">{{ exco.bio|truncatewords:30 }}</p>
+                        {% if exco.email %}
+                        <p class="mb-1">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <a href="mailto:{{ exco.email }}">{{ exco.email }}</a>
+                        </p>
+                        {% endif %}
+                        {% if exco.phone %}
+                        <p class="mb-0">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            <a href="tel:{{ exco.phone }}">{{ exco.phone }}</a>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-user-tie fa-4x text-muted mb-3"></i>
+                <p class="text-muted">No excos available at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

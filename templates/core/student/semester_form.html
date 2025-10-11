@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Semester - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold mb-4">{{ action }} Semester</h4>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="id_name" class="form-label fw-bold">Semester Name</label>
+                                {{ form.name }}
+                                <small class="text-muted d-block">e.g., 100 Level First Semester</small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="id_year" class="form-label fw-bold">Academic Year (Optional)</label>
+                                {{ form.year }}
+                                <small class="text-muted d-block">e.g., 2023/2024</small>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-2"></i>Save Semester
+                                </button>
+                                <a href="{% url 'cgpa_calculator' %}" class="btn btn-outline-secondary">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

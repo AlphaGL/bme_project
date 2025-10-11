@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}CGPA History - BME FUTO{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="py-4 bg-info text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-history me-2"></i>CGPA History
+                </h2>
+                <p class="mb-0">View your past CGPA calculations</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'student_dashboard' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- History Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                {% if calculations %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">
+                            <i class="fas fa-chart-line me-2 text-info"></i>Calculation History
+                        </h5>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>CGPA</th>
+                                        <th>Total Credits</th>
+                                        <th>Total Points</th>
+                                        <th>Class</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for calc in calculations %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-calendar me-2 text-muted"></i>
+                                            {{ calc.calculated_at|date:"M d, Y g:i A" }}
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if calc.cgpa >= 4.5 %}bg-success{% elif calc.cgpa >= 3.5 %}bg-primary{% elif calc.cgpa >= 2.5 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                                {{ calc.cgpa }}
+                                            </span>
+                                        </td>
+                                        <td>{{ calc.total_credit_units }}</td>
+                                        <td>{{ calc.total_grade_points|floatformat:2 }}</td>
+                                        <td>
+                                            {% if calc.cgpa >= 4.5 %}
+                                                <span class="badge bg-success">First Class</span>
+                                            {% elif calc.cgpa >= 3.5 %}
+                                                <span class="badge bg-primary">Second Class Upper</span>
+                                            {% elif calc.cgpa >= 2.5 %}
+                                                <span class="badge bg-warning text-dark">Second Class Lower</span>
+                                            {% elif calc.cgpa >= 1.5 %}
+                                                <span class="badge bg-secondary">Third Class</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Pass</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Chart -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">
+                            <i class="fas fa-chart-area me-2 text-success"></i>CGPA Progress Chart
+                        </h5>
+                        <canvas id="cgpaProgressChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="row g-3 mt-4">
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-success text-white text-center p-4">
+                            <h6 class="text-uppercase mb-2">Highest CGPA</h6>
+                            <h2 class="fw-bold mb-0">{{ calculations.first.cgpa }}</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-primary text-white text-center p-4">
+                            <h6 class="text-uppercase mb-2">Current CGPA</h6>
+                            <h2 class="fw-bold mb-0">{{ calculations.first.cgpa }}</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-info text-white text-center p-4">
+                            <h6 class="text-uppercase mb-2">Total Calculations</h6>
+                            <h2 class="fw-bold mb-0">{{ calculations.count }}</h2>
+                        </div>
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="card border-0 shadow-sm text-center p-5">
+                    <i class="fas fa-history fa-5x text-muted mb-4"></i>
+                    <h4 class="fw-bold mb-3">No Calculation History</h4>
+                    <p class="text-muted mb-4">
+                        You haven't calculated your CGPA yet. Start by adding your semesters and courses.
+                    </p>
+                    <a href="{% url 'cgpa_calculator' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-calculator me-2"></i>Calculate CGPA Now
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if calculations %}
+const ctx = document.getElementById('cgpaProgressChart').getContext('2d');
+const calculations = {{ calculations|length }};
+
+// Prepare data (reverse to show oldest to newest)
+const labels = [
+    {% for calc in calculations reversed %}
+        "{{ calc.calculated_at|date:'M d' }}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+const data = [
+    {% for calc in calculations reversed %}
+        {{ calc.cgpa }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'CGPA',
+            data: data,
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: '#0d6efd',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: 'Your CGPA Progress Over Time',
+                font: {
+                    size: 16,
+                    weight: 'bold'
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 5.0,
+                ticks: {
+                    stepSize: 0.5
+                },
+                title: {
+                    display: true,
+                    text: 'CGPA'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Calculation Date'
+                }
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

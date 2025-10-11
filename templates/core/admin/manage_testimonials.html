@@ -1,0 +1,77 @@
+<!-- admin/manage_testimonials.html -->
+{% extends 'base.html' %}
+{% block title %}Manage Testimonials - BME FUTO{% endblock %}
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="fw-bold"><i class="fas fa-comment-dots me-2"></i>Manage Testimonials</h1>
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        {% if testimonials %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Message</th>
+                                        <th>Rating</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for testimonial in testimonials %}
+                                    <tr>
+                                        <td>{{ testimonial.name }}</td>
+                                        <td>{{ testimonial.message|truncatewords:10 }}</td>
+                                        <td>{{ testimonial.rating }}/5</td>
+                                        <td>
+                                            {% if testimonial.is_approved %}
+                                            <span class="badge bg-success">Approved</span>
+                                            {% else %}
+                                            <span class="badge bg-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not testimonial.is_approved %}
+                                            <a href="{% url 'approve_testimonial' testimonial.pk %}" class="btn btn-sm btn-success">
+                                                <i class="fas fa-check"></i> Approve
+                                            </a>
+                                            {% else %}
+                                            <a href="{% url 'unapprove_testimonial' testimonial.pk %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-times"></i> Unapprove
+                                            </a>
+                                            {% endif %}
+                                            <a href="{% url 'delete_testimonial' testimonial.pk %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comment-dots fa-4x text-muted mb-3"></i>
+                            <p class="text-muted">No testimonials yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

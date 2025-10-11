@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block title %}Virtual Tour - BME FUTO{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="fas fa-video me-3"></i>Virtual Department Tour
+        </h1>
+        <p class="lead mb-4">
+            Explore our state-of-the-art facilities from the comfort of your home
+        </p>
+        <p class="text-white-50">
+            <i class="fas fa-info-circle me-2"></i>
+            Click on any location below to watch the virtual tour video
+        </p>
+    </div>
+</section>
+
+<!-- Tour Navigation -->
+<section class="py-4 bg-light border-bottom">
+    <div class="container">
+        <div class="row g-2">
+            {% for location in tour_locations %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="#{{ location.video_id }}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ location.title|truncatewords:2 }}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Tour Locations -->
+<section class="py-5">
+    <div class="container">
+        {% for location in tour_locations %}
+        <div class="row mb-5 {% if forloop.counter|divisibleby:2 %}flex-row-reverse{% endif %}" id="{{ location.video_id }}">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-lg">
+                    <div class="ratio ratio-16x9">
+                        <!-- Video Placeholder - Replace with actual video embed -->
+                        <div class="video-placeholder bg-dark d-flex align-items-center justify-content-center flex-column" 
+                             style="background-image: url('{{ location.thumbnail }}'); background-size: cover; background-position: center;">
+                            <div class="video-overlay">
+                                <button class="btn btn-light btn-lg rounded-circle" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-play fa-2x text-primary"></i>
+                                </button>
+                                <p class="text-white mt-3 fw-bold">Click to Play Video</p>
+                            </div>
+                        </div>
+                        <!-- 
+                        To use actual videos, replace the above div with:
+                        <iframe 
+                            src="YOUR_VIDEO_URL_HERE" 
+                            title="{{ location.title }}" 
+                            allowfullscreen>
+                        </iframe>
+                        
+                        For YouTube: https://www.youtube.com/embed/VIDEO_ID
+                        For Vimeo: https://player.vimeo.com/video/VIDEO_ID
+                        For Google Drive: https://drive.google.com/file/d/FILE_ID/preview
+                        -->
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="p-4 {% if forloop.counter|divisibleby:2 %}pe-lg-5{% else %}ps-lg-5{% endif %}">
+                    <span class="badge bg-primary mb-3">
+                        <i class="fas fa-map-marker-alt me-1"></i>Location {{ forloop.counter }}
+                    </span>
+                    <h2 class="fw-bold mb-3">{{ location.title }}</h2>
+                    <p class="text-muted mb-4">{{ location.description }}</p>
+                    
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-video me-1"></i>360° View
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-hd-video me-1"></i>HD Quality
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-expand me-1"></i>Full Screen
+                        </span>
+                    </div>
+                    
+                    <!-- Download Instructions -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Admin Note:</strong> Upload your video to YouTube, Vimeo, or Google Drive, then update the video embed code in the template.
+                    </div>
+                    
+                    {% if forloop.counter == 1 %}
+                    <div class="mt-4">
+                        <h5 class="fw-bold mb-3">Highlights:</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Modern Architecture</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Spacious Classrooms</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>24/7 Security</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Accessible Facilities</li>
+                        </ul>
+                    </div>
+                    {% elif forloop.counter == 2 %}
+                    <div class="mt-4">
+                        <h5 class="fw-bold mb-3">Features:</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Smart Boards</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Audio Systems</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Air Conditioning</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Ergonomic Seating</li>
+                        </ul>
+                    </div>
+                    {% elif forloop.counter == 3 %}
+                    <div class="mt-4">
+                        <h5 class="fw-bold mb-3">Equipment:</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Medical Devices</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Testing Equipment</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Safety Gear</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Computer Workstations</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if not forloop.last %}
+        <hr class="my-5">
+        {% endif %}
+        {% endfor %}
+    </div>
+</section>
+
+<!-- How to Upload Videos Guide -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-5">
+                        <h3 class="fw-bold mb-4 text-center">
+                            <i class="fas fa-upload me-2"></i>How to Add Your Tour Videos
+                        </h3>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                         style="width: 60px; height: 60px;">
+                                        <i class="fas fa-video fa-2x"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Step 1: Record</h5>
+                                    <p class="text-muted small">
+                                        Record your departmental tour videos using a good camera or smartphone
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                         style="width: 60px; height: 60px;">
+                                        <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Step 2: Upload</h5>
+                                    <p class="text-muted small">
+                                        Upload to YouTube, Vimeo, or Google Drive and set appropriate privacy settings
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                         style="width: 60px; height: 60px;">
+                                        <i class="fas fa-code fa-2x"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Step 3: Embed</h5>
+                                    <p class="text-muted small">
+                                        Copy the embed code and update the template file (virtual_tour.html)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 p-4 bg-light rounded">
+                            <h6 class="fw-bold mb-3">Example Embed Codes:</h6>
+                            <div class="mb-3">
+                                <strong>YouTube:</strong>
+                                <code class="d-block mt-1 p-2 bg-white rounded small">
+                                    &lt;iframe src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen&gt;&lt;/iframe&gt;
+                                </code>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Google Drive:</strong>
+                                <code class="d-block mt-1 p-2 bg-white rounded small">
+                                    &lt;iframe src="https://drive.google.com/file/d/FILE_ID/preview" allowfullscreen&gt;&lt;/iframe&gt;
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Map (Optional Future Enhancement) -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <h3 class="fw-bold mb-4">Campus Location Map</h3>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <!-- Placeholder for Google Maps or interactive map -->
+                        <div class="ratio ratio-21x9">
+                            <div class="bg-light d-flex align-items-center justify-content-center">
+                                <div class="text-center">
+                                    <i class="fas fa-map-marked-alt fa-5x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Interactive Campus Map</h5>
+                                    <p class="text-muted small">Coming Soon: Navigate through our campus digitally</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h3 class="fw-bold mb-3">Want to Visit in Person?</h3>
+        <p class="lead mb-4">Schedule a physical tour of our department</p>
+        <a href="{% url 'staff_list' %}" class="btn btn-light btn-lg">
+            <i class="fas fa-envelope me-2"></i>Contact Us
+        </a>
+    </div>
+</section>
+
+<style>
+.video-placeholder {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.video-placeholder:hover {
+    transform: scale(1.02);
+}
+
+.video-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 2;
+}
+
+.video-placeholder::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+code {
+    font-size: 0.875rem;
+    overflow-x: auto;
+}
+</style>
+
+<script>
+// Add click handler for video placeholders
+document.querySelectorAll('.video-placeholder').forEach(placeholder => {
+    placeholder.addEventListener('click', function() {
+        alert('Admin: Please replace this placeholder with actual video embed code.\n\n' +
+              'Update the template file at: core/templates/core/virtual_tour.html\n\n' +
+              'Upload your video to YouTube/Vimeo/Google Drive and use the embed code.');
+    });
+});
+</script>
+{% endblock %}

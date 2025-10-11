@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Digital Library - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col text-center">
+                <h1 class="fw-bold">Digital Library</h1>
+                <p class="lead">Explore our extensive collection of academic resources</p>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Category</label>
+                                <select name="category" class="form-select">
+                                    <option value="">All Categories</option>
+                                    <option value="Textbook" {% if selected_category == 'Textbook' %}selected{% endif %}>Textbook</option>
+                                    <option value="Journal" {% if selected_category == 'Journal' %}selected{% endif %}>Journal Article</option>
+                                    <option value="Lecture" {% if selected_category == 'Lecture' %}selected{% endif %}>Lecture Notes</option>
+                                    <option value="Project" {% if selected_category == 'Project' %}selected{% endif %}>Project Report</option>
+                                    <option value="Thesis" {% if selected_category == 'Thesis' %}selected{% endif %}>Thesis</option>
+                                    <option value="Other" {% if selected_category == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Level</label>
+                                <select name="level" class="form-select">
+                                    <option value="">All Levels</option>
+                                    <option value="100" {% if selected_level == '100' %}selected{% endif %}>100 Level</option>
+                                    <option value="200" {% if selected_level == '200' %}selected{% endif %}>200 Level</option>
+                                    <option value="300" {% if selected_level == '300' %}selected{% endif %}>300 Level</option>
+                                    <option value="400" {% if selected_level == '400' %}selected{% endif %}>400 Level</option>
+                                    <option value="500" {% if selected_level == '500' %}selected{% endif %}>500 Level</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-2"></i>Filter
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Grid -->
+        <div class="row g-4">
+            {% for resource in resources %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if resource.cover_image %}
+                    <img src="{{ resource.cover_image.url }}" class="card-img-top" alt="{{ resource.title }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <i class="fas fa-book fa-5x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <span class="badge bg-primary mb-2 align-self-start">{{ resource.category }}</span>
+                        {% if resource.level %}
+                        <span class="badge bg-secondary mb-2 align-self-start">{{ resource.level }} Level</span>
+                        {% endif %}
+                        <h5 class="card-title">{{ resource.title }}</h5>
+                        {% if resource.author %}
+                        <p class="text-muted small">By {{ resource.author }}</p>
+                        {% endif %}
+                        <p class="card-text flex-grow-1">{{ resource.description|truncatewords:20 }}</p>
+                        <a href="{{ resource.link }}" target="_blank" class="btn btn-primary mt-auto">
+                            <i class="fas fa-external-link-alt me-2"></i>Access Resource
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                <p class="text-muted">No resources found matching your filters.</p>
+                <a href="{% url 'library' %}" class="btn btn-primary">Clear Filters</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

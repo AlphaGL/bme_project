@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="fw-bold">
+                    <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                </h1>
+                <p class="text-muted">Welcome back, {{ user.username }}!</p>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-1">Staff Members</h6>
+                                <h2 class="fw-bold mb-0">{{ stats.staff_count }}</h2>
+                            </div>
+                            <i class="fas fa-users fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-1">Excos</h6>
+                                <h2 class="fw-bold mb-0">{{ stats.excos_count }}</h2>
+                            </div>
+                            <i class="fas fa-user-tie fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-1">Past Questions</h6>
+                                <h2 class="fw-bold mb-0">{{ stats.past_questions_count }}</h2>
+                            </div>
+                            <i class="fas fa-file-alt fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-1">Library Resources</h6>
+                                <h2 class="fw-bold mb-0">{{ stats.library_count }}</h2>
+                            </div>
+                            <i class="fas fa-book fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm bg-danger text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-1">Pending Testimonials</h6>
+                                <h2 class="fw-bold mb-0">{{ stats.testimonials_pending }}</h2>
+                            </div>
+                            <i class="fas fa-comment-dots fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm bg-secondary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-1">Active Announcements</h6>
+                                <h2 class="fw-bold mb-0">{{ stats.announcements_active }}</h2>
+                            </div>
+                            <i class="fas fa-bullhorn fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col">
+                <h3 class="fw-bold mb-4">Quick Actions</h3>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Manage Staff</h5>
+                        <p class="card-text text-muted">Add, edit, or remove staff members</p>
+                        <a href="{% url 'manage_staff' %}" class="btn btn-primary">Manage</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-user-tie fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Manage Excos</h5>
+                        <p class="card-text text-muted">Add, edit, or remove exco members</p>
+                        <a href="{% url 'manage_excos' %}" class="btn btn-success">Manage</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-file-alt fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Manage Past Questions</h5>
+                        <p class="card-text text-muted">Upload and manage past questions</p>
+                        <a href="{% url 'manage_pastquestions' %}" class="btn btn-info text-white">Manage</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-book fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Manage Library</h5>
+                        <p class="card-text text-muted">Add and manage library resources</p>
+                        <a href="{% url 'manage_library' %}" class="btn btn-warning">Manage</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-comment-dots fa-3x text-danger mb-3"></i>
+                        <h5 class="card-title">Manage Testimonials</h5>
+                        <p class="card-text text-muted">Review and approve testimonials</p>
+                        <a href="{% url 'manage_testimonials' %}" class="btn btn-danger">Manage</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-bullhorn fa-3x text-secondary mb-3"></i>
+                        <h5 class="card-title">Manage Announcements</h5>
+                        <p class="card-text text-muted">Create and manage announcements</p>
+                        <a href="{% url 'manage_announcements' %}" class="btn btn-secondary">Manage</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

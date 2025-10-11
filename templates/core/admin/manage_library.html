@@ -1,0 +1,70 @@
+<!-- admin/manage_library.html -->
+{% extends 'base.html' %}
+{% block title %}Manage Library - BME FUTO{% endblock %}
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="fw-bold"><i class="fas fa-book me-2"></i>Manage Library</h1>
+                    <div>
+                        <a href="{% url 'add_library_resource' %}" class="btn btn-warning">
+                            <i class="fas fa-plus me-2"></i>Add New Resource
+                        </a>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        {% if resources %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Author</th>
+                                        <th>Category</th>
+                                        <th>Level</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for resource in resources %}
+                                    <tr>
+                                        <td>{{ resource.title }}</td>
+                                        <td>{{ resource.author|default:"-" }}</td>
+                                        <td>{{ resource.category }}</td>
+                                        <td>{{ resource.level|default:"-" }}</td>
+                                        <td>
+                                            <a href="{% url 'edit_library_resource' resource.pk %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'delete_library_resource' resource.pk %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                            <p class="text-muted">No resources yet. Click the button above to add one.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
