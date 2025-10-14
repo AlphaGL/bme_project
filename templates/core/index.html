@@ -84,22 +84,40 @@
 
 <!-- Announcements Ticker -->
 {% if announcements %}
-<section class="py-3 bg-warning bg-opacity-10 border-bottom border-warning">
+<section class="py-5 bg-light">
     <div class="container">
-        <div id="announcementCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
-            <div class="carousel-inner">
-                {% for announcement in announcements %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <i class="fas fa-bullhorn text-warning me-3 fa-2x"></i>
-                        <div>
-                            <h6 class="mb-0 fw-bold">{{ announcement.title }}</h6>
-                            <p class="mb-0 small">{{ announcement.content|truncatewords:15 }}</p>
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">
+                    <i class="fas fa-bullhorn me-2 text-warning"></i>Latest Announcements
+                </h2>
+                <p class="text-muted">Stay updated with department news and information</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for announcement in announcements %}
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title fw-bold mb-0">{{ announcement.title }}</h5>
+                            <span class="badge bg-warning">New</span>
+                        </div>
+                        <p class="card-text text-muted">{{ announcement.content }}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ announcement.created_at|date:"M d, Y" }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>
+                                {{ announcement.created_by.username }}
+                            </small>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
     </div>
 </section>

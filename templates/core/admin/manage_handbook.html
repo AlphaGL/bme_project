@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Course Handbook - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="fw-bold">
+                        <i class="fas fa-book-open me-2 text-indigo"></i>Manage Course Handbook
+                    </h1>
+                    <div>
+                        <a href="{% url 'add_course_handbook' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Course
+                        </a>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if grouped_courses %}
+            {% for level_semester, courses in grouped_courses.items %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>{{ level_semester }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="15%">Course Code</th>
+                                    <th width="40%">Course Title</th>
+                                    <th width="10%">Credits</th>
+                                    <th width="15%">Type</th>
+                                    <th width="20%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in courses %}
+                                <tr>
+                                    <td><strong>{{ course.course_code }}</strong></td>
+                                    <td>{{ course.course_title }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ course.credit_unit }} CU</span>
+                                    </td>
+                                    <td>
+                                        {% if course.course_type == 'Core' %}
+                                        <span class="badge bg-success">{{ course.course_type }}</span>
+                                        {% elif course.course_type == 'Required' %}
+                                        <span class="badge bg-primary">{{ course.course_type }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ course.course_type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'edit_course_handbook' course.pk %}" class="btn btn-sm btn-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'delete_course_handbook' course.pk %}" class="btn btn-sm btn-danger" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="2"><strong>Total Courses:</strong> {{ courses|length }}</td>
+                                    <td colspan="3">
+                                        <strong>Total Credits:</strong> 
+                                        <span class="badge bg-primary">
+                                            {% widthratio courses|length 1 1 %} 
+                                            {% for c in courses %}{% if forloop.first %}{{ c.credit_unit }}{% endif %}{% endfor %}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-book-open fa-5x text-muted mb-4"></i>
+                <h4 class="fw-bold mb-3">No Courses in Handbook</h4>
+                <p class="text-muted mb-4">
+                    Start building your course handbook by adding courses for different levels and semesters.
+                </p>
+                <a href="{% url 'add_course_handbook' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Add First Course
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Stats -->
+        {% if grouped_courses %}
+        <div class="row mt-4 g-3">
+            <div class="col-md-3">
+                <div class="card border-0 bg-primary text-white text-center p-3">
+                    <h4 class="mb-0">{{ grouped_courses|length }}</h4>
+                    <small>Level/Semester Groups</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-success text-white text-center p-3">
+                    <h4 class="mb-0">
+                        {% for courses in grouped_courses.values %}
+                            {{ courses|length }}{% if not forloop.last %}+{% endif %}
+                        {% endfor %}
+                    </h4>
+                    <small>Total Courses</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-info text-white text-center p-3">
+                    <h4 class="mb-0">100-500</h4>
+                    <small>Level Range</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-warning text-dark text-center p-3">
+                    <h4 class="mb-0">
+                        <a href="{% url 'view_course_handbook' %}" class="text-dark text-decoration-none">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </h4>
+                    <small>Public View</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

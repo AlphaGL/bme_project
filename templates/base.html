@@ -261,6 +261,32 @@ img {
                             <i class="fas fa-book me-1"></i>Library
                         </a>
                     </li>
+                    <!-- In the navbar navigation, add these links -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="academicsDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-graduation-cap me-1"></i>Academics
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="academicsDropdown">
+                            <li><a class="dropdown-item" href="{% url 'view_course_handbook' %}">
+                                <i class="fas fa-book me-2"></i>Course Handbook
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'view_timetables' %}">
+                                <i class="fas fa-calendar-alt me-2"></i>Timetables
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'view_calendar' %}">
+                                <i class="fas fa-calendar me-2"></i>Academic Calendar
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- For logged-in students, add to their menu -->
+                    {% if request.session.student_reg_number %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my_receipt' %}">
+                            <i class="fas fa-receipt me-1"></i>My Receipt
+                        </a>
+                    </li>
+                    {% endif %}
                     {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'admin_dashboard' %}">

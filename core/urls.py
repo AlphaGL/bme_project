@@ -73,4 +73,42 @@ urlpatterns = [
     path('admin/announcements/add/', views.add_announcement, name='add_announcement'),
     path('admin/announcements/edit/<int:pk>/', views.edit_announcement, name='edit_announcement'),
     path('admin/announcements/delete/<int:pk>/', views.delete_announcement, name='delete_announcement'),
+    
+    # ==================== DEPARTMENTAL DUES URLs ====================
+    path('admin/dues/', views.manage_departmental_dues, name='manage_departmental_dues'),
+    path('admin/dues/add/', views.add_departmental_dues, name='add_departmental_dues'),
+    path('admin/dues/edit/<int:pk>/', views.edit_departmental_dues, name='edit_departmental_dues'),
+    path('admin/dues/approve/<int:pk>/', views.approve_dues, name='approve_dues'),
+    path('admin/dues/delete/<int:pk>/', views.delete_departmental_dues, name='delete_departmental_dues'),
+    
+    # Student Receipt URLs
+    path('student/my-receipt/', views.my_receipt, name='my_receipt'),
+    path('student/print-receipt/', views.print_receipt, name='print_receipt'),
+    
+    # ==================== COURSE HANDBOOK URLs ====================
+    path('admin/handbook/', views.manage_course_handbook, name='manage_course_handbook'),
+    path('admin/handbook/add/', views.add_course_handbook, name='add_course_handbook'),
+    path('admin/handbook/edit/<int:pk>/', views.edit_course_handbook, name='edit_course_handbook'),
+    path('admin/handbook/delete/<int:pk>/', views.delete_course_handbook, name='delete_course_handbook'),
+    
+    # Public Course Handbook URL
+    path('course-handbook/', views.view_course_handbook, name='view_course_handbook'),
+    
+    # ==================== TIMETABLE URLs ====================
+    path('admin/timetables/', views.manage_timetables, name='manage_timetables'),
+    path('admin/timetables/add/', views.add_timetable, name='add_timetable'),
+    path('admin/timetables/edit/<int:pk>/', views.edit_timetable, name='edit_timetable'),
+    path('admin/timetables/delete/<int:pk>/', views.delete_timetable, name='delete_timetable'),
+    
+    # Public Timetables URL
+    path('timetables/', views.view_timetables, name='view_timetables'),
+    
+    # ==================== ACADEMIC CALENDAR URLs ====================
+    path('admin/calendars/', views.manage_calendars, name='manage_calendars'),
+    path('admin/calendars/add/', views.add_calendar, name='add_calendar'),
+    path('admin/calendars/edit/<int:pk>/', views.edit_calendar, name='edit_calendar'),
+    path('admin/calendars/delete/<int:pk>/', views.delete_calendar, name='delete_calendar'),
+    
+    # Public Academic Calendar URL
+    path('academic-calendar/', views.view_calendar, name='view_calendar'),
 ]

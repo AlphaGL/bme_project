@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Receipt - {{ student.reg_number }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                margin: 0;
+                padding: 20px;
+            }
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .receipt-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .watermark-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .watermark-text {
+            font-size: 4rem;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .watermark-code {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 1rem;
+            letter-spacing: 2px;
+        }
+
+        .receipt-content {
+            position: relative;
+            z-index: 2;
+            padding: 40px;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #0d6efd;
+        }
+
+        .receipt-title {
+            background-color: #0d6efd;
+            color: white;
+            padding: 15px;
+            margin: -40px -40px 30px -40px;
+            text-align: center;
+        }
+
+        .info-table td {
+            padding: 10px 0;
+        }
+
+        .verification-box {
+            background: repeating-linear-gradient(
+                45deg,
+                #f8f9fa,
+                #f8f9fa 10px,
+                #e9ecef 10px,
+                #e9ecef 20px
+            );
+            border: 2px dashed #6c757d;
+            padding: 15px;
+            margin-top: 30px;
+        }
+
+        .stamp {
+            position: absolute;
+            bottom: 80px;
+            right: 60px;
+            border: 3px solid #198754;
+            color: #198754;
+            padding: 10px 20px;
+            border-radius: 50%;
+            transform: rotate(-15deg);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Button (Hidden when printing) -->
+    <div class="no-print text-center mb-3">
+        <button onclick="window.print()" class="btn btn-primary btn-lg">
+            <i class="fas fa-print me-2"></i>Print Receipt
+        </button>
+        <a href="{% url 'my_receipt' %}" class="btn btn-secondary btn-lg ms-2">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
+    </div>
+
+    <div class="receipt-container">
+        <!-- Multiple Watermarks for Anti-Fraud -->
+        <div class="watermark-container">
+            <div class="watermark-text">
+                <i class="fas fa-stamp"></i><br>
+                BME FUTO<br>
+                OFFICIAL
+            </div>
+            <div class="watermark-code">{{ dues.watermark_code }}</div>
+        </div>
+
+        <!-- Repeating watermark pattern -->
+        <div style="position: absolute; top: 100px; left: 50px; opacity: 0.05; z-index: 1;">
+            <i class="fas fa-shield-alt" style="font-size: 3rem;"></i>
+        </div>
+        <div style="position: absolute; bottom: 100px; right: 50px; opacity: 0.05; z-index: 1;">
+            <i class="fas fa-shield-alt" style="font-size: 3rem;"></i>
+        </div>
+        <div style="position: absolute; top: 200px; right: 100px; opacity: 0.05; z-index: 1;">
+            <i class="fas fa-lock" style="font-size: 2rem;"></i>
+        </div>
+
+        <div class="receipt-title">
+            <h3 class="mb-2"><i class="fas fa-heartbeat me-2"></i>BIOMEDICAL ENGINEERING DEPARTMENT</h3>
+            <p class="mb-1">Federal University of Technology, Owerri</p>
+            <p class="mb-0 small">PMB 1526, Owerri, Imo State, Nigeria</p>
+        </div>
+
+        <div class="receipt-content">
+            <div class="receipt-header">
+                <h4 class="fw-bold text-uppercase mb-3">DEPARTMENTAL DUES RECEIPT</h4>
+                <div class="row">
+                    <div class="col-6 text-start">
+                        <strong>Receipt No:</strong> <span class="text-primary">{{ dues.receipt_number }}</span>
+                    </div>
+                    <div class="col-6 text-end">
+                        <strong>Date:</strong> {{ dues.approved_at|date:"F d, Y" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Information -->
+            <div class="mb-4">
+                <h5 class="fw-bold text-uppercase border-bottom pb-2 mb-3">
+                    <i class="fas fa-user-graduate me-2 text-primary"></i>Student Information
+                </h5>
+                <table class="info-table w-100">
+                    <tr>
+                        <td width="35%"><strong>Full Name:</strong></td>
+                        <td>{{ student.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Registration Number:</strong></td>
+                        <td>{{ student.reg_number }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Level:</strong></td>
+                        <td>{{ student.level }} Level</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td>{{ student.email|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phone:</strong></td>
+                        <td>{{ student.phone|default:"N/A" }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="mb-4">
+                <h5 class="fw-bold text-uppercase border-bottom pb-2 mb-3">
+                    <i class="fas fa-money-bill-wave me-2 text-success"></i>Payment Details
+                </h5>
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Description</th>
+                            <th width="30%" class="text-end">Amount (₦)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Departmental Dues - {{ dues.academic_session }} Academic Session</td>
+                            <td class="text-end">{{ dues.amount_paid|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>TOTAL AMOUNT PAID</strong></td>
+                            <td class="text-end"><strong>₦{{ dues.amount_paid|floatformat:2 }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="mb-0"><strong>Payment Reference:</strong> {{ dues.payment_reference }}</p>
+            </div>
+
+            <!-- Verification Information -->
+            <div class="verification-box">
+                <h6 class="fw-bold text-uppercase mb-3">
+                    <i class="fas fa-check-circle me-2 text-success"></i>Verification & Security
+                </h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Verification Code:</strong></p>
+                        <p class="font-monospace text-primary fs-6 mb-3">{{ dues.watermark_code }}</p>
+                        <p class="mb-2"><strong>Approved By:</strong></p>
+                        <p class="mb-0">{{ dues.approved_by.get_full_name|default:dues.approved_by.username }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Approval Date:</strong></p>
+                        <p class="mb-3">{{ dues.approved_at|date:"F d, Y - h:i A" }}</p>
+                        <p class="mb-2"><strong>Status:</strong></p>
+                        <p class="mb-0">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>APPROVED
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anti-Fraud Notice -->
+            <div class="alert alert-warning mt-4 mb-0">
+                <div class="d-flex align-items-start">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <h6 class="fw-bold mb-2">ANTI-FRAUD NOTICE</h6>
+                        <p class="small mb-0">
+                            This receipt is valid ONLY if it contains:
+                        </p>
+                        <ul class="small mb-0">
+                            <li>The official BME FUTO watermark visible throughout the document</li>
+                            <li>A unique verification code: <strong>{{ dues.watermark_code }}</strong></li>
+                            <li>Official receipt number: <strong>{{ dues.receipt_number }}</strong></li>
+                        </ul>
+                        <p class="small mb-0 mt-2">
+                            Any receipt without these security features or with different codes is INVALID and should be reported immediately.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signature Section -->
+            <div class="row mt-5 pt-4">
+                <div class="col-6">
+                    <div class="text-center">
+                        <div class="border-top border-dark d-inline-block" style="width: 200px; padding-top: 10px;">
+                            <p class="mb-0 small"><strong>Student Signature</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="text-center">
+                        <div class="border-top border-dark d-inline-block" style="width: 200px; padding-top: 10px;">
+                            <p class="mb-0 small"><strong>HOD Signature & Stamp</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approved Stamp -->
+            <div class="stamp">
+                APPROVED
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-5 pt-4 border-top">
+                <p class="small text-muted mb-1">
+                    <i class="fas fa-phone me-2"></i>Contact: +234 XXX XXX XXXX | 
+                    <i class="fas fa-envelope me-2 ms-3"></i>bmefuto@futo.edu.ng
+                </p>
+                <p class="small text-muted mb-0">
+                    This is a computer-generated receipt and is valid without signature if verification code matches.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Prevent right-click (makes it harder to copy)
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Add print timestamp
+        window.onbeforeprint = function() {
+            console.log('Receipt printed: ' + new Date().toISOString());
+        };
+    </script>
+</body>
+</html>

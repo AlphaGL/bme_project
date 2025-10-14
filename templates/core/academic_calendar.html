@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}Academic Calendar - BME FUTO{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="py-4 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-calendar me-2"></i>Academic Calendar
+                </h2>
+                <p class="mb-0">View the official academic calendar for the current session</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'index' %}" class="btn btn-light">
+                    <i class="fas fa-home me-2"></i>Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Current Academic Calendar -->
+<section class="py-5">
+    <div class="container">
+        {% if calendar %}
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h3 class="fw-bold mb-2">{{ calendar.title }}</h3>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-calendar-alt me-2"></i>{{ calendar.academic_session }}
+                                </p>
+                            </div>
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                        
+                        {% if calendar.description %}
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>{{ calendar.description }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Calendar Image/PDF Display -->
+                        <div class="calendar-display mb-4">
+                            {% if calendar.image.url %}
+                                {% if calendar.image.url|slice:"-4:" == ".pdf" %}
+                                <div class="text-center">
+                                    <div class="mb-3">
+                                        <i class="far fa-file-pdf fa-5x text-danger"></i>
+                                    </div>
+                                    <a href="{{ calendar.image.url }}" target="_blank" class="btn btn-danger btn-lg">
+                                        <i class="fas fa-download me-2"></i>Download PDF Calendar
+                                    </a>
+                                </div>
+                                {% else %}
+                                <div class="text-center">
+                                    <img src="{{ calendar.image.url }}" alt="{{ calendar.title }}" 
+                                         class="img-fluid rounded shadow" style="max-width: 100%; cursor: pointer;"
+                                         onclick="window.open(this.src, '_blank')">
+                                    <p class="text-muted mt-3 small">
+                                        <i class="fas fa-search-plus me-1"></i>Click image to view full size
+                                    </p>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                        <!-- Calendar Details -->
+                        <div class="row g-3 mt-4">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user text-primary me-3 fa-lg"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Uploaded By</small>
+                                        <strong>{{ calendar.uploaded_by.username|default:"Admin" }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-clock text-primary me-3 fa-lg"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Last Updated</small>
+                                        <strong>{{ calendar.updated_at|date:"M d, Y - h:i A" }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2 mt-4">
+                            <a href="{{ calendar.image.url }}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt me-2"></i>Open in New Tab
+                            </a>
+                            <a href="{{ calendar.image.url }}" download class="btn btn-success">
+                                <i class="fas fa-download me-2"></i>Download
+                            </a>
+                            <button onclick="window.print()" class="btn btn-outline-secondary">
+                                <i class="fas fa-print me-2"></i>Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- No Active Calendar -->
+        <div class="row">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="far fa-calendar-times fa-5x text-muted mb-4"></i>
+                        <h3 class="fw-bold mb-3">No Active Academic Calendar</h3>
+                        <p class="text-muted mb-4">
+                            There is currently no active academic calendar available. Please check back later.
+                        </p>
+                        <a href="{% url 'index' %}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>Return to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Previous Calendars -->
+        {% if all_calendars %}
+        <div class="row mt-5">
+            <div class="col">
+                <h3 class="fw-bold mb-4">
+                    <i class="fas fa-history me-2"></i>Previous Calendars
+                </h3>
+                <div class="row g-4">
+                    {% for prev_calendar in all_calendars %}
+                    {% if not prev_calendar.is_active %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="fw-bold mb-0">{{ prev_calendar.title|truncatewords:5 }}</h5>
+                                    <span class="badge bg-secondary">Archived</span>
+                                </div>
+                                <p class="text-muted mb-3">
+                                    <i class="fas fa-calendar-alt me-2"></i>{{ prev_calendar.academic_session }}
+                                </p>
+                                <div class="d-grid">
+                                    <a href="{{ prev_calendar.image.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-2"></i>View Calendar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Important Information -->
+        <div class="row mt-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold mb-3">
+                            <i class="fas fa-info-circle me-2 text-info"></i>Important Information
+                        </h4>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                All dates are subject to change. Please check regularly for updates.
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                For any clarification, contact the department office.
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Make sure to plan your academic activities according to the calendar.
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Download and save a copy for offline reference.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.calendar-display img {
+    border: 2px solid #dee2e6;
+    transition: transform 0.3s ease;
+}
+
+.calendar-display img:hover {
+    transform: scale(1.02);
+}
+
+@media print {
+    nav, footer, .btn, .badge {
+        display: none !important;
+    }
+    
+    .calendar-display img {
+        max-width: 100%;
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}

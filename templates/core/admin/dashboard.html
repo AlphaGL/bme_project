@@ -102,7 +102,13 @@
                 <h3 class="fw-bold mb-4">Quick Actions</h3>
             </div>
         </div>
-        <div class="row g-4">
+        <div class="row g-4 mb-4">
+            <!-- Content Management -->
+            <div class="col-12">
+                <h5 class="fw-bold text-muted mb-3">
+                    <i class="fas fa-folder-open me-2"></i>Content Management
+                </h5>
+            </div>
             <div class="col-md-6 col-lg-4">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center p-4">
@@ -160,6 +166,64 @@
                         <h5 class="card-title">Manage Announcements</h5>
                         <p class="card-text text-muted">Create and manage announcements</p>
                         <a href="{% url 'manage_announcements' %}" class="btn btn-secondary">Manage</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Management -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <h5 class="fw-bold text-muted mb-3">
+                    <i class="fas fa-graduation-cap me-2"></i>Academic Management
+                </h5>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Course Handbook</h5>
+                        <p class="card-text text-muted">Manage course listings and details</p>
+                        <a href="{% url 'manage_course_handbook' %}" class="btn btn-primary">Manage</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Timetables</h5>
+                        <p class="card-text text-muted">Upload exam and class timetables</p>
+                        <a href="{% url 'manage_timetables' %}" class="btn btn-success">Manage</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-calendar fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Academic Calendar</h5>
+                        <p class="card-text text-muted">Upload and manage academic calendar</p>
+                        <a href="{% url 'manage_calendars' %}" class="btn btn-info text-white">Manage</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Management -->
+        <div class="row g-4">
+            <div class="col-12">
+                <h5 class="fw-bold text-muted mb-3">
+                    <i class="fas fa-user-graduate me-2"></i>Student Management
+                </h5>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-receipt fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Departmental Dues</h5>
+                        <p class="card-text text-muted">Manage student payment receipts</p>
+                        <a href="{% url 'manage_departmental_dues' %}" class="btn btn-warning">Manage</a>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Departmental Dues - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="fw-bold">
+                        <i class="fas fa-receipt me-2 text-purple"></i>Manage Departmental Dues
+                    </h1>
+                    <div>
+                        <a href="{% url 'add_departmental_dues' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Dues Record
+                        </a>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        {% if dues %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Receipt No.</th>
+                                        <th>Student</th>
+                                        <th>Reg Number</th>
+                                        <th>Amount</th>
+                                        <th>Session</th>
+                                        <th>Status</th>
+                                        <th>Approved By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for due in dues %}
+                                    <tr>
+                                        <td><strong>{{ due.receipt_number }}</strong></td>
+                                        <td>{{ due.student.full_name }}</td>
+                                        <td>{{ due.student.reg_number }}</td>
+                                        <td>₦{{ due.amount_paid|floatformat:2 }}</td>
+                                        <td>{{ due.academic_session }}</td>
+                                        <td>
+                                            {% if due.is_approved %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Approved
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-clock me-1"></i>Pending
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if due.approved_by %}
+                                                {{ due.approved_by.username }}
+                                                <br><small class="text-muted">{{ due.approved_at|date:"M d, Y" }}</small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not due.is_approved %}
+                                            <a href="{% url 'approve_dues' due.pk %}" class="btn btn-sm btn-success" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            {% endif %}
+                                            <a href="{% url 'edit_departmental_dues' due.pk %}" class="btn btn-sm btn-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'delete_departmental_dues' due.pk %}" class="btn btn-sm btn-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+                            <p class="text-muted">No departmental dues records yet.</p>
+                            <a href="{% url 'add_departmental_dues' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add First Record
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        {% if dues %}
+        <div class="row mt-4 g-3">
+            <div class="col-md-3">
+                <div class="card border-0 bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3>{{ total_count }}</h3>
+                        <small>Total Records</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3>{{ approved_count }}</h3>
+                        <small>Approved</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h3>{{ pending_count }}</h3>
+                        <small>Pending</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 bg-info text-white">
+                    <div class="card-body text-center">
+                        <h3>₦{{ total_revenue|floatformat:2 }}</h3>
+                        <small>Total Revenue</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

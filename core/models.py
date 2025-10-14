@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
+from django.core.validators import FileExtensionValidator
+import uuid
 import json
 
 class Staff(models.Model):
@@ -226,3 +228,160 @@ class CGPACalculation(models.Model):
 
     def __str__(self):
         return f"{self.student.reg_number} - CGPA: {self.cgpa}"
+
+
+# DEPARTMENTAL DUES RECEIPT MODEL
+class DepartmentalDues(models.Model):
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='departmental_dues')
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=5000.00)
+    payment_reference = models.CharField(max_length=100, unique=True, blank=True)
+    is_approved = models.BooleanField(default=False, help_text="Admin approval required")
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_dues')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    academic_session = models.CharField(max_length=20, help_text="e.g., 2023/2024")
+    receipt_number = models.CharField(max_length=50, unique=True, blank=True)
+    watermark_code = models.CharField(max_length=100, blank=True, help_text="Unique code for verification")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Departmental Dues"
+    
+    def save(self, *args, **kwargs):
+        if not self.receipt_number:
+            # Generate unique receipt number: BME/2024/001
+            import datetime
+            year = datetime.datetime.now().year
+            last_receipt = DepartmentalDues.objects.filter(
+                receipt_number__startswith=f'BME/{year}/'
+            ).order_by('-receipt_number').first()
+            
+            if last_receipt:
+                last_number = int(last_receipt.receipt_number.split('/')[-1])
+                new_number = last_number + 1
+            else:
+                new_number = 1
+            
+            self.receipt_number = f'BME/{year}/{new_number:04d}'
+        
+        if not self.watermark_code:
+            # Generate unique watermark code for anti-fraud
+            self.watermark_code = f"BME-{uuid.uuid4().hex[:12].upper()}"
+        
+        if not self.payment_reference:
+            self.payment_reference = f"PAY-{uuid.uuid4().hex[:10].upper()}"
+        
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.student.reg_number} - {self.receipt_number}"
+
+
+# COURSE HANDBOOK MODEL
+class CourseHandbook(models.Model):
+    LEVEL_CHOICES = [
+        ('100', '100 Level'),
+        ('200', '200 Level'),
+        ('300', '300 Level'),
+        ('400', '400 Level'),
+        ('500', '500 Level'),
+    ]
+    
+    SEMESTER_CHOICES = [
+        ('First', 'First Semester'),
+        ('Second', 'Second Semester'),
+    ]
+    
+    level = models.CharField(max_length=10, choices=LEVEL_CHOICES)
+    semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
+    course_code = models.CharField(max_length=20)
+    course_title = models.CharField(max_length=300)
+    credit_unit = models.IntegerField()
+    course_type = models.CharField(max_length=20, choices=[
+        ('Core', 'Core'),
+        ('Required', 'Required'),
+        ('Elective', 'Elective'),
+    ], default='Core')
+    description = models.TextField(blank=True, null=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['level', 'semester', 'course_code']
+        unique_together = ['level', 'semester', 'course_code']
+        verbose_name_plural = "Course Handbook"
+    
+    def __str__(self):
+        return f"{self.level}L {self.semester} - {self.course_code}"
+
+
+# TIMETABLE MODEL
+class Timetable(models.Model):
+    TIMETABLE_CHOICES = [
+        ('Exam', 'Examination Timetable'),
+        ('Class', 'Class Timetable'),
+    ]
+    
+    LEVEL_CHOICES = [
+        ('100', '100 Level'),
+        ('200', '200 Level'),
+        ('300', '300 Level'),
+        ('400', '400 Level'),
+        ('500', '500 Level'),
+        ('All', 'All Levels'),
+    ]
+    
+    SEMESTER_CHOICES = [
+        ('First', 'First Semester'),
+        ('Second', 'Second Semester'),
+    ]
+    
+    title = models.CharField(max_length=300)
+    timetable_type = models.CharField(max_length=10, choices=TIMETABLE_CHOICES)
+    level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='All')
+    semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
+    academic_session = models.CharField(max_length=20, help_text="e.g., 2023/2024")
+    image = CloudinaryField('image', 
+                           validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'pdf'])],
+                           help_text="Upload timetable image or PDF")
+    description = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Timetables"
+    
+    def __str__(self):
+        return f"{self.timetable_type} - {self.level} {self.semester} ({self.academic_session})"
+
+
+# ACADEMIC CALENDAR MODEL
+class AcademicCalendar(models.Model):
+    title = models.CharField(max_length=300)
+    academic_session = models.CharField(max_length=20, help_text="e.g., 2023/2024")
+    image = CloudinaryField('image',
+                           validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'pdf'])],
+                           help_text="Upload academic calendar image or PDF")
+    description = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True, help_text="Only one calendar should be active at a time")
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Academic Calendars"
+    
+    def __str__(self):
+        return f"{self.title} ({self.academic_session})"
+    
+    def save(self, *args, **kwargs):
+        # If this calendar is being set as active, deactivate all others
+        if self.is_active:
+            AcademicCalendar.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+        super().save(*args, **kwargs)

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Timetable - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="fw-bold">
+                    <i class="fas fa-calendar-alt me-2"></i>{{ action }} Timetable
+                </h1>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="id_title" class="form-label fw-bold">
+                                    <i class="fas fa-heading me-2"></i>Timetable Title
+                                </label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_timetable_type" class="form-label fw-bold">
+                                        <i class="fas fa-tags me-2"></i>Timetable Type
+                                    </label>
+                                    {{ form.timetable_type }}
+                                    {% if form.timetable_type.errors %}
+                                        <div class="text-danger small mt-1">{{ form.timetable_type.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_level" class="form-label fw-bold">
+                                        <i class="fas fa-layer-group me-2"></i>Level
+                                    </label>
+                                    {{ form.level }}
+                                    {% if form.level.errors %}
+                                        <div class="text-danger small mt-1">{{ form.level.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_semester" class="form-label fw-bold">
+                                        <i class="fas fa-calendar me-2"></i>Semester
+                                    </label>
+                                    {{ form.semester }}
+                                    {% if form.semester.errors %}
+                                        <div class="text-danger small mt-1">{{ form.semester.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_academic_session" class="form-label fw-bold">
+                                        <i class="fas fa-graduation-cap me-2"></i>Academic Session
+                                    </label>
+                                    {{ form.academic_session }}
+                                    {% if form.academic_session.errors %}
+                                        <div class="text-danger small mt-1">{{ form.academic_session.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_image" class="form-label fw-bold">
+                                    <i class="fas fa-image me-2"></i>Timetable Image/PDF
+                                </label>
+                                {{ form.image }}
+                                {% if form.image.errors %}
+                                    <div class="text-danger small mt-1">{{ form.image.errors.0 }}</div>
+                                {% endif %}
+                                <small class="text-muted d-block mt-1">
+                                    Upload screenshot or PDF of the timetable. Accepted formats: JPG, PNG, PDF
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_description" class="form-label fw-bold">
+                                    <i class="fas fa-align-left me-2"></i>Description (Optional)
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="id_is_active">
+                                        <strong>Make this timetable active</strong>
+                                        <br><small class="text-muted">Active timetables are visible to students</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-lightbulb me-2"></i>Tips for Uploading Timetables
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li>Take a clear screenshot or photo of the timetable</li>
+                                    <li>Ensure text is readable when viewing on mobile devices</li>
+                                    <li>Use descriptive titles like "First Semester Exam Timetable 2023/2024"</li>
+                                    <li>Select "All" for level if timetable applies to everyone</li>
+                                </ul>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-upload me-2"></i>Upload Timetable
+                                </button>
+                                <a href="{% url 'manage_timetables' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Sidebar -->
+            <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Quick Guide
+                        </h5>
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-danger">
+                                <i class="fas fa-pencil-alt me-2"></i>Exam Timetable
+                            </h6>
+                            <p class="small text-muted">
+                                Schedule for examinations. Students use this to prepare and know exam dates.
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-info">
+                                <i class="fas fa-clock me-2"></i>Class Timetable
+                            </h6>
+                            <p class="small text-muted">
+                                Daily/weekly class schedules. Shows when and where classes hold.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 bg-primary bg-opacity-10 mt-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-users me-2 text-primary"></i>Level Options
+                        </h6>
+                        <p class="small mb-0">
+                            <strong>All Levels:</strong> Use when timetable applies to everyone<br>
+                            <strong>Specific Level:</strong> Use for level-specific timetables (100, 200, 300, 400, 500)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

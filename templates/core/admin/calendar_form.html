@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Academic Calendars - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="fw-bold">
+                        <i class="fas fa-calendar me-2" style="color: #fd7e14;"></i>Manage Academic Calendars
+                    </h1>
+                    <div>
+                        <a href="{% url 'add_calendar' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Upload Calendar
+                        </a>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        {% if calendars %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="40%">Title</th>
+                                        <th>Academic Session</th>
+                                        <th>Status</th>
+                                        <th>Uploaded By</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for calendar in calendars %}
+                                    <tr {% if calendar.is_active %}class="table-success"{% endif %}>
+                                        <td>
+                                            <strong>{{ calendar.title }}</strong>
+                                            {% if calendar.is_active %}
+                                            <span class="badge bg-success ms-2">Current</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ calendar.academic_session }}</td>
+                                        <td>
+                                            {% if calendar.is_active %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Active
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-archive me-1"></i>Archived
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>
+                                                {{ calendar.uploaded_by.username }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ calendar.created_at|date:"M d, Y" }}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <a href="{{ calendar.image.url }}" target="_blank" class="btn btn-sm btn-info" title="View Calendar">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'edit_calendar' calendar.pk %}" class="btn btn-sm btn-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'delete_calendar' calendar.pk %}" class="btn btn-sm btn-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-info-circle me-2"></i>Important Note
+                            </h6>
+                            <p class="mb-0 small">
+                                Only ONE academic calendar can be active at a time. When you set a calendar as active, 
+                                all other calendars will automatically be marked as inactive. The active calendar is 
+                                displayed on the public academic calendar page.
+                            </p>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar fa-5x text-muted mb-4"></i>
+                            <h4 class="fw-bold mb-3">No Academic Calendars</h4>
+                            <p class="text-muted mb-4">
+                                Upload the academic calendar for the current session so students can stay informed about important dates.
+                            </p>
+                            <a href="{% url 'add_calendar' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus me-2"></i>Upload Academic Calendar
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        {% if calendars %}
+        <div class="row mt-4 g-3">
+            <div class="col-md-4">
+                <div class="card border-0 bg-primary text-white text-center p-3">
+                    <h4 class="mb-0">{{ calendars.count }}</h4>
+                    <small>Total Calendars</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-success text-white text-center p-3">
+                    <h4 class="mb-0">
+                        {% for cal in calendars %}
+                            {% if cal.is_active %}1{% endif %}
+                        {% endfor %}
+                    </h4>
+                    <small>Active Calendar</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-warning text-dark text-center p-3">
+                    <h4 class="mb-0">
+                        <a href="{% url 'view_calendar' %}" class="text-dark text-decoration-none">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </h4>
+                    <small>Public View</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

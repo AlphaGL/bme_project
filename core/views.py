@@ -3,9 +3,18 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Sum, Avg
-from .models import Staff, Exco, PastQuestion, LibraryResource, Testimonial, Announcement, Student, Semester, Course, CGPACalculation
-from .forms import StaffForm, ExcoForm, PastQuestionForm, LibraryResourceForm, TestimonialForm, AnnouncementForm, StudentRegistrationForm, StudentLoginForm, StudentProfileForm, SemesterForm, CourseForm
+from .models import( Staff, Exco, PastQuestion, 
+                    LibraryResource, Testimonial, Announcement, 
+                    Student, Semester, Course, CGPACalculation, DepartmentalDues, 
+                    CourseHandbook, Timetable, AcademicCalendar)
+from .forms import (StaffForm, ExcoForm, PastQuestionForm, LibraryResourceForm, TestimonialForm, 
+                    AnnouncementForm, StudentRegistrationForm, StudentLoginForm, 
+                    StudentProfileForm, SemesterForm, CourseForm,  DepartmentalDuesForm,
+                    CourseHandbookForm, TimetableForm, AcademicCalendarForm)
 import json
+from django.utils import timezone
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 
 # Public Views
 def index(request):
@@ -743,4 +752,329 @@ def cgpa_history(request):
     return render(request, 'core/student/cgpa_history.html', {
         'student': student,
         'calculations': calculations
+    })
+
+
+# ==================== DEPARTMENTAL DUES VIEWS ====================
+
+@login_required
+def manage_departmental_dues(request):
+    """Admin view to manage all departmental dues"""
+    dues = DepartmentalDues.objects.all().select_related('student', 'approved_by')
+
+    # Compute summary statistics
+    total_count = dues.count()
+    approved_count = dues.filter(is_approved=True).count()
+    pending_count = dues.filter(is_approved=False).count()
+
+    context = {
+        'dues': dues,
+        'total_count': total_count,
+        'approved_count': approved_count,
+        'pending_count': pending_count,
+    }
+    return render(request, 'core/admin/manage_dues.html', context)
+
+
+@login_required
+def add_departmental_dues(request):
+    """Admin adds departmental dues for a student"""
+    if request.method == 'POST':
+        form = DepartmentalDuesForm(request.POST)
+        if form.is_valid():
+            dues = form.save(commit=False)
+            if dues.is_approved:
+                dues.approved_by = request.user
+                dues.approved_at = timezone.now()
+            dues.save()
+            messages.success(request, 'Departmental dues added successfully!')
+            return redirect('manage_departmental_dues')
+    else:
+        form = DepartmentalDuesForm()
+    return render(request, 'core/admin/dues_form.html', {'form': form, 'action': 'Add'})
+
+
+@login_required
+def edit_departmental_dues(request, pk):
+    """Admin edits departmental dues"""
+    dues = get_object_or_404(DepartmentalDues, pk=pk)
+    if request.method == 'POST':
+        form = DepartmentalDuesForm(request.POST, instance=dues)
+        if form.is_valid():
+            dues = form.save(commit=False)
+            if dues.is_approved and not dues.approved_at:
+                dues.approved_by = request.user
+                dues.approved_at = timezone.now()
+            dues.save()
+            messages.success(request, 'Departmental dues updated successfully!')
+            return redirect('manage_departmental_dues')
+    else:
+        form = DepartmentalDuesForm(instance=dues)
+    return render(request, 'core/admin/dues_form.html', {'form': form, 'action': 'Edit'})
+
+
+@login_required
+def approve_dues(request, pk):
+    """Admin approves departmental dues"""
+    dues = get_object_or_404(DepartmentalDues, pk=pk)
+    dues.is_approved = True
+    dues.approved_by = request.user
+    dues.approved_at = timezone.now()
+    dues.save()
+    messages.success(request, f'Dues for {dues.student.full_name} approved successfully!')
+    return redirect('manage_departmental_dues')
+
+
+@login_required
+def delete_departmental_dues(request, pk):
+    """Admin deletes departmental dues"""
+    dues = get_object_or_404(DepartmentalDues, pk=pk)
+    if request.method == 'POST':
+        dues.delete()
+        messages.success(request, 'Departmental dues deleted successfully!')
+        return redirect('manage_departmental_dues')
+    return render(request, 'core/admin/confirm_delete.html', {'object': dues, 'type': 'Departmental Dues'})
+
+
+@student_required
+def my_receipt(request):
+    """Student views their departmental receipt"""
+    reg_number = request.session.get('student_reg_number')
+    student = Student.objects.get(reg_number=reg_number)
+    
+    try:
+        dues = DepartmentalDues.objects.get(student=student)
+    except DepartmentalDues.DoesNotExist:
+        dues = None
+    
+    return render(request, 'core/student/my_receipt.html', {
+        'student': student,
+        'dues': dues
+    })
+
+
+@student_required
+def print_receipt(request):
+    """Student prints their receipt"""
+    reg_number = request.session.get('student_reg_number')
+    student = Student.objects.get(reg_number=reg_number)
+    
+    try:
+        dues = DepartmentalDues.objects.get(student=student, is_approved=True)
+    except DepartmentalDues.DoesNotExist:
+        messages.error(request, 'Your departmental dues have not been approved yet.')
+        return redirect('my_receipt')
+    
+    return render(request, 'core/student/print_receipt.html', {
+        'student': student,
+        'dues': dues
+    })
+
+
+# ==================== COURSE HANDBOOK VIEWS ====================
+
+@login_required
+def manage_course_handbook(request):
+    """Admin manages course handbook"""
+    courses = CourseHandbook.objects.all()
+    
+    # Group by level and semester
+    grouped_courses = {}
+    for course in courses:
+        key = f"{course.level}L {course.semester}"
+        if key not in grouped_courses:
+            grouped_courses[key] = []
+        grouped_courses[key].append(course)
+    
+    return render(request, 'core/admin/manage_handbook.html', {
+        'grouped_courses': grouped_courses
+    })
+
+
+@login_required
+def add_course_handbook(request):
+    """Admin adds course to handbook"""
+    if request.method == 'POST':
+        form = CourseHandbookForm(request.POST)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.uploaded_by = request.user
+            course.save()
+            messages.success(request, 'Course added to handbook successfully!')
+            return redirect('manage_course_handbook')
+    else:
+        form = CourseHandbookForm()
+    return render(request, 'core/admin/handbook_form.html', {'form': form, 'action': 'Add'})
+
+
+@login_required
+def edit_course_handbook(request, pk):
+    """Admin edits course in handbook"""
+    course = get_object_or_404(CourseHandbook, pk=pk)
+    if request.method == 'POST':
+        form = CourseHandbookForm(request.POST, instance=course)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Course updated successfully!')
+            return redirect('manage_course_handbook')
+    else:
+        form = CourseHandbookForm(instance=course)
+    return render(request, 'core/admin/handbook_form.html', {'form': form, 'action': 'Edit'})
+
+
+@login_required
+def delete_course_handbook(request, pk):
+    """Admin deletes course from handbook"""
+    course = get_object_or_404(CourseHandbook, pk=pk)
+    if request.method == 'POST':
+        course.delete()
+        messages.success(request, 'Course deleted successfully!')
+        return redirect('manage_course_handbook')
+    return render(request, 'core/admin/confirm_delete.html', {'object': course, 'type': 'Course'})
+
+
+def view_course_handbook(request):
+    """Public/Student view of course handbook"""
+    level = request.GET.get('level', '100')
+    semester = request.GET.get('semester', 'First')
+    
+    courses = CourseHandbook.objects.filter(level=level, semester=semester)
+    
+    # Calculate total credit units
+    total_credits = sum(course.credit_unit for course in courses)
+    
+    return render(request, 'core/course_handbook.html', {
+        'courses': courses,
+        'selected_level': level,
+        'selected_semester': semester,
+        'total_credits': total_credits
+    })
+
+
+# ==================== TIMETABLE VIEWS ====================
+
+@login_required
+def manage_timetables(request):
+    """Admin manages timetables"""
+    timetables = Timetable.objects.all()
+    return render(request, 'core/admin/manage_timetables.html', {'timetables': timetables})
+
+
+@login_required
+def add_timetable(request):
+    """Admin adds timetable"""
+    if request.method == 'POST':
+        form = TimetableForm(request.POST, request.FILES)
+        if form.is_valid():
+            timetable = form.save(commit=False)
+            timetable.uploaded_by = request.user
+            timetable.save()
+            messages.success(request, 'Timetable uploaded successfully!')
+            return redirect('manage_timetables')
+    else:
+        form = TimetableForm()
+    return render(request, 'core/admin/timetable_form.html', {'form': form, 'action': 'Add'})
+
+
+@login_required
+def edit_timetable(request, pk):
+    """Admin edits timetable"""
+    timetable = get_object_or_404(Timetable, pk=pk)
+    if request.method == 'POST':
+        form = TimetableForm(request.POST, request.FILES, instance=timetable)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Timetable updated successfully!')
+            return redirect('manage_timetables')
+    else:
+        form = TimetableForm(instance=timetable)
+    return render(request, 'core/admin/timetable_form.html', {'form': form, 'action': 'Edit'})
+
+
+@login_required
+def delete_timetable(request, pk):
+    """Admin deletes timetable"""
+    timetable = get_object_or_404(Timetable, pk=pk)
+    if request.method == 'POST':
+        timetable.delete()
+        messages.success(request, 'Timetable deleted successfully!')
+        return redirect('manage_timetables')
+    return render(request, 'core/admin/confirm_delete.html', {'object': timetable, 'type': 'Timetable'})
+
+
+def view_timetables(request):
+    """Public/Student view of timetables"""
+    timetable_type = request.GET.get('type', 'Exam')
+    level = request.GET.get('level', 'All')
+    
+    timetables = Timetable.objects.filter(is_active=True, timetable_type=timetable_type)
+    if level != 'All':
+        timetables = timetables.filter(level__in=[level, 'All'])
+    
+    return render(request, 'core/timetables.html', {
+        'timetables': timetables,
+        'selected_type': timetable_type,
+        'selected_level': level
+    })
+
+
+# ==================== ACADEMIC CALENDAR VIEWS ====================
+
+@login_required
+def manage_calendars(request):
+    """Admin manages academic calendars"""
+    calendars = AcademicCalendar.objects.all()
+    return render(request, 'core/admin/manage_calendars.html', {'calendars': calendars})
+
+
+@login_required
+def add_calendar(request):
+    """Admin adds academic calendar"""
+    if request.method == 'POST':
+        form = AcademicCalendarForm(request.POST, request.FILES)
+        if form.is_valid():
+            calendar = form.save(commit=False)
+            calendar.uploaded_by = request.user
+            calendar.save()
+            messages.success(request, 'Academic calendar uploaded successfully!')
+            return redirect('manage_calendars')
+    else:
+        form = AcademicCalendarForm()
+    return render(request, 'core/admin/calendar_form.html', {'form': form, 'action': 'Add'})
+
+
+@login_required
+def edit_calendar(request, pk):
+    """Admin edits academic calendar"""
+    calendar = get_object_or_404(AcademicCalendar, pk=pk)
+    if request.method == 'POST':
+        form = AcademicCalendarForm(request.POST, request.FILES, instance=calendar)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Academic calendar updated successfully!')
+            return redirect('manage_calendars')
+    else:
+        form = AcademicCalendarForm(instance=calendar)
+    return render(request, 'core/admin/calendar_form.html', {'form': form, 'action': 'Edit'})
+
+
+@login_required
+def delete_calendar(request, pk):
+    """Admin deletes academic calendar"""
+    calendar = get_object_or_404(AcademicCalendar, pk=pk)
+    if request.method == 'POST':
+        calendar.delete()
+        messages.success(request, 'Academic calendar deleted successfully!')
+        return redirect('manage_calendars')
+    return render(request, 'core/admin/confirm_delete.html', {'object': calendar, 'type': 'Academic Calendar'})
+
+
+def view_calendar(request):
+    """Public/Student view of academic calendar"""
+    calendar = AcademicCalendar.objects.filter(is_active=True).first()
+    all_calendars = AcademicCalendar.objects.all()[:5]  # Show last 5
+    
+    return render(request, 'core/academic_calendar.html', {
+        'calendar': calendar,
+        'all_calendars': all_calendars
     })

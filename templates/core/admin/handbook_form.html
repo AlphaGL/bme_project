@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Course - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="fw-bold">
+                    <i class="fas fa-book me-2"></i>{{ action }} Course to Handbook
+                </h1>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_level" class="form-label fw-bold">
+                                        <i class="fas fa-layer-group me-2"></i>Level
+                                    </label>
+                                    {{ form.level }}
+                                    {% if form.level.errors %}
+                                        <div class="text-danger small mt-1">{{ form.level.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_semester" class="form-label fw-bold">
+                                        <i class="fas fa-calendar-alt me-2"></i>Semester
+                                    </label>
+                                    {{ form.semester }}
+                                    {% if form.semester.errors %}
+                                        <div class="text-danger small mt-1">{{ form.semester.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_course_code" class="form-label fw-bold">
+                                        <i class="fas fa-hashtag me-2"></i>Course Code
+                                    </label>
+                                    {{ form.course_code }}
+                                    {% if form.course_code.errors %}
+                                        <div class="text-danger small mt-1">{{ form.course_code.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_credit_unit" class="form-label fw-bold">
+                                        <i class="fas fa-weight me-2"></i>Credit Unit
+                                    </label>
+                                    {{ form.credit_unit }}
+                                    {% if form.credit_unit.errors %}
+                                        <div class="text-danger small mt-1">{{ form.credit_unit.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_course_title" class="form-label fw-bold">
+                                    <i class="fas fa-book-open me-2"></i>Course Title
+                                </label>
+                                {{ form.course_title }}
+                                {% if form.course_title.errors %}
+                                    <div class="text-danger small mt-1">{{ form.course_title.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_course_type" class="form-label fw-bold">
+                                    <i class="fas fa-tags me-2"></i>Course Type
+                                </label>
+                                {{ form.course_type }}
+                                {% if form.course_type.errors %}
+                                    <div class="text-danger small mt-1">{{ form.course_type.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="id_description" class="form-label fw-bold">
+                                    <i class="fas fa-align-left me-2"></i>Description (Optional)
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="alert alert-info">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>Course Type Guide
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li><strong>Core:</strong> Compulsory courses specific to BME</li>
+                                    <li><strong>Required:</strong> Mandatory university/faculty courses</li>
+                                    <li><strong>Elective:</strong> Optional courses students can choose</li>
+                                </ul>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-save me-2"></i>Save Course
+                                </button>
+                                <a href="{% url 'manage_course_handbook' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Sidebar -->
+            <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-lightbulb me-2"></i>Quick Tips
+                        </h5>
+                        <p class="small"><strong>Course Code:</strong> Use standard format (e.g., BME 101, GST 101)</p>
+                        <p class="small"><strong>Credit Units:</strong> Typically range from 1-6 credits</p>
+                        <p class="small"><strong>Title:</strong> Use the official course title from curriculum</p>
+                    </div>
+                </div>
+
+                <div class="card border-0 bg-primary bg-opacity-10 mt-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-example me-2 text-primary"></i>Example
+                        </h6>
+                        <p class="small mb-1"><strong>Code:</strong> BME 101</p>
+                        <p class="small mb-1"><strong>Title:</strong> Introduction to Biomedical Engineering</p>
+                        <p class="small mb-1"><strong>Credits:</strong> 3</p>
+                        <p class="small mb-0"><strong>Type:</strong> Core</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

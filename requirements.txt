@@ -4,3 +4,4 @@ python-decouple==3.8
 Pillow==10.1.0
 django-crispy-forms==2.4
 crispy-bootstrap4==2025.6
+dj-database-url==2.3.0

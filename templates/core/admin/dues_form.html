@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Departmental Dues - BME FUTO{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="fw-bold">
+                    <i class="fas fa-receipt me-2"></i>{{ action }} Departmental Dues
+                </h1>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="id_student" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2"></i>Student
+                                </label>
+                                {{ form.student }}
+                                {% if form.student.errors %}
+                                    <div class="text-danger small mt-1">{{ form.student.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_amount_paid" class="form-label fw-bold">
+                                    <i class="fas fa-money-bill me-2"></i>Amount Paid (₦)
+                                </label>
+                                {{ form.amount_paid }}
+                                {% if form.amount_paid.errors %}
+                                    <div class="text-danger small mt-1">{{ form.amount_paid.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_academic_session" class="form-label fw-bold">
+                                    <i class="fas fa-calendar me-2"></i>Academic Session
+                                </label>
+                                {{ form.academic_session }}
+                                {% if form.academic_session.errors %}
+                                    <div class="text-danger small mt-1">{{ form.academic_session.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    {{ form.is_approved }}
+                                    <label class="form-check-label" for="id_is_approved">
+                                        <strong>Approve this payment</strong>
+                                        <br><small class="text-muted">Check this box to immediately approve the dues payment</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>Important Information
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li>A unique receipt number will be automatically generated</li>
+                                    <li>A watermark code will be created for security</li>
+                                    <li>Students can print their receipt only after approval</li>
+                                </ul>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-save me-2"></i>Save Dues Record
+                                </button>
+                                <a href="{% url 'manage_departmental_dues' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Sidebar -->
+            <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-question-circle me-2"></i>Help
+                        </h5>
+                        <p class="small"><strong>Student Selection:</strong> Choose the student who paid the departmental dues.</p>
+                        <p class="small"><strong>Amount:</strong> Enter the exact amount paid. Default is ₦5,000.00.</p>
+                        <p class="small"><strong>Session:</strong> Format: 2023/2024</p>
+                        <p class="small"><strong>Approval:</strong> Check the box to approve immediately, or leave unchecked to approve later.</p>
+                    </div>
+                </div>
+
+                <div class="card border-0 bg-warning bg-opacity-10 mt-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-shield-alt me-2 text-warning"></i>Security Features
+                        </h6>
+                        <ul class="small mb-0">
+                            <li>Unique receipt number</li>
+                            <li>Anti-fraud watermark code</li>
+                            <li>Payment reference tracking</li>
+                            <li>Approval timestamp</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

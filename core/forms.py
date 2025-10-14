@@ -1,5 +1,10 @@
 from django import forms
-from .models import Staff, Exco, PastQuestion, LibraryResource, Testimonial, Announcement, Student, Semester, Course
+from .models import( Staff, Exco, PastQuestion, LibraryResource,
+                     Testimonial, Announcement, Student, Semester, Course, 
+                     DepartmentalDues, CourseHandbook, Timetable, AcademicCalendar
+                    )
+
+# ADD THESE FORMS
 
 # Existing forms...
 class StaffForm(forms.ModelForm):
@@ -176,4 +181,99 @@ class CourseForm(forms.ModelForm):
                 'max': 6
             }),
             'grade_point': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
+class DepartmentalDuesForm(forms.ModelForm):
+    class Meta:
+        model = DepartmentalDues
+        fields = ['student', 'amount_paid', 'academic_session', 'is_approved']
+        widgets = {
+            'student': forms.Select(attrs={'class': 'form-control'}),
+            'amount_paid': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': '5000.00'
+            }),
+            'academic_session': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., 2023/2024'
+            }),
+            'is_approved': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class CourseHandbookForm(forms.ModelForm):
+    class Meta:
+        model = CourseHandbook
+        fields = ['level', 'semester', 'course_code', 'course_title', 'credit_unit', 'course_type', 'description']
+        widgets = {
+            'level': forms.Select(attrs={'class': 'form-control'}),
+            'semester': forms.Select(attrs={'class': 'form-control'}),
+            'course_code': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., BME 101'
+            }),
+            'course_title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Introduction to Biomedical Engineering'
+            }),
+            'credit_unit': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+                'max': 6
+            }),
+            'course_type': forms.Select(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Optional course description'
+            }),
+        }
+
+
+class TimetableForm(forms.ModelForm):
+    class Meta:
+        model = Timetable
+        fields = ['title', 'timetable_type', 'level', 'semester', 'academic_session', 'image', 'description', 'is_active']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., First Semester Examination Timetable 2023/2024'
+            }),
+            'timetable_type': forms.Select(attrs={'class': 'form-control'}),
+            'level': forms.Select(attrs={'class': 'form-control'}),
+            'semester': forms.Select(attrs={'class': 'form-control'}),
+            'academic_session': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., 2023/2024'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Optional description'
+            }),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class AcademicCalendarForm(forms.ModelForm):
+    class Meta:
+        model = AcademicCalendar
+        fields = ['title', 'academic_session', 'image', 'description', 'is_active']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Academic Calendar 2023/2024'
+            }),
+            'academic_session': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., 2023/2024'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Optional description'
+            }),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

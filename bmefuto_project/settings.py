@@ -4,6 +4,7 @@ from decouple import config
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,11 +57,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bmefuto_project.wsgi.application'
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# HOSTING SAME GMAIL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    ### eamil for the account: briurex@gmail.com
+    # Supabase db
+    'default': dj_database_url.parse(
+        'postgresql://postgres.bwtvjdohwzgjhrdxijjv:bmefuto_db_test@aws-1-us-east-1.pooler.supabase.com:6543/postgres'
+    ),
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -85,9 +95,14 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Cloudinary Configuration
-CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
-CLOUDINARY_API_KEY = config('CLOUDINARY_API_KEY', default='')
-CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
+
+# ### eamil for the account: briurex@gmail.com
+CLOUDINARY_CLOUD_NAME = 'dasmnlwnm'
+CLOUDINARY_API_KEY = '862355491194945'
+CLOUDINARY_API_SECRET = 'RV5MD_sYzeVvprYLQ6-EPYmr6U0'
+# CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
+# CLOUDINARY_API_KEY = config('CLOUDINARY_API_KEY', default='')
+# CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
 
 cloudinary.config(
     cloud_name=CLOUDINARY_CLOUD_NAME,
