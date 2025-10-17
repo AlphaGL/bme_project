@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('encrypted/admin/futobme', admin.site.urls),
+    path('encrypted/admin/', admin.site.urls),
     path('', include('core.urls')),
 ]
 
