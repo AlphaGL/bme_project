@@ -32,82 +32,82 @@ urlpatterns = [
     path('student/cgpa-history/', views.cgpa_history, name='cgpa_history'),
     
     # Admin Authentication
-    path('admin/login/', views.admin_login, name='admin_login'),
-    path('admin/logout/', views.admin_logout, name='admin_logout'),
+    path('encrypted/admin/futobme/login/', views.admin_login, name='admin_login'),
+    path('encrypted/admin/futobme/logout/', views.admin_logout, name='admin_logout'),
     
     # Admin Dashboard
-    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('encrypted/admin/futobme/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     
     # Staff Management
-    path('admin/staff/', views.manage_staff, name='manage_staff'),
-    path('admin/staff/add/', views.add_staff, name='add_staff'),
-    path('admin/staff/edit/<int:pk>/', views.edit_staff, name='edit_staff'),
-    path('admin/staff/delete/<int:pk>/', views.delete_staff, name='delete_staff'),
+    path('encrypted/admin/futobme/staff/', views.manage_staff, name='manage_staff'),
+    path('encrypted/admin/futobme/staff/add/', views.add_staff, name='add_staff'),
+    path('encrypted/admin/futobme/staff/edit/<int:pk>/', views.edit_staff, name='edit_staff'),
+    path('encrypted/admin/futobme/staff/delete/<int:pk>/', views.delete_staff, name='delete_staff'),
     
     # Exco Management
-    path('admin/excos/', views.manage_excos, name='manage_excos'),
-    path('admin/excos/add/', views.add_exco, name='add_exco'),
-    path('admin/excos/edit/<int:pk>/', views.edit_exco, name='edit_exco'),
-    path('admin/excos/delete/<int:pk>/', views.delete_exco, name='delete_exco'),
+    path('encrypted/admin/futobme/excos/', views.manage_excos, name='manage_excos'),
+    path('encrypted/admin/futobme/excos/add/', views.add_exco, name='add_exco'),
+    path('encrypted/admin/futobme/excos/edit/<int:pk>/', views.edit_exco, name='edit_exco'),
+    path('encrypted/admin/futobme/excos/delete/<int:pk>/', views.delete_exco, name='delete_exco'),
     
     # Past Questions Management
-    path('admin/pastquestions/', views.manage_pastquestions, name='manage_pastquestions'),
-    path('admin/pastquestions/add/', views.add_pastquestion, name='add_pastquestion'),
-    path('admin/pastquestions/edit/<int:pk>/', views.edit_pastquestion, name='edit_pastquestion'),
-    path('admin/pastquestions/delete/<int:pk>/', views.delete_pastquestion, name='delete_pastquestion'),
+    path('encrypted/admin/futobme/pastquestions/', views.manage_pastquestions, name='manage_pastquestions'),
+    path('encrypted/admin/futobme/pastquestions/add/', views.add_pastquestion, name='add_pastquestion'),
+    path('encrypted/admin/futobme/pastquestions/edit/<int:pk>/', views.edit_pastquestion, name='edit_pastquestion'),
+    path('encrypted/admin/futobme/pastquestions/delete/<int:pk>/', views.delete_pastquestion, name='delete_pastquestion'),
     
     # Library Management
-    path('admin/library/', views.manage_library, name='manage_library'),
-    path('admin/library/add/', views.add_library_resource, name='add_library_resource'),
-    path('admin/library/edit/<int:pk>/', views.edit_library_resource, name='edit_library_resource'),
-    path('admin/library/delete/<int:pk>/', views.delete_library_resource, name='delete_library_resource'),
+    path('encrypted/admin/futobme/library/', views.manage_library, name='manage_library'),
+    path('encrypted/admin/futobme/library/add/', views.add_library_resource, name='add_library_resource'),
+    path('encrypted/admin/futobme/library/edit/<int:pk>/', views.edit_library_resource, name='edit_library_resource'),
+    path('encrypted/admin/futobme/library/delete/<int:pk>/', views.delete_library_resource, name='delete_library_resource'),
     
     # Testimonials Management
-    path('admin/testimonials/', views.manage_testimonials, name='manage_testimonials'),
-    path('admin/testimonials/approve/<int:pk>/', views.approve_testimonial, name='approve_testimonial'),
-    path('admin/testimonials/unapprove/<int:pk>/', views.unapprove_testimonial, name='unapprove_testimonial'),
-    path('admin/testimonials/delete/<int:pk>/', views.delete_testimonial, name='delete_testimonial'),
+    path('encrypted/admin/futobme/testimonials/', views.manage_testimonials, name='manage_testimonials'),
+    path('encrypted/admin/futobme/testimonials/approve/<int:pk>/', views.approve_testimonial, name='approve_testimonial'),
+    path('encrypted/admin/futobme/testimonials/unapprove/<int:pk>/', views.unapprove_testimonial, name='unapprove_testimonial'),
+    path('encrypted/admin/futobme/testimonials/delete/<int:pk>/', views.delete_testimonial, name='delete_testimonial'),
     
     # Announcements Management
-    path('admin/announcements/', views.manage_announcements, name='manage_announcements'),
-    path('admin/announcements/add/', views.add_announcement, name='add_announcement'),
-    path('admin/announcements/edit/<int:pk>/', views.edit_announcement, name='edit_announcement'),
-    path('admin/announcements/delete/<int:pk>/', views.delete_announcement, name='delete_announcement'),
+    path('encrypted/admin/futobme/announcements/', views.manage_announcements, name='manage_announcements'),
+    path('encrypted/admin/futobme/announcements/add/', views.add_announcement, name='add_announcement'),
+    path('encrypted/admin/futobme/announcements/edit/<int:pk>/', views.edit_announcement, name='edit_announcement'),
+    path('encrypted/admin/futobme/announcements/delete/<int:pk>/', views.delete_announcement, name='delete_announcement'),
     
     # ==================== DEPARTMENTAL DUES URLs ====================
-    path('admin/dues/', views.manage_departmental_dues, name='manage_departmental_dues'),
-    path('admin/dues/add/', views.add_departmental_dues, name='add_departmental_dues'),
-    path('admin/dues/edit/<int:pk>/', views.edit_departmental_dues, name='edit_departmental_dues'),
-    path('admin/dues/approve/<int:pk>/', views.approve_dues, name='approve_dues'),
-    path('admin/dues/delete/<int:pk>/', views.delete_departmental_dues, name='delete_departmental_dues'),
+    path('encrypted/admin/futobme/dues/', views.manage_departmental_dues, name='manage_departmental_dues'),
+    path('encrypted/admin/futobme/dues/add/', views.add_departmental_dues, name='add_departmental_dues'),
+    path('encrypted/admin/futobme/dues/edit/<int:pk>/', views.edit_departmental_dues, name='edit_departmental_dues'),
+    path('encrypted/admin/futobme/dues/approve/<int:pk>/', views.approve_dues, name='approve_dues'),
+    path('encrypted/admin/futobme/dues/delete/<int:pk>/', views.delete_departmental_dues, name='delete_departmental_dues'),
     
     # Student Receipt URLs
     path('student/my-receipt/', views.my_receipt, name='my_receipt'),
     path('student/print-receipt/', views.print_receipt, name='print_receipt'),
     
     # ==================== COURSE HANDBOOK URLs ====================
-    path('admin/handbook/', views.manage_course_handbook, name='manage_course_handbook'),
-    path('admin/handbook/add/', views.add_course_handbook, name='add_course_handbook'),
-    path('admin/handbook/edit/<int:pk>/', views.edit_course_handbook, name='edit_course_handbook'),
-    path('admin/handbook/delete/<int:pk>/', views.delete_course_handbook, name='delete_course_handbook'),
+    path('encrypted/admin/futobme/handbook/', views.manage_course_handbook, name='manage_course_handbook'),
+    path('encrypted/admin/futobme/handbook/add/', views.add_course_handbook, name='add_course_handbook'),
+    path('encrypted/admin/futobme/handbook/edit/<int:pk>/', views.edit_course_handbook, name='edit_course_handbook'),
+    path('encrypted/admin/futobme/handbook/delete/<int:pk>/', views.delete_course_handbook, name='delete_course_handbook'),
     
     # Public Course Handbook URL
     path('course-handbook/', views.view_course_handbook, name='view_course_handbook'),
     
     # ==================== TIMETABLE URLs ====================
-    path('admin/timetables/', views.manage_timetables, name='manage_timetables'),
-    path('admin/timetables/add/', views.add_timetable, name='add_timetable'),
-    path('admin/timetables/edit/<int:pk>/', views.edit_timetable, name='edit_timetable'),
-    path('admin/timetables/delete/<int:pk>/', views.delete_timetable, name='delete_timetable'),
+    path('encrypted/admin/futobme/timetables/', views.manage_timetables, name='manage_timetables'),
+    path('encrypted/admin/futobme/timetables/add/', views.add_timetable, name='add_timetable'),
+    path('encrypted/admin/futobme/timetables/edit/<int:pk>/', views.edit_timetable, name='edit_timetable'),
+    path('encrypted/admin/futobme/timetables/delete/<int:pk>/', views.delete_timetable, name='delete_timetable'),
     
     # Public Timetables URL
     path('timetables/', views.view_timetables, name='view_timetables'),
     
     # ==================== ACADEMIC CALENDAR URLs ====================
-    path('admin/calendars/', views.manage_calendars, name='manage_calendars'),
-    path('admin/calendars/add/', views.add_calendar, name='add_calendar'),
-    path('admin/calendars/edit/<int:pk>/', views.edit_calendar, name='edit_calendar'),
-    path('admin/calendars/delete/<int:pk>/', views.delete_calendar, name='delete_calendar'),
+    path('encrypted/admin/futobme/calendars/', views.manage_calendars, name='manage_calendars'),
+    path('encrypted/admin/futobme/calendars/add/', views.add_calendar, name='add_calendar'),
+    path('encrypted/admin/futobme/calendars/edit/<int:pk>/', views.edit_calendar, name='edit_calendar'),
+    path('encrypted/admin/futobme/calendars/delete/<int:pk>/', views.delete_calendar, name='delete_calendar'),
     
     # Public Academic Calendar URL
     path('academic-calendar/', views.view_calendar, name='view_calendar'),
