@@ -2,16 +2,17 @@
 {% load static %}
 
 {% block content %}
-<!-- Hero Section with Carousel -->
+<!-- Hero Section with Image Carousel -->
 <section class="hero-section bg-primary text-white py-5">
     <div class="container">
-        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
             <div class="carousel-indicators">
                 <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
                 <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
                 <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
             </div>
             <div class="carousel-inner">
+                <!-- Slide 1 -->
                 <div class="carousel-item active">
                     <div class="row align-items-center py-4">
                         <div class="col-lg-6">
@@ -19,18 +20,22 @@
                             <p class="lead mb-4">
                                 Integrating Biotechnology and Medical Technology to develop systems and devices for healthcare innovation.
                             </p>
-                            <a href="{% url 'virtual_tour' %}" class="btn btn-light btn-lg me-2">
+                            <a href="{% url 'virtual_tour' %}" class="btn btn-light btn-lg me-2 mb-2">
                                 <i class="fas fa-video me-2"></i>Take Virtual Tour
                             </a>
-                            <a href="{% url 'past_questions' %}" class="btn btn-outline-light btn-lg">
+                            <a href="{% url 'past_questions' %}" class="btn btn-warning btn-lg mb-2">
                                 <i class="fas fa-file-alt me-2"></i>Resources
                             </a>
                         </div>
-                        <div class="col-lg-6 text-center">
-                            <i class="fas fa-heartbeat" style="font-size: 200px; opacity: 0.3;"></i>
+                        <div class="col-lg-6">
+                            <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=600&fit=crop" 
+                                 alt="Medical Technology" 
+                                 class="img-fluid rounded shadow-lg">
                         </div>
                     </div>
                 </div>
+                
+                <!-- Slide 2 -->
                 <div class="carousel-item">
                     <div class="row align-items-center py-4">
                         <div class="col-lg-6">
@@ -38,18 +43,22 @@
                             <p class="lead mb-4">
                                 State-of-the-art facilities and world-class faculty committed to your success.
                             </p>
-                            <a href="{% url 'staff_list' %}" class="btn btn-light btn-lg me-2">
+                            <a href="{% url 'staff_list' %}" class="btn btn-light btn-lg me-2 mb-2">
                                 <i class="fas fa-users me-2"></i>Meet Our Staff
                             </a>
-                            <a href="{% url 'library' %}" class="btn btn-outline-light btn-lg">
+                            <a href="{% url 'library' %}" class="btn btn-warning btn-lg mb-2">
                                 <i class="fas fa-book me-2"></i>Visit Library
                             </a>
                         </div>
-                        <div class="col-lg-6 text-center">
-                            <i class="fas fa-graduation-cap" style="font-size: 200px; opacity: 0.3;"></i>
+                        <div class="col-lg-6">
+                            <img src="https://images.unsplash.com/photo-1581594549595-35f6edc7b762?w=800&h=600&fit=crop" 
+                                 alt="Education Excellence" 
+                                 class="img-fluid rounded shadow-lg">
                         </div>
                     </div>
                 </div>
+                
+                <!-- Slide 3 -->
                 <div class="carousel-item">
                     <div class="row align-items-center py-4">
                         <div class="col-lg-6">
@@ -57,15 +66,17 @@
                             <p class="lead mb-4">
                                 Pioneering research in medical devices, diagnostics, and healthcare technology.
                             </p>
-                            <a href="{% url 'exco_list' %}" class="btn btn-light btn-lg me-2">
+                            <a href="{% url 'exco_list' %}" class="btn btn-light btn-lg me-2 mb-2">
                                 <i class="fas fa-user-tie me-2"></i>Student Leaders
                             </a>
-                            <a href="{% url 'submit_testimonial' %}" class="btn btn-outline-light btn-lg">
+                            <a href="{% url 'submit_testimonial' %}" class="btn btn-warning btn-lg mb-2">
                                 <i class="fas fa-comment-dots me-2"></i>Testimonials
                             </a>
                         </div>
-                        <div class="col-lg-6 text-center">
-                            <i class="fas fa-microscope" style="font-size: 200px; opacity: 0.3;"></i>
+                        <div class="col-lg-6">
+                            <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop" 
+                                 alt="Research & Innovation" 
+                                 class="img-fluid rounded shadow-lg">
                         </div>
                     </div>
                 </div>
@@ -89,7 +100,7 @@
         <div class="row mb-4">
             <div class="col-md-8">
                 <h2 class="fw-bold">
-                    <i class="fas fa-bullhorn me-2 text-warning"></i>Latest Announcements
+                    <i class="fas fa-bullhorn me-2 text-gold"></i>Latest Announcements
                 </h2>
                 <p class="text-muted">Stay updated with department news and information</p>
             </div>
@@ -129,28 +140,28 @@
         <div class="row text-center g-4">
             <div class="col-6 col-md-3">
                 <div class="stat-card">
-                    <i class="fas fa-users fa-3x text-primary mb-2"></i>
+                    <i class="fas fa-users fa-3x mb-2" style="color: var(--primary-color);"></i>
                     <h3 class="fw-bold mb-0">{{ stats.total_staff }}+</h3>
                     <p class="text-muted small mb-0">Expert Staff</p>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
-                    <i class="fas fa-user-graduate fa-3x text-success mb-2"></i>
+                    <i class="fas fa-user-graduate fa-3x mb-2" style="color: var(--accent-purple);"></i>
                     <h3 class="fw-bold mb-0">{{ stats.total_students }}+</h3>
                     <p class="text-muted small mb-0">Active Students</p>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
-                    <i class="fas fa-book fa-3x text-info mb-2"></i>
+                    <i class="fas fa-book fa-3x mb-2" style="color: var(--secondary-color);"></i>
                     <h3 class="fw-bold mb-0">{{ stats.total_resources }}+</h3>
                     <p class="text-muted small mb-0">Resources</p>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
-                    <i class="fas fa-file-alt fa-3x text-warning mb-2"></i>
+                    <i class="fas fa-file-alt fa-3x mb-2" style="color: var(--success-color);"></i>
                     <h3 class="fw-bold mb-0">{{ stats.total_questions }}+</h3>
                     <p class="text-muted small mb-0">Past Questions</p>
                 </div>
@@ -172,9 +183,9 @@
         </div>
         <div class="row g-4">
             <div class="col-md-6">
-                <div class="card h-100 border-0 shadow-sm">
+                <div class="card h-100 border-0 shadow-sm border-accent" style="border-left: 4px solid var(--primary-color) !important;">
                     <div class="card-body p-4">
-                        <div class="text-primary mb-3">
+                        <div class="mb-3" style="color: var(--primary-color);">
                             <i class="fas fa-bullseye fa-3x"></i>
                         </div>
                         <h4 class="card-title">Our Mission</h4>
@@ -185,9 +196,9 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card h-100 border-0 shadow-sm">
+                <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid var(--secondary-color) !important;">
                     <div class="card-body p-4">
-                        <div class="text-primary mb-3">
+                        <div class="mb-3 text-gold">
                             <i class="fas fa-lightbulb fa-3x"></i>
                         </div>
                         <h4 class="card-title">Our Vision</h4>
@@ -223,7 +234,7 @@
                     {% if member.image %}
                     <img src="{{ member.image.url }}" class="card-img-top" alt="{{ member.name }}" style="height: 250px; object-fit: cover;">
                     {% else %}
-                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 250px;">
+                    <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 250px; background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-purple) 100%);">
                         <i class="fas fa-user fa-5x text-white"></i>
                     </div>
                     {% endif %}
@@ -253,7 +264,7 @@
             <div class="col-md-4">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
-                        <i class="fas fa-video fa-3x text-primary mb-3"></i>
+                        <i class="fas fa-video fa-3x mb-3" style="color: var(--primary-color);"></i>
                         <h5 class="card-title">Virtual Tour</h5>
                         <p class="card-text">
                             Take a 360° virtual tour of our department facilities, labs, and lecture halls.
@@ -265,24 +276,24 @@
             <div class="col-md-4">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
-                        <i class="fas fa-file-alt fa-3x text-success mb-3"></i>
+                        <i class="fas fa-file-alt fa-3x mb-3" style="color: var(--accent-purple);"></i>
                         <h5 class="card-title">Past Questions</h5>
                         <p class="card-text">
                             Access comprehensive collection of past examination questions for your preparation.
                         </p>
-                        <a href="{% url 'past_questions' %}" class="btn btn-outline-success">Browse Questions</a>
+                        <a href="{% url 'past_questions' %}" class="btn btn-outline-primary">Browse Questions</a>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
-                        <i class="fas fa-book fa-3x text-info mb-3"></i>
+                        <i class="fas fa-book fa-3x mb-3 text-gold"></i>
                         <h5 class="card-title">Digital Library</h5>
                         <p class="card-text">
                             Explore our extensive digital library with vast array of academic resources.
                         </p>
-                        <a href="{% url 'library' %}" class="btn btn-outline-info">Visit Library</a>
+                        <a href="{% url 'library' %}" class="btn btn-outline-primary">Visit Library</a>
                     </div>
                 </div>
             </div>
@@ -347,7 +358,7 @@
                     {% if exco.image %}
                     <img src="{{ exco.image.url }}" class="card-img-top" alt="{{ exco.name }}" style="height: 200px; object-fit: cover;">
                     {% else %}
-                    <div class="card-img-top bg-primary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-purple) 100%);">
                         <i class="fas fa-user-tie fa-4x text-white"></i>
                     </div>
                     {% endif %}
@@ -432,9 +443,9 @@
                         <div class="mb-3">
                             {% for i in "12345" %}
                                 {% if forloop.counter <= testimonial.rating %}
-                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-gold"></i>
                                 {% else %}
-                                <i class="far fa-star text-warning"></i>
+                                <i class="far fa-star text-gold"></i>
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -455,7 +466,7 @@
 {% endif %}
 
 <!-- Call to Action -->
-<section class="py-5 bg-primary text-white">
+<section class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-purple) 100%);">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-8">
@@ -466,7 +477,7 @@
                 <a href="{% url 'past_questions' %}" class="btn btn-light btn-lg me-2 mb-2">
                     <i class="fas fa-rocket me-2"></i>Get Started
                 </a>
-                <a href="{% url 'virtual_tour' %}" class="btn btn-outline-light btn-lg mb-2">
+                <a href="{% url 'virtual_tour' %}" class="btn btn-warning btn-lg mb-2">
                     <i class="fas fa-video me-2"></i>Take Tour
                 </a>
             </div>
@@ -481,7 +492,7 @@
 
 .hover-lift:hover {
     transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;
+    box-shadow: 0 15px 30px rgba(139, 21, 56, 0.2) !important;
 }
 
 .stat-card {
@@ -490,6 +501,18 @@
 
 .stat-card:hover {
     transform: scale(1.1);
+}
+
+.carousel-item img {
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+@media (max-width: 768px) {
+    .carousel-item img {
+        margin-top: 20px;
+        max-height: 300px;
+    }
 }
 </style>
 {% endblock %}

@@ -64,13 +64,10 @@ WSGI_APPLICATION = 'bmefuto_project.wsgi.application'
 #     }
 # }
 
-# HOSTING SAME GMAIL
+# HOSTING SAME + DATABASE (SUPABASE)
+# briurex@gmail.com
 DATABASES = {
-    ### eamil for the account: briurex@gmail.com
-    # Supabase db
-    'default': dj_database_url.parse(
-        'postgresql://postgres.bwtvjdohwzgjhrdxijjv:bmefuto_db_test@aws-1-us-east-1.pooler.supabase.com:6543/postgres'
-    ),
+    'default': dj_database_url.parse(config('DATABASE_URL'))
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -85,30 +82,38 @@ TIME_ZONE = 'Africa/Lagos'
 USE_I18N = True
 USE_TZ = True
 
+# Static files configuration
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'core' / 'static']
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Cloudinary Configuration
+
 
 # ### eamil for the account: briurex@gmail.com
-CLOUDINARY_CLOUD_NAME = 'dasmnlwnm'
-CLOUDINARY_API_KEY = '862355491194945'
-CLOUDINARY_API_SECRET = 'RV5MD_sYzeVvprYLQ6-EPYmr6U0'
-# CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
-# CLOUDINARY_API_KEY = config('CLOUDINARY_API_KEY', default='')
-# CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
+# Cloudinary configuration
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': config('CLOUDINARY_API_KEY'),
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+    'SECURE': False,  # Set to False for development
+}
 
-cloudinary.config(
-    cloud_name=CLOUDINARY_CLOUD_NAME,
-    api_key=CLOUDINARY_API_KEY,
-    api_secret=CLOUDINARY_API_SECRET
+cloudinary.config( 
+    cloud_name=config('CLOUDINARY_CLOUD_NAME'), 
+    api_key=config('CLOUDINARY_API_KEY'), 
+    api_secret=config('CLOUDINARY_API_SECRET'),
+    secure=False  # Add this for development
 )
+
+CLOUDINARY_URL = config('CLOUDINARY_URL')
 
 # Crispy Forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
