@@ -4,12 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}FUTO BME{% endblock %}</title>
+    <title>{% block title %}FUTO BME - Biomedical Engineering Portal{% endblock %}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Federal University of Technology Owerri - Biomedical Engineering Department Portal. Access past questions, library resources, research hub, and student portal.">
+    <meta name="theme-color" content="#8B1538">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FUTO BME">
     
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
     <link rel="shortcut icon" type="image/jpeg" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
     
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
+    <link rel="apple-touch-icon" sizes="167x167" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    
+    <!-- Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
@@ -19,9 +37,9 @@
     /* Custom Styles for FUTO BME - Matching Logo Colors */
 
 :root {
-    --primary-color: #8B1538;  /* Maroon from logo */
-    --secondary-color: #D4AF37; /* Gold from logo */
-    --accent-purple: #6B3FA0;   /* Purple from logo */
+    --primary-color: #8B1538;
+    --secondary-color: #D4AF37;
+    --accent-purple: #6B3FA0;
     --success-color: #198754;
     --danger-color: #dc3545;
     --warning-color: #D4AF37;
@@ -442,6 +460,11 @@ img {
                             <i class="fas fa-calendar me-2"></i>Academic Calendar
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'research_hub' %}">
+                            <i class="fas fa-flask me-2"></i>Research Hub
+                        </a>
+                    </li>
                     {% if request.session.student_reg_number %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'my_receipt' %}">
@@ -449,7 +472,7 @@ img {
                         </a>
                     </li>
                     {% endif %}
-                    {% if student.is_authenticated %}
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'admin_dashboard' %}">
                             <i class="fas fa-tachometer-alt me-1"></i>Dashboard
@@ -461,11 +484,20 @@ img {
                         </a>
                     </li>
                     {% else %}
+                    {% if not request.session.student_reg_number %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'student_login' %}">
-                            <i class="fas fa-lock me-1"></i>Student-portal
+                            <i class="fas fa-lock me-1"></i>Student Portal
                         </a>
                     </li>
+                    {% endif %}
+                    {% if request.session.student_reg_number %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'student_dashboard' %}">
+                            <i class="fas fa-unlock me-1"></i>My Portal
+                        </a>
+                    </li>
+                    {% endif %}
                     {% endif %}
                 </ul>
             </div>
@@ -495,7 +527,11 @@ img {
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <h5 class="fw-bold mb-3">
-                        <i class="fas fa-heartbeat me-2 text-gold"></i>FUTO BME
+                        <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" 
+                            alt="FUTO BME Logo" 
+                            class="img-fluid me-2"
+                            style="height: 50px; width: auto; max-width: 100%; border-radius: 20%;">
+                        <span class="fw-bold">FUTO BME</span>
                     </h5>
                     <p class="text-white-50">
                         Biomedical Engineering Department<br>
@@ -533,42 +569,42 @@ img {
                         </li>
                     </ul>
                 </div>
-                <!-- <div class="col-md-4 mb-3">
-                    <h5 class="fw-bold mb-3">Contact Us</h5>
-                    <p class="text-white-50 mb-2">
-                        <i class="fas fa-envelope me-2"></i>
-                        <a href="mailto:ichukwugozirim@gmail.com" class="text-white-50">futobme.vercel.app</a>
-                    </p>
-                    <p class="text-white-50 mb-2">
-                        <i class="fas fa-phone me-2"></i>
-                        <a href="tel:+234XXXXXXXXXX" class="text-white-50">+234 XXX XXX XXXX</a>
-                    </p>
-                    <div class="mt-3">
-                        <a href="#" class="text-white-50 me-3" title="Facebook">
-                            <i class="fab fa-facebook fa-2x"></i>
-                        </a>
-                        <a href="#" class="text-white-50 me-3" title="Twitter">
-                            <i class="fab fa-twitter fa-2x"></i>
-                        </a>
-                        <a href="#" class="text-white-50 me-3" title="Instagram">
-                            <i class="fab fa-instagram fa-2x"></i>
-                        </a>
-                        <a href="#" class="text-white-50" title="LinkedIn">
-                            <i class="fab fa-linkedin fa-2x"></i>
-                        </a>
-                    </div>
-                </div> -->
+                <div class="col-md-4 mb-3">
+                    <h5 class="fw-bold mb-3">Academic Resources</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{% url 'view_course_handbook' %}" class="text-white-50">
+                                <i class="fas fa-angle-right me-2"></i>Course Handbook
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'view_timetables' %}" class="text-white-50">
+                                <i class="fas fa-angle-right me-2"></i>Timetables
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'view_calendar' %}" class="text-white-50">
+                                <i class="fas fa-angle-right me-2"></i>Academic Calendar
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'research_hub' %}" class="text-white-50">
+                                <i class="fas fa-angle-right me-2"></i>Research Hub
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
             <hr class="bg-white my-4">
             <div class="row">
                 <div class="col-md-6 text-center text-md-start">
                     <p class="mb-0 text-white-50">
-                        &copy; 2024 FUTO BME. All rights reserved.
+                        &copy; 2025 FUTO BME. All rights reserved.
                     </p>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
                     <p class="mb-0 text-white-50">
-                        Designed with <i class="fas fa-heart text-danger"></i> by BME Students
+                        Designed with <i class="fas fa-heart text-danger"></i> by Alpha_DEV
                     </p>
                 </div>
             </div>
@@ -581,7 +617,11 @@ img {
         <i class="fas fa-arrow-up"></i>
     </button>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- PWA Install Script -->
+    <script src="{% static 'js/pwa-install.js' %}"></script>
     
     <script>
         // Back to Top Button
@@ -609,6 +649,12 @@ img {
                 item.classList.add('active');
             }
         });
+
+        // PWA display mode detection
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+            console.log('Running as installed PWA');
+            // Add any PWA-specific features here
+        }
     </script>
     
     {% block extra_js %}{% endblock %}

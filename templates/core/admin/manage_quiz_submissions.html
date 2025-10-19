@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Quiz Submissions - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-3">
+                    <h6 class="text-muted mb-3">ADMIN MENU</h6>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'admin_dashboard' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a href="{% url 'manage_research_teams' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-users me-2"></i>Teams
+                        </a>
+                        <a href="{% url 'manage_research_articles' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-alt me-2"></i>Articles
+                        </a>
+                        <a href="{% url 'manage_contributions' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-edit me-2"></i>Contributions
+                        </a>
+                        <a href="{% url 'manage_guest_contributors' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-check me-2"></i>Guests
+                        </a>
+                        <a href="{% url 'manage_research_quizzes' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-question-circle me-2"></i>Quizzes
+                        </a>
+                        <a href="{% url 'manage_quiz_submissions' %}" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-paper-plane me-2"></i>Submissions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">
+                        <i class="fas fa-paper-plane text-primary me-2"></i>Quiz Submissions
+                    </h2>
+                    <p class="text-muted mb-0">Review and award quiz submissions</p>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Pending Review</h6>
+                                    <h3 class="fw-bold mb-0 text-warning">{{ pending_count }}</h3>
+                                </div>
+                                <i class="fas fa-hourglass-half fa-3x text-warning opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Awarded</h6>
+                                    <h3 class="fw-bold mb-0 text-success">{{ awarded_count }}</h3>
+                                </div>
+                                <i class="fas fa-trophy fa-3x text-success opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Total Submissions</h6>
+                                    <h3 class="fw-bold mb-0 text-primary">{{ submissions.count }}</h3>
+                                </div>
+                                <i class="fas fa-list fa-3x text-primary opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <ul class="nav nav-tabs mb-4" id="submissionTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#all">
+                        All ({{ submissions.count }})
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#pending">
+                        Pending ({{ pending_count }})
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#awarded">
+                        Awarded ({{ awarded_count }})
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Submissions List -->
+            <div class="tab-content">
+                <!-- All Submissions -->
+                <div class="tab-pane fade show active" id="all">
+                    {% if submissions %}
+                        {% for submission in submissions %}
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-9">
+                                        <div class="d-flex align-items-start mb-3">
+                                            {% if submission.is_awarded %}
+                                            <span class="badge bg-success me-2">
+                                                <i class="fas fa-trophy"></i> Awarded
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-warning me-2">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                            {% endif %}
+                                            
+                                            <!-- Quiz Difficulty Badge -->
+                                            {% if submission.quiz.difficulty_level == 'Easy' %}
+                                            <span class="badge bg-success">{{ submission.quiz.difficulty_level }}</span>
+                                            {% elif submission.quiz.difficulty_level == 'Medium' %}
+                                            <span class="badge bg-warning">{{ submission.quiz.difficulty_level }}</span>
+                                            {% elif submission.quiz.difficulty_level == 'Hard' %}
+                                            <span class="badge bg-danger">{{ submission.quiz.difficulty_level }}</span>
+                                            {% else %}
+                                            <span class="badge bg-dark">{{ submission.quiz.difficulty_level }}</span>
+                                            {% endif %}
+                                        </div>
+
+                                        <h5 class="fw-bold mb-2">{{ submission.quiz.title }}</h5>
+                                        
+                                        <div class="mb-3">
+                                            <small class="text-muted">
+                                                <i class="fas fa-question-circle me-1"></i>
+                                                Category: <strong>{{ submission.quiz.category }}</strong>
+                                            </small>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-star me-1"></i>
+                                                Points: <strong>{{ submission.quiz.points }}</strong>
+                                            </small>
+                                        </div>
+
+                                        <!-- Submitter Info -->
+                                        <div class="mb-3">
+                                            {% if submission.student_submitter %}
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-graduate text-primary me-2"></i>
+                                                <div>
+                                                    <strong>{{ submission.student_submitter.full_name }}</strong>
+                                                    <small class="text-muted d-block">
+                                                        {{ submission.student_submitter.reg_number }} - {{ submission.student_submitter.get_level_display }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            {% elif submission.guest_submitter %}
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-tie text-warning me-2"></i>
+                                                <div>
+                                                    <strong>{{ submission.guest_submitter.full_name }}</strong>
+                                                    <small class="text-muted d-block">
+                                                        {{ submission.guest_submitter.institution }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Answer Preview -->
+                                        <div class="answer-preview bg-light p-3 rounded">
+                                            <h6 class="fw-bold mb-2">Answer Preview:</h6>
+                                            <p class="mb-0 text-muted">{{ submission.answer|truncatewords:30 }}</p>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                Submitted: {{ submission.created_at|date:"M d, Y - h:i A" }}
+                                            </small>
+                                            {% if submission.is_awarded %}
+                                            <br>
+                                            <small class="text-success">
+                                                <i class="fas fa-user-check me-1"></i>
+                                                Awarded by {{ submission.awarded_by.username }} on {{ submission.awarded_at|date:"M d, Y" }}
+                                            </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 text-end">
+                                        <a href="{% url 'view_quiz_submission_detail' submission.pk %}" 
+                                           class="btn btn-primary btn-sm mb-2 w-100">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                        {% if not submission.is_awarded %}
+                                        <a href="{% url 'award_quiz_submission' submission.pk %}" 
+                                           class="btn btn-success btn-sm w-100">
+                                            <i class="fas fa-trophy me-1"></i>Award Points
+                                        </a>
+                                        {% else %}
+                                        <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                            <i class="fas fa-check-circle me-1"></i>Already Awarded
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                        <p class="text-muted">No submissions found</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Pending Submissions -->
+                <div class="tab-pane fade" id="pending">
+                    {% for submission in submissions %}
+                        {% if not submission.is_awarded %}
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-9">
+                                        <span class="badge bg-warning mb-2">
+                                            <i class="fas fa-clock"></i> Pending Review
+                                        </span>
+                                        <h5 class="fw-bold mb-2">{{ submission.quiz.title }}</h5>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ submission.get_submitter_name }}
+                                        </p>
+                                        <p class="text-muted">{{ submission.answer|truncatewords:20 }}</p>
+                                    </div>
+                                    <div class="col-lg-3 text-end">
+                                        <a href="{% url 'view_quiz_submission_detail' submission.pk %}" 
+                                           class="btn btn-primary btn-sm mb-2 w-100">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                        <a href="{% url 'award_quiz_submission' submission.pk %}" 
+                                           class="btn btn-success btn-sm w-100">
+                                            <i class="fas fa-trophy me-1"></i>Award
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                        <p class="text-muted">No pending submissions</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Awarded Submissions -->
+                <div class="tab-pane fade" id="awarded">
+                    {% for submission in submissions %}
+                        {% if submission.is_awarded %}
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-9">
+                                        <span class="badge bg-success mb-2">
+                                            <i class="fas fa-trophy"></i> Awarded
+                                        </span>
+                                        <h5 class="fw-bold mb-2">{{ submission.quiz.title }}</h5>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ submission.get_submitter_name }}
+                                        </p>
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            Awarded by {{ submission.awarded_by.username }} on {{ submission.awarded_at|date:"M d, Y" }}
+                                        </small>
+                                        <br>
+                                        {% if submission.award_comment %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-comment me-1"></i>
+                                            {{ submission.award_comment|truncatewords:15 }}
+                                        </small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-lg-3 text-end">
+                                        <a href="{% url 'view_quiz_submission_detail' submission.pk %}" 
+                                           class="btn btn-outline-primary btn-sm w-100">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-hourglass-half fa-4x text-muted mb-3"></i>
+                        <p class="text-muted">No awarded submissions yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.answer-preview {
+    border-left: 4px solid var(--primary-color);
+}
+
+.nav-tabs .nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+</style>
+{% endblock %}

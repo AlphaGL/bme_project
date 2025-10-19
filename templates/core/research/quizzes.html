@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Research Quizzes - BME FUTO{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5" style="background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);">
+    <div class="container text-white">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent text-white">
+                <li class="breadcrumb-item"><a href="{% url 'research_hub' %}" class="text-white">Research Hub</a></li>
+                <li class="breadcrumb-item active text-white">Quizzes</li>
+            </ol>
+        </nav>
+        
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-trophy me-3"></i>Research Quiz Challenges
+                </h1>
+                <p class="lead mb-0">
+                    Test your knowledge, solve challenging problems, and get recognized for your brilliance!
+                </p>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="quiz-icon">
+                    <i class="fas fa-brain fa-5x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quiz Instructions -->
+<section class="py-4 bg-warning bg-opacity-10">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="fas fa-lightbulb fa-2x text-warning"></i>
+                    <div>
+                        <h5 class="fw-bold mb-2">How It Works</h5>
+                        <p class="mb-0 text-muted">
+                            Browse active quizzes, submit your solution with detailed explanation, 
+                            and the Director of Research may award outstanding submissions. Winners get recognition and points!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Active Quizzes -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">
+                    <i class="fas fa-fire text-danger me-2"></i>Active Quiz Challenges
+                </h2>
+                <p class="text-muted">{{ quizzes.count }} quiz{{ quizzes.count|pluralize:"zes" }} available</p>
+            </div>
+        </div>
+
+        {% if quizzes %}
+        <div class="row g-4">
+            {% for quiz in quizzes %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body">
+                        <!-- Quiz Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge 
+                                {% if quiz.difficulty_level == 'Easy' %}bg-success
+                                {% elif quiz.difficulty_level == 'Medium' %}bg-primary
+                                {% elif quiz.difficulty_level == 'Hard' %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %} p-2">
+                                {{ quiz.difficulty_level }}
+                            </span>
+                            <span class="badge bg-warning text-dark p-2">
+                                <i class="fas fa-star me-1"></i>{{ quiz.points }} pts
+                            </span>
+                        </div>
+                        
+                        <!-- Quiz Info -->
+                        <h5 class="card-title fw-bold mb-3">{{ quiz.title }}</h5>
+                        <p class="text-muted small mb-3">
+                            <i class="fas fa-tag me-1"></i>{{ quiz.category }}
+                        </p>
+                        
+                        <p class="card-text text-muted">{{ quiz.question|truncatewords:25 }}</p>
+                        
+                        <!-- Quiz Stats -->
+                        <div class="d-flex justify-content-between align-items-center mb-3 text-muted small">
+                            <span>
+                                <i class="fas fa-users me-1"></i>{{ quiz.get_submissions_count }} submissions
+                            </span>
+                            <span>
+                                <i class="fas fa-award me-1 text-warning"></i>{{ quiz.get_awarded_submissions }} awarded
+                            </span>
+                        </div>
+                        
+                        {% if quiz.deadline %}
+                        <div class="alert alert-info small mb-3 py-2">
+                            <i class="fas fa-clock me-1"></i>Deadline: {{ quiz.deadline|date:"M d, Y g:i A" }}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Action Button -->
+                        {% if quiz.id in user_submissions %}
+                        <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-outline-success btn-sm w-100">
+                            <i class="fas fa-check-circle me-2"></i>View Your Submission
+                        </a>
+                        {% else %}
+                        <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Take Challenge
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No active quizzes at the moment. Check back soon for new challenges!
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Benefits Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Why Take Quiz Challenges?</h2>
+            <p class="text-muted">Benefits of participating in research quizzes</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="benefit-icon mb-3">
+                        <i class="fas fa-brain fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold">Sharpen Skills</h5>
+                    <p class="text-muted small">Enhance your problem-solving abilities</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="benefit-icon mb-3">
+                        <i class="fas fa-trophy fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="fw-bold">Get Recognition</h5>
+                    <p class="text-muted small">Outstanding solutions get awarded</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="benefit-icon mb-3">
+                        <i class="fas fa-chart-line fa-3x text-success"></i>
+                    </div>
+                    <h5 class="fw-bold">Track Progress</h5>
+                    <p class="text-muted small">Build your research portfolio</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="benefit-icon mb-3">
+                        <i class="fas fa-users fa-3x text-info"></i>
+                    </div>
+                    <h5 class="fw-bold">Join Community</h5>
+                    <p class="text-muted small">Connect with brilliant minds</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(139, 21, 56, 0.2) !important;
+}
+
+.quiz-icon i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reject Contribution - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-triangle fa-4x text-danger"></i>
+                </div>
+                <h2 class="fw-bold text-danger mb-2">Reject Contribution</h2>
+                <p class="text-muted">
+                    Please provide a reason for rejecting this contribution
+                </p>
+            </div>
+
+            <!-- Contribution Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 fw-bold">Contribution Details</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold">{{ contribution.section_title }}</h6>
+                    <p class="text-muted mb-2">{{ contribution.content|truncatewords:50 }}</p>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>Contributor:</strong><br>
+                                {{ contribution.get_contributor_name }}
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>Article:</strong><br>
+                                {{ contribution.article.title }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rejection Form -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comment-dots me-2"></i>Rejection Reason
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="rejection_reason" class="form-label fw-bold">
+                                Why are you rejecting this contribution?
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" 
+                                      id="rejection_reason" 
+                                      name="rejection_reason" 
+                                      rows="6" 
+                                      placeholder="Provide detailed feedback to help the contributor improve..."
+                                      required></textarea>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Be constructive - this feedback will help the contributor understand what needs improvement
+                            </small>
+                        </div>
+
+                        <div class="mb-4">
+                            <p class="fw-bold mb-2">Common rejection reasons:</p>
+                            <div class="list-group">
+                                <button type="button" class="list-group-item list-group-item-action reason-template" 
+                                        data-reason="The content does not align with the article's focus and objectives.">
+                                    <i class="fas fa-bullseye me-2 text-muted"></i>
+                                    Content not relevant to article topic
+                                </button>
+                                <button type="button" class="list-group-item list-group-item-action reason-template" 
+                                        data-reason="The information provided contains inaccuracies or is not properly supported by research.">
+                                    <i class="fas fa-exclamation-circle me-2 text-muted"></i>
+                                    Inaccurate or unsupported information
+                                </button>
+                                <button type="button" class="list-group-item list-group-item-action reason-template" 
+                                        data-reason="The writing quality needs improvement. Please ensure clarity, proper grammar, and professional tone.">
+                                    <i class="fas fa-pen me-2 text-muted"></i>
+                                    Poor writing quality
+                                </button>
+                                <button type="button" class="list-group-item list-group-item-action reason-template" 
+                                        data-reason="References are missing or not properly cited. Please add credible sources to support your claims.">
+                                    <i class="fas fa-book me-2 text-muted"></i>
+                                    Missing or improper references
+                                </button>
+                                <button type="button" class="list-group-item list-group-item-action reason-template" 
+                                        data-reason="Similar content has already been covered in another section of this article.">
+                                    <i class="fas fa-copy me-2 text-muted"></i>
+                                    Duplicate content
+                                </button>
+                            </div>
+                            <small class="form-text text-muted d-block mt-2">
+                                <i class="fas fa-hand-pointer me-1"></i>
+                                Click any reason above to use it as a template (you can modify it)
+                            </small>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Rejecting will permanently delete this contribution. The contributor will not receive automatic notification.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-times-circle me-2"></i>Confirm Rejection
+                            </button>
+                            <a href="{% url 'approve_contribution' contribution.pk %}" class="btn btn-outline-success">
+                                <i class="fas fa-check-circle me-2"></i>Approve Instead
+                            </a>
+                            <a href="{% url 'manage_contributions' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Template reason selection
+document.addEventListener('DOMContentLoaded', function() {
+    const reasonButtons = document.querySelectorAll('.reason-template');
+    const reasonTextarea = document.getElementById('rejection_reason');
+    
+    reasonButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const reason = this.getAttribute('data-reason');
+            reasonTextarea.value = reason;
+            
+            // Highlight selected template
+            reasonButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

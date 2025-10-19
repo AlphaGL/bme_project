@@ -111,4 +111,57 @@ urlpatterns = [
     
     # Public Academic Calendar URL
     path('academic-calendar/', views.view_calendar, name='view_calendar'),
+    
+    # ==================== PUBLIC RESEARCH URLs ====================
+    path('research/', views.research_hub, name='research_hub'),
+    path('research/team/<int:team_id>/', views.research_team_detail, name='research_team_detail'),
+    path('research/team/<int:team_id>/join/', views.join_research_team, name='join_research_team'),
+    path('research/article/<int:article_id>/', views.research_article_detail, name='research_article_detail'),
+    path('research/article/<int:article_id>/like/', views.like_article, name='like_article'),
+    path('research/article/<int:article_id>/contribute/', views.contribute_to_article, name='contribute_to_article'),
+    
+    # Guest Contributor URLs
+    path('research/guest/choice/', views.guest_contributor_choice, name='guest_contributor_choice'),
+    path('research/guest/register/', views.guest_contributor_register, name='guest_contributor_register'),
+    path('research/guest/login/', views.guest_contributor_login, name='guest_contributor_login'),
+    path('research/guest/logout/', views.guest_contributor_logout, name='guest_contributor_logout'),
+    
+    # Quiz URLs
+    path('research/quizzes/', views.research_quizzes, name='research_quizzes'),
+    path('research/quiz/<int:quiz_id>/', views.quiz_detail, name='quiz_detail'),
+    path('research/quiz/<int:quiz_id>/submit/', views.submit_quiz, name='submit_quiz'),
+    
+    # ==================== ADMIN RESEARCH MANAGEMENT URLs ====================
+    # Research Teams
+    path('encrypted/admin/futobme/research/teams/', views.manage_research_teams, name='manage_research_teams'),
+    path('encrypted/admin/futobme/research/teams/add/', views.add_research_team, name='add_research_team'),
+    path('encrypted/admin/futobme/research/teams/edit/<int:pk>/', views.edit_research_team, name='edit_research_team'),
+    path('encrypted/admin/futobme/research/teams/delete/<int:pk>/', views.delete_research_team, name='delete_research_team'),
+    
+    # Research Articles
+    path('encrypted/admin/futobme/research/articles/', views.manage_research_articles, name='manage_research_articles'),
+    path('encrypted/admin/futobme/research/articles/add/', views.add_research_article, name='add_research_article'),
+    path('encrypted/admin/futobme/research/articles/edit/<int:pk>/', views.edit_research_article, name='edit_research_article'),
+    path('encrypted/admin/futobme/research/articles/delete/<int:pk>/', views.delete_research_article, name='delete_research_article'),
+    
+    # Contributions Management
+    path('encrypted/admin/futobme/research/contributions/', views.manage_contributions, name='manage_contributions'),
+    path('encrypted/admin/futobme/research/contributions/approve/<int:pk>/', views.approve_contribution, name='approve_contribution'),
+    path('encrypted/admin/futobme/research/contributions/reject/<int:pk>/', views.reject_contribution, name='reject_contribution'),
+    
+    # Guest Contributors Management
+    path('encrypted/admin/futobme/research/guests/', views.manage_guest_contributors, name='manage_guest_contributors'),
+    path('encrypted/admin/futobme/research/guests/approve/<int:pk>/', views.approve_guest_contributor, name='approve_guest_contributor'),
+    path('encrypted/admin/futobme/research/guests/reject/<int:pk>/', views.reject_guest_contributor, name='reject_guest_contributor'),
+    
+    # Quiz Management
+    path('encrypted/admin/futobme/research/quizzes/', views.manage_research_quizzes, name='manage_research_quizzes'),
+    path('encrypted/admin/futobme/research/quizzes/add/', views.add_research_quiz, name='add_research_quiz'),
+    path('encrypted/admin/futobme/research/quizzes/edit/<int:pk>/', views.edit_research_quiz, name='edit_research_quiz'),
+    path('encrypted/admin/futobme/research/quizzes/delete/<int:pk>/', views.delete_research_quiz, name='delete_research_quiz'),
+    
+    # Quiz Submissions Management
+    path('encrypted/admin/futobme/research/submissions/', views.manage_quiz_submissions, name='manage_quiz_submissions'),
+    path('encrypted/admin/futobme/research/submissions/award/<int:pk>/', views.award_quiz_submission, name='award_quiz_submission'),
+    path('encrypted/admin/futobme/research/submissions/detail/<int:pk>/', views.view_quiz_submission_detail, name='view_quiz_submission_detail'),
 ]

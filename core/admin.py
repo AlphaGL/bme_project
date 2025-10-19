@@ -2,7 +2,8 @@ from django.contrib import admin
 from .models import (
     Staff, Exco, PastQuestion, LibraryResource, 
     Testimonial, Announcement, Student, Semester, 
-    Course, CGPACalculation, DepartmentalDues, CourseHandbook, Timetable, AcademicCalendar
+    Course, CGPACalculation, DepartmentalDues, CourseHandbook, Timetable, AcademicCalendar,    ResearchTeam, ResearchArticle, GuestContributor, ResearchContribution,
+    ResearchQuiz, QuizSubmission, TeamMembership, ArticleLike
 )
 
 @admin.register(Staff)
@@ -194,3 +195,107 @@ class AcademicCalendarAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.uploaded_by = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(ResearchTeam)
+class ResearchTeamAdmin(admin.ModelAdmin):
+    list_display = ['name', 'focus_area', 'team_lead', 'is_active', 'get_member_count', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['name', 'focus_area']
+    ordering = ['name']
+
+
+@admin.register(ResearchArticle)
+class ResearchArticleAdmin(admin.ModelAdmin):
+    list_display = ['title', 'team', 'status', 'views_count', 'likes_count', 'created_at']
+    list_filter = ['status', 'team', 'created_at']
+    search_fields = ['title', 'abstract']
+    ordering = ['-created_at']
+
+
+@admin.register(GuestContributor)
+class GuestContributorAdmin(admin.ModelAdmin):
+    list_display = ['full_name', 'email', 'institution', 'is_approved', 'created_at']
+    list_filter = ['is_approved', 'created_at']
+    search_fields = ['full_name', 'email', 'institution']
+    readonly_fields = ['password', 'approved_at', 'created_at']
+    actions = ['approve_guests', 'unapprove_guests']
+    
+    def approve_guests(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(is_approved=True, approved_by=request.user, approved_at=timezone.now())
+        self.message_user(request, f'{updated} guest contributors approved.')
+    approve_guests.short_description = "Approve selected guest contributors"
+    
+    def unapprove_guests(self, request, queryset):
+        updated = queryset.update(is_approved=False, approved_by=None, approved_at=None)
+        self.message_user(request, f'{updated} guest contributors unapproved.')
+    unapprove_guests.short_description = "Unapprove selected guest contributors"
+
+
+@admin.register(ResearchContribution)
+class ResearchContributionAdmin(admin.ModelAdmin):
+    list_display = ['get_contributor_name', 'section_title', 'article', 'is_approved', 'section_order', 'created_at']
+    list_filter = ['is_approved', 'created_at']
+    search_fields = ['section_title', 'content', 'student_contributor__full_name', 'guest_contributor__full_name']
+    readonly_fields = ['approved_at', 'created_at', 'updated_at']
+    actions = ['approve_contributions', 'unapprove_contributions']
+    
+    def get_contributor_name(self, obj):
+        """Display contributor name in admin list"""
+        return obj.get_contributor_name()
+    get_contributor_name.short_description = 'Contributor'
+    
+    def approve_contributions(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(is_approved=True, approved_by=request.user, approved_at=timezone.now())
+        self.message_user(request, f'{updated} contributions approved.')
+    approve_contributions.short_description = "Approve selected contributions"
+    
+    def unapprove_contributions(self, request, queryset):
+        updated = queryset.update(is_approved=False, approved_by=None, approved_at=None)
+        self.message_user(request, f'{updated} contributions unapproved.')
+    unapprove_contributions.short_description = "Unapprove selected contributions"
+
+
+@admin.register(ResearchQuiz)
+class ResearchQuizAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'difficulty_level', 'points', 'is_active', 'get_submissions_count', 'created_at']
+    list_filter = ['is_active', 'difficulty_level', 'created_at']
+    search_fields = ['title', 'question', 'category']
+    ordering = ['-created_at']
+
+
+@admin.register(QuizSubmission)
+class QuizSubmissionAdmin(admin.ModelAdmin):
+    list_display = ['get_submitter_name', 'quiz', 'is_awarded', 'awarded_at', 'created_at']
+    list_filter = ['is_awarded', 'created_at']
+    search_fields = ['answer', 'explanation', 'student_submitter__full_name', 'guest_submitter__full_name']
+    readonly_fields = ['awarded_at', 'created_at', 'updated_at']
+    actions = ['award_submissions']
+    
+    def get_submitter_name(self, obj):
+        """Display submitter name in admin list"""
+        return obj.get_submitter_name()
+    get_submitter_name.short_description = 'Submitter'
+    
+    def award_submissions(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(is_awarded=True, awarded_by=request.user, awarded_at=timezone.now())
+        self.message_user(request, f'{updated} submissions awarded.')
+    award_submissions.short_description = "Award selected submissions"
+
+@admin.register(TeamMembership)
+class TeamMembershipAdmin(admin.ModelAdmin):
+    list_display = ['student', 'team', 'role', 'joined_at']
+    list_filter = ['team', 'joined_at']
+    search_fields = ['student__full_name', 'student__reg_number', 'team__name']
+    ordering = ['-joined_at']
+
+
+@admin.register(ArticleLike)
+class ArticleLikeAdmin(admin.ModelAdmin):
+    list_display = ['student', 'article', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['student__full_name', 'article__title']
+    ordering = ['-created_at']

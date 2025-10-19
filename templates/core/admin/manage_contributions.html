@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Contributions - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-3">
+                    <h6 class="text-muted mb-3">ADMIN MENU</h6>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'admin_dashboard' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a href="{% url 'manage_research_teams' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-users me-2"></i>Teams
+                        </a>
+                        <a href="{% url 'manage_research_articles' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-alt me-2"></i>Articles
+                        </a>
+                        <a href="{% url 'manage_contributions' %}" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-edit me-2"></i>Contributions
+                        </a>
+                        <a href="{% url 'manage_guest_contributors' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-check me-2"></i>Guests
+                        </a>
+                        <a href="{% url 'manage_research_quizzes' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-question-circle me-2"></i>Quizzes
+                        </a>
+                        <a href="{% url 'manage_quiz_submissions' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-paper-plane me-2"></i>Submissions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">
+                        <i class="fas fa-edit text-primary me-2"></i>Manage Contributions
+                    </h2>
+                    <p class="text-muted mb-0">Review and approve research article contributions</p>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Pending Review</h6>
+                                    <h3 class="fw-bold mb-0 text-warning">{{ pending_count }}</h3>
+                                </div>
+                                <i class="fas fa-clock fa-3x text-warning opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Approved</h6>
+                                    <h3 class="fw-bold mb-0 text-success">{{ approved_count }}</h3>
+                                </div>
+                                <i class="fas fa-check-circle fa-3x text-success opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Total</h6>
+                                    <h3 class="fw-bold mb-0 text-primary">{{ contributions.count }}</h3>
+                                </div>
+                                <i class="fas fa-list fa-3x text-primary opacity-25"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <ul class="nav nav-tabs mb-4" id="contributionTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#all">
+                        All ({{ contributions.count }})
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#pending">
+                        Pending ({{ pending_count }})
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#approved">
+                        Approved ({{ approved_count }})
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Contributions List -->
+            <div class="tab-content">
+                <!-- All Contributions -->
+                <div class="tab-pane fade show active" id="all">
+                    {% if contributions %}
+                        {% for contribution in contributions %}
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-8">
+                                        <div class="d-flex align-items-start mb-3">
+                                            {% if contribution.is_approved %}
+                                            <span class="badge bg-success me-2">
+                                                <i class="fas fa-check"></i> Approved
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-warning me-2">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <h5 class="fw-bold mb-2">{{ contribution.section_title }}</h5>
+                                        
+                                        <div class="mb-3">
+                                            <small class="text-muted">
+                                                <i class="fas fa-file-alt me-1"></i>
+                                                Article: <strong>{{ contribution.article.title }}</strong>
+                                            </small>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-users me-1"></i>
+                                                Team: <strong>{{ contribution.article.team.name }}</strong>
+                                            </small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            {% if contribution.student_contributor %}
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-graduate text-primary me-2"></i>
+                                                <div>
+                                                    <strong>{{ contribution.student_contributor.full_name }}</strong>
+                                                    <small class="text-muted d-block">
+                                                        {{ contribution.student_contributor.reg_number }} - {{ contribution.student_contributor.get_level_display }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            {% elif contribution.guest_contributor %}
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-tie text-warning me-2"></i>
+                                                <div>
+                                                    <strong>{{ contribution.guest_contributor.full_name }}</strong>
+                                                    <small class="text-muted d-block">
+                                                        {{ contribution.guest_contributor.institution }} - {{ contribution.guest_contributor.qualification }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="contribution-preview">
+                                            <p class="text-muted mb-0">
+                                                {{ contribution.content|truncatewords:50 }}
+                                            </p>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                Submitted: {{ contribution.created_at|date:"M d, Y - h:i A" }}
+                                            </small>
+                                            {% if contribution.is_approved %}
+                                            <br>
+                                            <small class="text-success">
+                                                <i class="fas fa-user-check me-1"></i>
+                                                Approved by {{ contribution.approved_by.username }} on {{ contribution.approved_at|date:"M d, Y" }}
+                                            </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 text-end">
+                                        {% if not contribution.is_approved %}
+                                        <a href="{% url 'approve_contribution' contribution.pk %}" 
+                                           class="btn btn-success btn-sm mb-2 w-100">
+                                            <i class="fas fa-check me-1"></i>Approve
+                                        </a>
+                                        <a href="{% url 'reject_contribution' contribution.pk %}" 
+                                           class="btn btn-danger btn-sm w-100">
+                                            <i class="fas fa-times me-1"></i>Reject
+                                        </a>
+                                        {% else %}
+                                        <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                            <i class="fas fa-check-circle me-1"></i>Already Approved
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                        <p class="text-muted">No contributions found</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Pending Contributions -->
+                <div class="tab-pane fade" id="pending">
+                    {% for contribution in contributions %}
+                        {% if not contribution.is_approved %}
+                        <div class="card shadow-sm mb-3">
+                            <!-- Same card structure as above, filtered for pending -->
+                            <div class="card-body">
+                                <span class="badge bg-warning mb-2">
+                                    <i class="fas fa-clock"></i> Pending Review
+                                </span>
+                                <h5 class="fw-bold">{{ contribution.section_title }}</h5>
+                                <p class="text-muted">{{ contribution.content|truncatewords:30 }}</p>
+                                <a href="{% url 'approve_contribution' contribution.pk %}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-check me-1"></i>Review & Approve
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                        <p class="text-muted">No pending contributions</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Approved Contributions -->
+                <div class="tab-pane fade" id="approved">
+                    {% for contribution in contributions %}
+                        {% if contribution.is_approved %}
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-body">
+                                <span class="badge bg-success mb-2">
+                                    <i class="fas fa-check"></i> Approved
+                                </span>
+                                <h5 class="fw-bold">{{ contribution.section_title }}</h5>
+                                <p class="text-muted">{{ contribution.content|truncatewords:30 }}</p>
+                                <small class="text-success">
+                                    Approved by {{ contribution.approved_by.username }} on {{ contribution.approved_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-hourglass-half fa-4x text-muted mb-3"></i>
+                        <p class="text-muted">No approved contributions yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.contribution-preview {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.nav-tabs .nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+</style>
+{% endblock %}

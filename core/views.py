@@ -6,15 +6,33 @@ from django.db.models import Count, Sum, Avg
 from .models import( Staff, Exco, PastQuestion, 
                     LibraryResource, Testimonial, Announcement, 
                     Student, Semester, Course, CGPACalculation, DepartmentalDues, 
-                    CourseHandbook, Timetable, AcademicCalendar)
+                    CourseHandbook, Timetable, AcademicCalendar,ResearchTeam, ResearchArticle, GuestContributor, 
+                     ResearchContribution, ResearchQuiz, QuizSubmission, 
+                     TeamMembership, ArticleLike)
 from .forms import (StaffForm, ExcoForm, PastQuestionForm, LibraryResourceForm, TestimonialForm, 
                     AnnouncementForm, StudentRegistrationForm, StudentLoginForm, 
                     StudentProfileForm, SemesterForm, CourseForm,  DepartmentalDuesForm,
-                    CourseHandbookForm, TimetableForm, AcademicCalendarForm)
+                    CourseHandbookForm, TimetableForm, AcademicCalendarForm,ResearchTeamForm, ResearchArticleForm, GuestContributorForm,
+                    GuestLoginForm, ResearchContributionForm, ResearchQuizForm,
+                    QuizSubmissionForm, TeamJoinForm)
 import json
 from django.utils import timezone
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+
+
+
+def custom_404(request, exception):
+    """Custom 404 error handler"""
+    return render(request, 'errors/404.html', status=404)
+
+def custom_403(request, exception):
+    """Custom 403 error handler"""
+    return render(request, 'errors/403.html', status=403)
+
+def custom_500(request):
+    """Custom 500 error handler"""
+    return render(request, 'errors/500.html', status=500)
 
 # Public Views
 def index(request):
@@ -1078,3 +1096,649 @@ def view_calendar(request):
         'calendar': calendar,
         'all_calendars': all_calendars
     })
+
+
+# ==================== PUBLIC RESEARCH VIEWS ====================
+
+def research_hub(request):
+    """Main research hub showcasing all teams and recent activity"""
+    teams = ResearchTeam.objects.filter(is_active=True)
+    published_articles = ResearchArticle.objects.filter(status='Published')[:6]
+    active_quizzes = ResearchQuiz.objects.filter(is_active=True)[:5]
+    
+    # Top contributors
+    from django.db.models import Count
+    top_contributors = ResearchContribution.objects.filter(
+        is_approved=True
+    ).values(
+        'student_contributor__full_name',
+        'student_contributor__reg_number'
+    ).annotate(
+        contribution_count=Count('id')
+    ).order_by('-contribution_count')[:10]
+    
+    context = {
+        'teams': teams,
+        'published_articles': published_articles,
+        'active_quizzes': active_quizzes,
+        'top_contributors': top_contributors,
+        'total_teams': teams.count(),
+        'total_articles': ResearchArticle.objects.count(),
+        'total_contributions': ResearchContribution.objects.filter(is_approved=True).count(),
+    }
+    return render(request, 'core/research/hub.html', context)
+
+
+def research_team_detail(request, team_id):
+    """Detailed view of a research team"""
+    team = get_object_or_404(ResearchTeam, id=team_id)
+    articles = team.articles.all()
+    members = team.members.select_related('student').all()
+    
+    # Check if current user is a member
+    is_member = False
+    if request.session.get('student_reg_number'):
+        reg_number = request.session.get('student_reg_number')
+        student = Student.objects.get(reg_number=reg_number)
+        is_member = TeamMembership.objects.filter(team=team, student=student).exists()
+    
+    context = {
+        'team': team,
+        'articles': articles,
+        'members': members,
+        'is_member': is_member,
+        'can_join': team.get_member_count() < team.max_members,
+    }
+    return render(request, 'core/research/team_detail.html', context)
+
+
+def join_research_team(request, team_id):
+    """Student joins a research team"""
+    if not request.session.get('student_reg_number'):
+        messages.error(request, 'Please login to join a research team.')
+        return redirect('student_login')
+    
+    team = get_object_or_404(ResearchTeam, id=team_id)
+    reg_number = request.session.get('student_reg_number')
+    student = Student.objects.get(reg_number=reg_number)
+    
+    # Check if already a member
+    if TeamMembership.objects.filter(team=team, student=student).exists():
+        messages.warning(request, 'You are already a member of this team!')
+        return redirect('research_team_detail', team_id=team_id)
+    
+    # Check if team is full
+    if team.get_member_count() >= team.max_members:
+        messages.error(request, 'This team is currently full.')
+        return redirect('research_team_detail', team_id=team_id)
+    
+    if request.method == 'POST':
+        form = TeamJoinForm(request.POST)
+        if form.is_valid():
+            TeamMembership.objects.create(
+                team=team,
+                student=student,
+                role=form.cleaned_data.get('role', 'Member')
+            )
+            messages.success(request, f'Welcome to {team.name}!')
+            return redirect('research_team_detail', team_id=team_id)
+    else:
+        form = TeamJoinForm()
+    
+    return render(request, 'core/research/join_team.html', {'form': form, 'team': team})
+
+
+def research_article_detail(request, article_id):
+    """View a complete research article with all approved contributions"""
+    article = get_object_or_404(ResearchArticle, id=article_id)
+    contributions = article.get_approved_contributions()
+    
+    # Increment view count
+    article.views_count += 1
+    article.save(update_fields=['views_count'])
+    
+    # Check if student has liked this article
+    has_liked = False
+    if request.session.get('student_reg_number'):
+        reg_number = request.session.get('student_reg_number')
+        student = Student.objects.get(reg_number=reg_number)
+        has_liked = ArticleLike.objects.filter(article=article, student=student).exists()
+    
+    context = {
+        'article': article,
+        'contributions': contributions,
+        'has_liked': has_liked,
+    }
+    return render(request, 'core/research/article_detail.html', context)
+
+
+def like_article(request, article_id):
+    """Toggle like on an article"""
+    if not request.session.get('student_reg_number'):
+        messages.error(request, 'Please login to like articles.')
+        return redirect('student_login')
+    
+    article = get_object_or_404(ResearchArticle, id=article_id)
+    reg_number = request.session.get('student_reg_number')
+    student = Student.objects.get(reg_number=reg_number)
+    
+    like, created = ArticleLike.objects.get_or_create(article=article, student=student)
+    
+    if not created:
+        like.delete()
+        article.likes_count -= 1
+        messages.info(request, 'Article unliked.')
+    else:
+        article.likes_count += 1
+        messages.success(request, 'Article liked!')
+    
+    article.save(update_fields=['likes_count'])
+    return redirect('research_article_detail', article_id=article_id)
+
+
+# ==================== CONTRIBUTION VIEWS ====================
+
+def contribute_to_article(request, article_id):
+    """Contribute to a research article"""
+    article = get_object_or_404(ResearchArticle, id=article_id)
+    
+    # Determine contributor type
+    contributor_type = None
+    student_contributor = None
+    guest_contributor = None
+    
+    if request.session.get('student_reg_number'):
+        reg_number = request.session.get('student_reg_number')
+        student_contributor = Student.objects.get(reg_number=reg_number)
+        contributor_type = 'student'
+        
+        # Check if student is a team member
+        if not TeamMembership.objects.filter(team=article.team, student=student_contributor).exists():
+            messages.error(request, 'You must be a team member to contribute to this article.')
+            return redirect('research_article_detail', article_id=article_id)
+    
+    elif request.session.get('guest_contributor_id'):
+        guest_id = request.session.get('guest_contributor_id')
+        guest_contributor = GuestContributor.objects.get(id=guest_id, is_approved=True)
+        contributor_type = 'guest'
+    
+    else:
+        messages.error(request, 'Please login or register as a guest contributor.')
+        return redirect('guest_contributor_choice')
+    
+    if request.method == 'POST':
+        form = ResearchContributionForm(request.POST)
+        if form.is_valid():
+            contribution = form.save(commit=False)
+            contribution.article = article
+            
+            if contributor_type == 'student':
+                contribution.student_contributor = student_contributor
+            else:
+                contribution.guest_contributor = guest_contributor
+            
+            contribution.save()
+            messages.success(request, 'Your contribution has been submitted for review!')
+            return redirect('research_article_detail', article_id=article_id)
+    else:
+        form = ResearchContributionForm()
+    
+    context = {
+        'form': form,
+        'article': article,
+        'contributor_type': contributor_type,
+    }
+    return render(request, 'core/research/contribute.html', context)
+
+
+# ==================== GUEST CONTRIBUTOR VIEWS ====================
+
+def guest_contributor_choice(request):
+    """Guest contributor login or register choice"""
+    return render(request, 'core/research/guest_choice.html')
+
+
+def guest_contributor_register(request):
+    """Register as a guest contributor"""
+    if request.method == 'POST':
+        form = GuestContributorForm(request.POST)
+        if form.is_valid():
+            guest = form.save()
+            messages.success(request, 
+                'Registration successful! Your application is pending admin approval. '
+                'You will be notified via email once approved.')
+            return redirect('research_hub')
+    else:
+        form = GuestContributorForm()
+    
+    return render(request, 'core/research/guest_register.html', {'form': form})
+
+
+def guest_contributor_login(request):
+    """Login for approved guest contributors"""
+    if request.method == 'POST':
+        form = GuestLoginForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            
+            try:
+                guest = GuestContributor.objects.get(email=email)
+                if not guest.is_approved:
+                    messages.error(request, 'Your account is pending approval.')
+                    return redirect('guest_contributor_login')
+                
+                if guest.check_password(password):
+                    request.session['guest_contributor_id'] = guest.id
+                    messages.success(request, f'Welcome back, {guest.full_name}!')
+                    return redirect('research_hub')
+                else:
+                    messages.error(request, 'Invalid password.')
+            except GuestContributor.DoesNotExist:
+                messages.error(request, 'Email not found. Please register first.')
+    else:
+        form = GuestLoginForm()
+    
+    return render(request, 'core/research/guest_login.html', {'form': form})
+
+
+def guest_contributor_logout(request):
+    """Logout guest contributor"""
+    if 'guest_contributor_id' in request.session:
+        del request.session['guest_contributor_id']
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('research_hub')
+
+
+# ==================== QUIZ VIEWS ====================
+
+def research_quizzes(request):
+    """View all active research quizzes"""
+    quizzes = ResearchQuiz.objects.filter(is_active=True).order_by('-created_at')
+    
+    # Get user's submissions if logged in
+    user_submissions = []
+    if request.session.get('student_reg_number'):
+        reg_number = request.session.get('student_reg_number')
+        student = Student.objects.get(reg_number=reg_number)
+        user_submissions = QuizSubmission.objects.filter(
+            student_submitter=student
+        ).values_list('quiz_id', flat=True)
+    
+    context = {
+        'quizzes': quizzes,
+        'user_submissions': user_submissions,
+    }
+    return render(request, 'core/research/quizzes.html', context)
+
+
+def quiz_detail(request, quiz_id):
+    """View quiz details and submit solution"""
+    quiz = get_object_or_404(ResearchQuiz, id=quiz_id)
+    submissions = quiz.submissions.filter(is_awarded=True).order_by('-awarded_at')[:5]
+    
+    # Check if user has already submitted
+    has_submitted = False
+    user_submission = None
+    
+    if request.session.get('student_reg_number'):
+        reg_number = request.session.get('student_reg_number')
+        student = Student.objects.get(reg_number=reg_number)
+        user_submission = QuizSubmission.objects.filter(
+            quiz=quiz, student_submitter=student
+        ).first()
+        has_submitted = user_submission is not None
+    elif request.session.get('guest_contributor_id'):
+        guest_id = request.session.get('guest_contributor_id')
+        guest = GuestContributor.objects.get(id=guest_id)
+        user_submission = QuizSubmission.objects.filter(
+            quiz=quiz, guest_submitter=guest
+        ).first()
+        has_submitted = user_submission is not None
+    
+    context = {
+        'quiz': quiz,
+        'submissions': submissions,
+        'has_submitted': has_submitted,
+        'user_submission': user_submission,
+    }
+    return render(request, 'core/research/quiz_detail.html', context)
+
+
+def submit_quiz(request, quiz_id):
+    """Submit solution to a quiz"""
+    quiz = get_object_or_404(ResearchQuiz, id=quiz_id)
+    
+    # Check if quiz is still active
+    if not quiz.is_active:
+        messages.error(request, 'This quiz is no longer active.')
+        return redirect('quiz_detail', quiz_id=quiz_id)
+    
+    # Determine submitter
+    student_submitter = None
+    guest_submitter = None
+    
+    if request.session.get('student_reg_number'):
+        reg_number = request.session.get('student_reg_number')
+        student_submitter = Student.objects.get(reg_number=reg_number)
+        
+        # Check if already submitted
+        if QuizSubmission.objects.filter(quiz=quiz, student_submitter=student_submitter).exists():
+            messages.warning(request, 'You have already submitted a solution to this quiz.')
+            return redirect('quiz_detail', quiz_id=quiz_id)
+    
+    elif request.session.get('guest_contributor_id'):
+        guest_id = request.session.get('guest_contributor_id')
+        guest_submitter = GuestContributor.objects.get(id=guest_id, is_approved=True)
+        
+        if QuizSubmission.objects.filter(quiz=quiz, guest_submitter=guest_submitter).exists():
+            messages.warning(request, 'You have already submitted a solution to this quiz.')
+            return redirect('quiz_detail', quiz_id=quiz_id)
+    
+    else:
+        messages.error(request, 'Please login to submit a solution.')
+        return redirect('guest_contributor_choice')
+    
+    if request.method == 'POST':
+        form = QuizSubmissionForm(request.POST, request.FILES)
+        if form.is_valid():
+            submission = form.save(commit=False)
+            submission.quiz = quiz
+            submission.student_submitter = student_submitter
+            submission.guest_submitter = guest_submitter
+            submission.save()
+            messages.success(request, 'Your solution has been submitted successfully!')
+            return redirect('quiz_detail', quiz_id=quiz_id)
+    else:
+        form = QuizSubmissionForm()
+    
+    return render(request, 'core/research/submit_quiz.html', {'form': form, 'quiz': quiz})
+
+
+# ==================== ADMIN RESEARCH MANAGEMENT ====================
+
+@login_required
+def manage_research_teams(request):
+    """Admin manages research teams"""
+    teams = ResearchTeam.objects.all()
+    return render(request, 'core/admin/manage_research_teams.html', {'teams': teams})
+
+
+@login_required
+def add_research_team(request):
+    """Admin adds research team"""
+    if request.method == 'POST':
+        form = ResearchTeamForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Research team added successfully!')
+            return redirect('manage_research_teams')
+    else:
+        form = ResearchTeamForm()
+    return render(request, 'core/admin/research_team_form.html', {'form': form, 'action': 'Add'})
+
+
+@login_required
+def edit_research_team(request, pk):
+    """Admin edits research team"""
+    team = get_object_or_404(ResearchTeam, pk=pk)
+    if request.method == 'POST':
+        form = ResearchTeamForm(request.POST, request.FILES, instance=team)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Research team updated successfully!')
+            return redirect('manage_research_teams')
+    else:
+        form = ResearchTeamForm(instance=team)
+    return render(request, 'core/admin/research_team_form.html', {'form': form, 'action': 'Edit'})
+
+
+@login_required
+def delete_research_team(request, pk):
+    """Admin deletes research team"""
+    team = get_object_or_404(ResearchTeam, pk=pk)
+    if request.method == 'POST':
+        team.delete()
+        messages.success(request, 'Research team deleted successfully!')
+        return redirect('manage_research_teams')
+    return render(request, 'core/admin/confirm_delete.html', {'object': team, 'type': 'Research Team'})
+
+
+@login_required
+def manage_research_articles(request):
+    """Admin manages research articles"""
+    articles = ResearchArticle.objects.all().select_related('team', 'created_by')
+    return render(request, 'core/admin/manage_research_articles.html', {'articles': articles})
+
+
+@login_required
+def add_research_article(request):
+    """Admin adds research article"""
+    if request.method == 'POST':
+        form = ResearchArticleForm(request.POST)
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.created_by = request.user
+            article.save()
+            messages.success(request, 'Research article created successfully!')
+            return redirect('manage_research_articles')
+    else:
+        form = ResearchArticleForm()
+    return render(request, 'core/admin/research_article_form.html', {'form': form, 'action': 'Add'})
+
+
+@login_required
+def edit_research_article(request, pk):
+    """Admin edits research article"""
+    article = get_object_or_404(ResearchArticle, pk=pk)
+    if request.method == 'POST':
+        form = ResearchArticleForm(request.POST, instance=article)
+        if form.is_valid():
+            updated_article = form.save()
+            
+            # If status changed to Published, set publish date
+            if updated_article.status == 'Published' and not updated_article.published_date:
+                updated_article.published_date = timezone.now()
+                updated_article.save()
+            
+            messages.success(request, 'Research article updated successfully!')
+            return redirect('manage_research_articles')
+    else:
+        form = ResearchArticleForm(instance=article)
+    return render(request, 'core/admin/research_article_form.html', {'form': form, 'action': 'Edit'})
+
+
+@login_required
+def delete_research_article(request, pk):
+    """Admin deletes research article"""
+    article = get_object_or_404(ResearchArticle, pk=pk)
+    if request.method == 'POST':
+        article.delete()
+        messages.success(request, 'Research article deleted successfully!')
+        return redirect('manage_research_articles')
+    return render(request, 'core/admin/confirm_delete.html', {'object': article, 'type': 'Research Article'})
+
+
+@login_required
+def manage_contributions(request):
+    """Admin manages all contributions"""
+    contributions = ResearchContribution.objects.all().select_related(
+        'article', 'student_contributor', 'guest_contributor', 'approved_by'
+    ).order_by('-created_at')
+    
+    pending_count = contributions.filter(is_approved=False).count()
+    approved_count = contributions.filter(is_approved=True).count()
+    
+    context = {
+        'contributions': contributions,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+    }
+    return render(request, 'core/admin/manage_contributions.html', context)
+
+
+@login_required
+def approve_contribution(request, pk):
+    """Admin approves a contribution"""
+    contribution = get_object_or_404(ResearchContribution, pk=pk)
+    
+    if request.method == 'POST':
+        section_order = request.POST.get('section_order', 0)
+        contribution.is_approved = True
+        contribution.approved_by = request.user
+        contribution.approved_at = timezone.now()
+        contribution.section_order = int(section_order)
+        contribution.save()
+        
+        messages.success(request, f'Contribution by {contribution.get_contributor_name()} approved!')
+        return redirect('manage_contributions')
+    
+    return render(request, 'core/admin/approve_contribution.html', {'contribution': contribution})
+
+
+@login_required
+def reject_contribution(request, pk):
+    """Admin rejects a contribution"""
+    contribution = get_object_or_404(ResearchContribution, pk=pk)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('rejection_reason', '')
+        contribution.rejection_reason = reason
+        contribution.delete()  # Or keep it with a rejected flag
+        
+        messages.success(request, 'Contribution rejected.')
+        return redirect('manage_contributions')
+    
+    return render(request, 'core/admin/reject_contribution.html', {'contribution': contribution})
+
+
+@login_required
+def manage_guest_contributors(request):
+    """Admin manages guest contributors"""
+    guests = GuestContributor.objects.all().order_by('-created_at')
+    pending_count = guests.filter(is_approved=False).count()
+    approved_count = guests.filter(is_approved=True).count()
+    
+    context = {
+        'guests': guests,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+    }
+    return render(request, 'core/admin/manage_guest_contributors.html', context)
+
+
+@login_required
+def approve_guest_contributor(request, pk):
+    """Admin approves guest contributor"""
+    guest = get_object_or_404(GuestContributor, pk=pk)
+    guest.is_approved = True
+    guest.approved_by = request.user
+    guest.approved_at = timezone.now()
+    guest.save()
+    
+    messages.success(request, f'Guest contributor {guest.full_name} approved!')
+    return redirect('manage_guest_contributors')
+
+
+@login_required
+def reject_guest_contributor(request, pk):
+    """Admin rejects guest contributor"""
+    guest = get_object_or_404(GuestContributor, pk=pk)
+    if request.method == 'POST':
+        guest.delete()
+        messages.success(request, 'Guest contributor application rejected.')
+        return redirect('manage_guest_contributors')
+    return render(request, 'core/admin/confirm_delete.html', {'object': guest, 'type': 'Guest Contributor'})
+
+
+@login_required
+def manage_research_quizzes(request):
+    """Admin manages research quizzes"""
+    quizzes = ResearchQuiz.objects.all().order_by('-created_at')
+    return render(request, 'core/admin/manage_research_quizzes.html', {'quizzes': quizzes})
+
+
+@login_required
+def add_research_quiz(request):
+    """Admin adds research quiz"""
+    if request.method == 'POST':
+        form = ResearchQuizForm(request.POST)
+        if form.is_valid():
+            quiz = form.save(commit=False)
+            quiz.created_by = request.user
+            quiz.save()
+            messages.success(request, 'Research quiz added successfully!')
+            return redirect('manage_research_quizzes')
+    else:
+        form = ResearchQuizForm()
+    return render(request, 'core/admin/research_quiz_form.html', {'form': form, 'action': 'Add'})
+
+
+@login_required
+def edit_research_quiz(request, pk):
+    """Admin edits research quiz"""
+    quiz = get_object_or_404(ResearchQuiz, pk=pk)
+    if request.method == 'POST':
+        form = ResearchQuizForm(request.POST, instance=quiz)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Research quiz updated successfully!')
+            return redirect('manage_research_quizzes')
+    else:
+        form = ResearchQuizForm(instance=quiz)
+    return render(request, 'core/admin/research_quiz_form.html', {'form': form, 'action': 'Edit'})
+
+
+@login_required
+def delete_research_quiz(request, pk):
+    """Admin deletes research quiz"""
+    quiz = get_object_or_404(ResearchQuiz, pk=pk)
+    if request.method == 'POST':
+        quiz.delete()
+        messages.success(request, 'Research quiz deleted successfully!')
+        return redirect('manage_research_quizzes')
+    return render(request, 'core/admin/confirm_delete.html', {'object': quiz, 'type': 'Research Quiz'})
+
+
+@login_required
+def manage_quiz_submissions(request):
+    """Admin manages quiz submissions"""
+    submissions = QuizSubmission.objects.all().select_related(
+        'quiz', 'student_submitter', 'guest_submitter', 'awarded_by'
+    ).order_by('-created_at')
+    
+    pending_count = submissions.filter(is_awarded=False).count()
+    awarded_count = submissions.filter(is_awarded=True).count()
+    
+    context = {
+        'submissions': submissions,
+        'pending_count': pending_count,
+        'awarded_count': awarded_count,
+    }
+    return render(request, 'core/admin/manage_quiz_submissions.html', context)
+
+
+@login_required
+def award_quiz_submission(request, pk):
+    """Admin awards a quiz submission"""
+    submission = get_object_or_404(QuizSubmission, pk=pk)
+    
+    if request.method == 'POST':
+        comment = request.POST.get('award_comment', '')
+        submission.is_awarded = True
+        submission.award_comment = comment
+        submission.awarded_by = request.user
+        submission.awarded_at = timezone.now()
+        submission.save()
+        
+        messages.success(request, f'Quiz submission by {submission.get_submitter_name()} awarded!')
+        return redirect('manage_quiz_submissions')
+    
+    return render(request, 'core/admin/award_quiz_submission.html', {'submission': submission})
+
+
+@login_required
+def view_quiz_submission_detail(request, pk):
+    """Admin views detailed quiz submission"""
+    submission = get_object_or_404(QuizSubmission, pk=pk)
+    return render(request, 'core/admin/quiz_submission_detail.html', {'submission': submission})

@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.title }} - Research Hub{% endblock %}
+
+{% block content %}
+<!-- Article Header -->
+<section class="py-5" style="background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);">
+    <div class="container text-white">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent text-white">
+                <li class="breadcrumb-item"><a href="{% url 'research_hub' %}" class="text-white">Research Hub</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'research_team_detail' article.team.id %}" class="text-white">{{ article.team.name }}</a></li>
+                <li class="breadcrumb-item active text-white">Article</li>
+            </ol>
+        </nav>
+        
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <span class="badge bg-warning text-dark mb-3">{{ article.team.name }}</span>
+                <h1 class="display-5 fw-bold mb-4">{{ article.title }}</h1>
+                
+                <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                    <span class="badge 
+                        {% if article.status == 'Published' %}bg-success
+                        {% elif article.status == 'In Progress' %}bg-primary
+                        {% elif article.status == 'Under Review' %}bg-warning text-dark
+                        {% else %}bg-secondary{% endif %} p-2">
+                        <i class="fas fa-circle me-1"></i>{{ article.status }}
+                    </span>
+                    
+                    <div class="d-flex gap-3">
+                        <span><i class="fas fa-eye me-1"></i>{{ article.views_count }} views</span>
+                        <span><i class="fas fa-heart me-1"></i>{{ article.likes_count }} likes</span>
+                        <span><i class="fas fa-users me-1"></i>{{ article.get_total_contributors }} contributors</span>
+                    </div>
+                </div>
+                
+                {% if article.published_date %}
+                <p class="mb-3">
+                    <i class="fas fa-calendar me-2"></i>Published on {{ article.published_date|date:"F d, Y" }}
+                </p>
+                {% endif %}
+                
+                <div class="d-flex gap-2">
+                    {% if request.session.student_reg_number or request.session.guest_contributor_id %}
+                    <a href="{% url 'like_article' article.id %}" class="btn btn-light">
+                        <i class="fas fa-heart {% if has_liked %}text-danger{% endif %} me-2"></i>
+                        {% if has_liked %}Unlike{% else %}Like{% endif %}
+                    </a>
+                    {% endif %}
+                    
+                    {% if article.status != 'Published' %}
+                    <a href="{% url 'contribute_to_article' article.id %}" class="btn btn-warning">
+                        <i class="fas fa-pen me-2"></i>Contribute to This Article
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Abstract -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold mb-3">
+                            <i class="fas fa-file-alt me-2 text-primary"></i>Abstract
+                        </h4>
+                        <p class="lead text-muted">{{ article.abstract }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Article Content (Contributions) -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <h3 class="fw-bold mb-4">
+                    <i class="fas fa-book-open me-2 text-primary"></i>Article Content
+                </h3>
+                
+                {% if contributions %}
+                <div class="article-content">
+                    {% for contribution in contributions %}
+                    <div class="contribution-section mb-5 card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <!-- Section Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-3 pb-3 border-bottom">
+                                <div>
+                                    <h4 class="fw-bold text-primary mb-2">
+                                        {{ contribution.section_order }}. {{ contribution.section_title }}
+                                    </h4>
+                                    {% with contributor_info=contribution.get_contributor_info %}
+                                    <div class="d-flex align-items-center text-muted small">
+                                        <i class="fas fa-user-circle fa-lg me-2"></i>
+                                        <div>
+                                            <strong>{{ contributor_info.name }}</strong>
+                                            {% if contributor_info.type == 'Student' %}
+                                            <span class="badge bg-primary ms-2">Student</span>
+                                            <span class="text-muted ms-1">{{ contributor_info.reg_number }}</span>
+                                            {% else %}
+                                            <span class="badge bg-warning text-dark ms-2">Guest Contributor</span>
+                                            <span class="text-muted ms-1">{{ contributor_info.institution }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endwith %}
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ contribution.created_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                            
+                            <!-- Section Content -->
+                            <div class="section-content">
+                                <p class="text-justify" style="line-height: 1.8; text-align: justify;">
+                                    {{ contribution.content|linebreaks }}
+                                </p>
+                            </div>
+                            
+                            <!-- References -->
+                            {% if contribution.references %}
+                            <div class="mt-4 pt-3 border-top">
+                                <h6 class="fw-bold text-muted mb-2">
+                                    <i class="fas fa-book me-2"></i>References
+                                </h6>
+                                <div class="text-muted small" style="white-space: pre-line;">
+                                    {{ contribution.references }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No contributions yet. Be the first to contribute to this article!
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contributors Sidebar -->
+{% if contributions %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-users me-2 text-primary"></i>Contributors to This Article
+                        </h5>
+                        
+                        <div class="row g-3">
+                            {% for contribution in contributions %}
+                            {% with contributor_info=contribution.get_contributor_info %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="contributor-avatar me-3">
+                                        <i class="fas fa-user-circle fa-3x text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ contributor_info.name }}</h6>
+                                        <p class="text-muted small mb-0">
+                                            {% if contributor_info.type == 'Student' %}
+                                            {{ contributor_info.reg_number }} - {{ contributor_info.level }}
+                                            {% else %}
+                                            {{ contributor_info.qualification }}, {{ contributor_info.institution }}
+                                            {% endif %}
+                                        </p>
+                                        <span class="badge bg-success small">{{ contribution.section_title }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endwith %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Call to Action -->
+{% if article.status != 'Published' %}
+<section class="py-5 text-white" style="background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);">
+    <div class="container text-center">
+        <h3 class="fw-bold mb-3">Want to Contribute to This Research?</h3>
+        <p class="lead mb-4">Add your expertise and be part of this groundbreaking research</p>
+        <a href="{% url 'contribute_to_article' article.id %}" class="btn btn-warning btn-lg">
+            <i class="fas fa-pen me-2"></i>Contribute Now
+        </a>
+    </div>
+</section>
+{% endif %}
+
+<style>
+.article-content {
+    font-family: 'Georgia', serif;
+}
+
+.contribution-section {
+    transition: transform 0.3s ease;
+}
+
+.contribution-section:hover {
+    transform: translateX(5px);
+}
+
+.section-content p {
+    font-size: 1.05rem;
+    color: #333;
+}
+</style>
+{% endblock %}

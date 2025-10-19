@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Submit Solution - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);">
+    <div class="container text-white">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent text-white">
+                <li class="breadcrumb-item"><a href="{% url 'research_hub' %}" class="text-white">Research Hub</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'research_quizzes' %}" class="text-white">Quizzes</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'quiz_detail' quiz.id %}" class="text-white">{{ quiz.title|truncatewords:3 }}</a></li>
+                <li class="breadcrumb-item active text-white">Submit Solution</li>
+            </ol>
+        </nav>
+        
+        <div class="text-center">
+            <i class="fas fa-pen-fancy fa-3x mb-3"></i>
+            <h1 class="display-5 fw-bold">Submit Your Solution</h1>
+            <p class="lead">Show us your brilliance!</p>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <!-- Quiz Reminder -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-question-circle me-2 text-primary"></i>The Challenge
+                        </h5>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge bg-{{ quiz.difficulty_level|lower }} p-2">{{ quiz.difficulty_level }}</span>
+                            <span class="badge bg-warning text-dark p-2">
+                                <i class="fas fa-star me-1"></i>{{ quiz.points }} Points
+                            </span>
+                        </div>
+                        <h4 class="mb-3">{{ quiz.title }}</h4>
+                        <p class="text-muted mb-0">{{ quiz.question|truncatewords:50 }}</p>
+                    </div>
+                </div>
+
+                <!-- Submission Guidelines -->
+                <div class="alert alert-info mb-4">
+                    <h6 class="fw-bold mb-2">
+                        <i class="fas fa-lightbulb me-2"></i>Submission Guidelines
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>Provide a clear, complete answer</li>
+                        <li>Explain your solution process step-by-step</li>
+                        <li>Show all calculations and reasoning</li>
+                        <li>You can attach diagrams or supporting files</li>
+                        <li>Outstanding submissions will be awarded by the Director of Research</li>
+                    </ul>
+                </div>
+
+                <!-- Submission Form -->
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h3 class="fw-bold mb-4 text-center">Your Solution</h3>
+
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-edit me-2"></i>Your Answer *
+                                </label>
+                                {{ form.answer }}
+                                <small class="form-text text-muted">
+                                    Write your complete answer to the quiz question
+                                </small>
+                                {% if form.answer.errors %}
+                                <div class="text-danger small mt-1">{{ form.answer.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-file-alt me-2"></i>Detailed Explanation *
+                                </label>
+                                {{ form.explanation }}
+                                <small class="form-text text-muted">
+                                    Explain your solution process, methodology, and reasoning in detail. This is crucial for evaluation!
+                                </small>
+                                {% if form.explanation.errors %}
+                                <div class="text-danger small mt-1">{{ form.explanation.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-paperclip me-2"></i>Attachments (Optional)
+                                </label>
+                                {{ form.attachments }}
+                                <small class="form-text text-muted">
+                                    Upload diagrams, calculations, or any supporting files
+                                </small>
+                                {% if form.attachments.errors %}
+                                <div class="text-danger small mt-1">{{ form.attachments.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                            {% endif %}
+
+                            <!-- Tips Section -->
+                            <div class="alert alert-success">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-trophy me-2"></i>Tips for an Award-Winning Submission
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li><strong>Clarity:</strong> Write in clear, understandable language</li>
+                                    <li><strong>Completeness:</strong> Don't skip steps in your explanation</li>
+                                    <li><strong>Accuracy:</strong> Double-check your calculations</li>
+                                    <li><strong>Creativity:</strong> Show innovative thinking</li>
+                                    <li><strong>Format:</strong> Organize your solution logically</li>
+                                </ul>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit Solution
+                                </button>
+                                <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- What Happens Next -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-clock me-2 text-warning"></i>What Happens Next?
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                                    <h6 class="fw-bold">1. Submission</h6>
+                                    <p class="small text-muted mb-0">Your solution is recorded</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-search fa-2x text-primary mb-2"></i>
+                                    <h6 class="fw-bold">2. Review</h6>
+                                    <p class="small text-muted mb-0">Director reviews submissions</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                                    <h6 class="fw-bold">3. Award</h6>
+                                    <p class="small text-muted mb-0">Best solutions get awarded!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+textarea {
+    min-height: 200px;
+}
+
+.badge.bg-easy {
+    background-color: #198754 !important;
+}
+
+.badge.bg-medium {
+    background-color: #0d6efd !important;
+}
+
+.badge.bg-hard {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.badge.bg-expert {
+    background-color: #dc3545 !important;
+}
+</style>
+{% endblock %}

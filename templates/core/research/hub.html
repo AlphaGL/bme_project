@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Research Hub - BME FUTO{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="research-hero py-5" style="background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);">
+    <div class="container text-white">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="fas fa-flask me-3"></i>Research & Innovation Hub
+                </h1>
+                <p class="lead mb-4">
+                    Collaborate on cutting-edge biomedical engineering research. Join a team, 
+                    contribute to groundbreaking articles, and showcase your expertise.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="#teams" class="btn btn-light btn-lg">
+                        <i class="fas fa-users me-2"></i>Explore Teams
+                    </a>
+                    <a href="{% url 'research_quizzes' %}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-trophy me-2"></i>Take Quiz Challenge
+                    </a>
+                    {% if not request.session.student_reg_number and not request.session.guest_contributor_id %}
+                    <a href="{% url 'guest_contributor_choice' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Become a Contributor
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="research-stats p-4 bg-white bg-opacity-10 rounded-4">
+                    <div class="mb-3">
+                        <h2 class="display-5 fw-bold mb-0">{{ total_teams }}</h2>
+                        <p class="mb-0">Active Teams</p>
+                    </div>
+                    <div class="mb-3">
+                        <h2 class="display-5 fw-bold mb-0">{{ total_articles }}</h2>
+                        <p class="mb-0">Research Articles</p>
+                    </div>
+                    <div>
+                        <h2 class="display-5 fw-bold mb-0">{{ total_contributions }}</h2>
+                        <p class="mb-0">Contributions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Active Quizzes Highlight -->
+{% if active_quizzes %}
+<section class="py-4 bg-warning bg-opacity-10">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h5 class="mb-1 fw-bold">
+                    <i class="fas fa-fire text-danger me-2"></i>Active Quiz Challenges
+                </h5>
+                <p class="mb-0 text-muted">{{ active_quizzes.count }} quiz{{ active_quizzes.count|pluralize:"zes" }} waiting for your brilliant solution!</p>
+            </div>
+            <a href="{% url 'research_quizzes' %}" class="btn btn-warning">
+                View All Quizzes <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Research Teams Section -->
+<section class="py-5" id="teams">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">
+                    <i class="fas fa-users-cog me-2 text-primary"></i>Research Teams
+                </h2>
+                <p class="text-muted">Join a team and collaborate on innovative research projects</p>
+            </div>
+        </div>
+
+        {% if teams %}
+        <div class="row g-4">
+            {% for team in teams %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    {% if team.image %}
+                    <img src="{{ team.image.url }}" class="card-img-top" alt="{{ team.name }}" 
+                         style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top d-flex align-items-center justify-content-center" 
+                         style="height: 200px; background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);">
+                        <i class="fas fa-users fa-5x text-white opacity-75"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">{{ team.name }}</h5>
+                        <p class="text-primary small mb-2">
+                            <i class="fas fa-microscope me-1"></i>{{ team.focus_area }}
+                        </p>
+                        <p class="card-text text-muted">{{ team.description|truncatewords:20 }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-primary">
+                                <i class="fas fa-users me-1"></i>{{ team.get_member_count }}/{{ team.max_members }} Members
+                            </span>
+                            <span class="badge bg-success">
+                                <i class="fas fa-file-alt me-1"></i>{{ team.get_contribution_count }} Contributions
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        <a href="{% url 'research_team_detail' team.id %}" class="btn btn-primary w-100">
+                            <i class="fas fa-arrow-right me-2"></i>Explore Team
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No research teams available yet. Check back soon!
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Published Articles -->
+{% if published_articles %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">
+                    <i class="fas fa-newspaper me-2 text-success"></i>Published Research
+                </h2>
+                <p class="text-muted">Recent published articles from our research teams</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for article in published_articles %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge bg-success">Published</span>
+                            <span class="badge bg-primary">{{ article.team.name }}</span>
+                        </div>
+                        
+                        <h5 class="card-title fw-bold">{{ article.title }}</h5>
+                        <p class="card-text text-muted small">{{ article.abstract|truncatewords:25 }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
+                            <span>
+                                <i class="fas fa-eye me-1"></i>{{ article.views_count }} views
+                            </span>
+                            <span>
+                                <i class="fas fa-heart me-1 text-danger"></i>{{ article.likes_count }}
+                            </span>
+                            <span>
+                                <i class="fas fa-users me-1"></i>{{ article.get_total_contributors }} contributors
+                            </span>
+                        </div>
+                        
+                        <a href="{% url 'research_article_detail' article.id %}" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-book-open me-2"></i>Read Article
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Top Contributors Leaderboard -->
+{% if top_contributors %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">
+                    <i class="fas fa-trophy me-2 text-warning"></i>Top Contributors
+                </h2>
+                <p class="text-muted">Recognizing our most active research contributors</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">Rank</th>
+                                <th>Contributor</th>
+                                <th>Reg Number</th>
+                                <th class="text-center">Contributions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contributor in top_contributors %}
+                            <tr>
+                                <td class="fw-bold text-center">
+                                    {% if forloop.counter == 1 %}
+                                    <i class="fas fa-trophy fa-lg text-warning"></i>
+                                    {% elif forloop.counter == 2 %}
+                                    <i class="fas fa-medal fa-lg" style="color: silver;"></i>
+                                    {% elif forloop.counter == 3 %}
+                                    <i class="fas fa-medal fa-lg" style="color: #CD7F32;"></i>
+                                    {% else %}
+                                    {{ forloop.counter }}
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold">{{ contributor.student_contributor__full_name }}</td>
+                                <td class="text-muted">{{ contributor.student_contributor__reg_number }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary">{{ contributor.contribution_count }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- How It Works -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">How Research Collaboration Works</h2>
+            <p class="text-muted">Simple steps to contribute to groundbreaking research</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="step-circle mb-3 mx-auto">
+                        <i class="fas fa-user-plus fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">1. Join or Register</h5>
+                    <p class="text-muted small">Login as a student or register as a guest contributor</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="step-circle mb-3 mx-auto">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">2. Choose a Team</h5>
+                    <p class="text-muted small">Browse teams and join one that matches your interest</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="step-circle mb-3 mx-auto">
+                        <i class="fas fa-pen fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">3. Contribute</h5>
+                    <p class="text-muted small">Write sections, add research, and collaborate</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="step-circle mb-3 mx-auto">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">4. Get Recognized</h5>
+                    <p class="text-muted small">Your name appears on published articles</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 text-white" style="background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Ready to Make Your Mark in Research?</h2>
+        <p class="lead mb-4">Join our research community and contribute to innovative biomedical engineering solutions</p>
+        
+        {% if request.session.student_reg_number %}
+        <a href="#teams" class="btn btn-light btn-lg me-3">
+            <i class="fas fa-users me-2"></i>Join a Team
+        </a>
+        {% elif request.session.guest_contributor_id %}
+        <a href="#teams" class="btn btn-light btn-lg me-3">
+            <i class="fas fa-pen me-2"></i>Start Contributing
+        </a>
+        {% else %}
+        <a href="{% url 'student_login' %}" class="btn btn-light btn-lg me-3">
+            <i class="fas fa-sign-in-alt me-2"></i>Student Login
+        </a>
+        <a href="{% url 'guest_contributor_register' %}" class="btn btn-warning btn-lg">
+            <i class="fas fa-user-plus me-2"></i>Register as Guest
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(139, 21, 56, 0.3) !important;
+}
+
+.step-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.research-stats {
+    backdrop-filter: blur(10px);
+}
+
+@media (max-width: 768px) {
+    .step-circle {
+        width: 80px;
+        height: 80px;
+    }
+}
+</style>
+{% endblock %}

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
 from django.core.validators import FileExtensionValidator
 import uuid
+from django.contrib.auth.hashers import make_password, check_password
 import json
 
 class Staff(models.Model):
@@ -385,3 +386,281 @@ class AcademicCalendar(models.Model):
         if self.is_active:
             AcademicCalendar.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
         super().save(*args, **kwargs)
+
+    
+# ==================== RESEARCH MODELS ====================
+
+class ResearchTeam(models.Model):
+    """Research teams that students can join and contribute to"""
+    name = models.CharField(max_length=100, unique=True, help_text="e.g., Team Alpha, Team Beta")
+    description = models.TextField()
+    focus_area = models.CharField(max_length=200, help_text="e.g., Medical Imaging, Biomechanics")
+    team_lead = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='led_teams')
+    image = CloudinaryField('image', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    max_members = models.IntegerField(default=15, help_text="Maximum team members")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = "Research Teams"
+    
+    def __str__(self):
+        return self.name
+    
+    def get_member_count(self):
+        return self.members.count()
+    
+    def get_contribution_count(self):
+        return ResearchContribution.objects.filter(article__team=self).count()
+
+
+class ResearchArticle(models.Model):
+    """Main research article that team members contribute to"""
+    STATUS_CHOICES = [
+        ('Draft', 'Draft'),
+        ('In Progress', 'In Progress'),
+        ('Under Review', 'Under Review'),
+        ('Published', 'Published'),
+    ]
+    
+    team = models.ForeignKey(ResearchTeam, on_delete=models.CASCADE, related_name='articles')
+    title = models.CharField(max_length=300)
+    abstract = models.TextField(help_text="Brief overview of the research")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    published_date = models.DateTimeField(null=True, blank=True)
+    views_count = models.IntegerField(default=0)
+    likes_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Research Articles"
+    
+    def __str__(self):
+        return f"{self.team.name} - {self.title}"
+    
+    def get_approved_contributions(self):
+        return self.contributions.filter(is_approved=True).order_by('section_order')
+    
+    def get_total_contributors(self):
+        """Count unique contributors (both students and guests)"""
+        approved_contributions = self.contributions.filter(is_approved=True)
+        
+        # Count unique student contributors
+        student_contributors = approved_contributions.filter(
+            student_contributor__isnull=False
+        ).values_list('student_contributor', flat=True).distinct().count()
+        
+        # Count unique guest contributors
+        guest_contributors = approved_contributions.filter(
+            guest_contributor__isnull=False
+        ).values_list('guest_contributor', flat=True).distinct().count()
+        
+        # Return total unique contributors
+        return student_contributors + guest_contributors
+    
+
+class GuestContributor(models.Model):
+    """Non-student contributors who need approval"""
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    institution = models.CharField(max_length=200, help_text="University/Organization")
+    qualification = models.CharField(max_length=200, help_text="e.g., B.Eng, M.Sc, Ph.D")
+    area_of_expertise = models.CharField(max_length=200)
+    reason_for_contribution = models.TextField()
+    password = models.CharField(max_length=128)  # Hashed password
+    is_approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_guests')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Guest Contributors"
+    
+    def __str__(self):
+        return f"{self.full_name} - {'Approved' if self.is_approved else 'Pending'}"
+    
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+    
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
+
+
+class ResearchContribution(models.Model):
+    """Individual contributions to research articles"""
+    article = models.ForeignKey(ResearchArticle, on_delete=models.CASCADE, related_name='contributions')
+    
+    # Contributor can be either a student or guest
+    student_contributor = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='research_contributions')
+    guest_contributor = models.ForeignKey(GuestContributor, on_delete=models.SET_NULL, null=True, blank=True, related_name='research_contributions')
+    
+    section_title = models.CharField(max_length=300)
+    content = models.TextField()
+    references = models.TextField(blank=True, null=True, help_text="References used in this section")
+    section_order = models.IntegerField(default=0, help_text="Order in the article")
+    
+    is_approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_contributions')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+  
+    class Meta:
+        ordering = ['section_order', 'created_at']
+        verbose_name_plural = "Research Contributions"
+    
+    def __str__(self):
+        contributor_name = self.get_contributor_name()
+        return f"{contributor_name} - {self.section_title[:50]}"
+    
+    def get_contributor_name(self):
+        """Get the name of the contributor"""
+        if self.student_contributor:
+            return self.student_contributor.full_name
+        elif self.guest_contributor:
+            return self.guest_contributor.full_name
+        return "Unknown"
+    
+    def get_contributor_info(self):
+        """Get detailed contributor information"""
+        if self.student_contributor:
+            return {
+                'name': self.student_contributor.full_name,
+                'type': 'Student',
+                'reg_number': self.student_contributor.reg_number,
+                'level': self.student_contributor.get_level_display()
+            }
+        elif self.guest_contributor:
+            return {
+                'name': self.guest_contributor.full_name,
+                'type': 'Guest',
+                'institution': self.guest_contributor.institution,
+                'qualification': self.guest_contributor.qualification
+            }
+        return None
+
+class ResearchQuiz(models.Model):
+    """Research quizzes posted by admin"""
+    title = models.CharField(max_length=300)
+    question = models.TextField()
+    difficulty_level = models.CharField(max_length=20, choices=[
+        ('Easy', 'Easy'),
+        ('Medium', 'Medium'),
+        ('Hard', 'Hard'),
+        ('Expert', 'Expert'),
+    ], default='Medium')
+    category = models.CharField(max_length=100, help_text="e.g., Biomechanics, Signal Processing")
+    hints = models.TextField(blank=True, null=True, help_text="Optional hints for participants")
+    points = models.IntegerField(default=10, help_text="Points awarded for correct answer")
+    deadline = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Research Quizzes"
+    
+    def __str__(self):
+        return self.title
+    
+    def get_submissions_count(self):
+        return self.submissions.count()
+    
+    def get_awarded_submissions(self):
+        return self.submissions.filter(is_awarded=True).count()
+
+
+class QuizSubmission(models.Model):
+    """Student submissions for research quizzes"""
+    quiz = models.ForeignKey(ResearchQuiz, on_delete=models.CASCADE, related_name='submissions')
+    
+    # Submitter can be student or guest
+    student_submitter = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='quiz_submissions')
+    guest_submitter = models.ForeignKey(GuestContributor, on_delete=models.SET_NULL, null=True, blank=True, related_name='quiz_submissions')
+    
+    answer = models.TextField()
+    explanation = models.TextField(help_text="Explain your solution process")
+    attachments = CloudinaryField('file', blank=True, null=True, help_text="Optional: diagrams, calculations, etc.")
+    
+    is_awarded = models.BooleanField(default=False)
+    award_comment = models.TextField(blank=True, null=True)
+    awarded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='awarded_quizzes')
+    awarded_at = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Quiz Submissions"
+    
+    def __str__(self):
+        submitter = self.get_submitter_name()
+        return f"{submitter} - {self.quiz.title}"
+    
+    def get_submitter_name(self):
+        """Get the name of the submitter"""
+        if self.student_submitter:
+            return self.student_submitter.full_name
+        elif self.guest_submitter:
+            return self.guest_submitter.full_name
+        return "Unknown"
+    
+    def get_submitter_info(self):
+        """Get detailed submitter information"""
+        if self.student_submitter:
+            return {
+                'name': self.student_submitter.full_name,
+                'type': 'Student',
+                'reg_number': self.student_submitter.reg_number
+            }
+        elif self.guest_submitter:
+            return {
+                'name': self.guest_submitter.full_name,
+                'type': 'Guest',
+                'institution': self.guest_submitter.institution
+            }
+        return None
+
+
+class TeamMembership(models.Model):
+    """Track team members"""
+    team = models.ForeignKey(ResearchTeam, on_delete=models.CASCADE, related_name='members')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='research_teams')
+    role = models.CharField(max_length=100, default='Member', help_text="e.g., Member, Co-Lead")
+    joined_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['team', 'student']
+        ordering = ['-joined_at']
+        verbose_name_plural = "Team Memberships"
+    
+    def __str__(self):
+        return f"{self.student.full_name} - {self.team.name}"
+
+
+class ArticleLike(models.Model):
+    """Track article likes"""
+    article = models.ForeignKey(ResearchArticle, on_delete=models.CASCADE, related_name='likes')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='liked_articles')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['article', 'student']
+        verbose_name_plural = "Article Likes"
+    
+    def __str__(self):
+        return f"{self.student.full_name} liked {self.article.title}"

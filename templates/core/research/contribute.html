@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contribute to {{ article.title }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'research_hub' %}">Research Hub</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'research_team_detail' article.team.id %}">{{ article.team.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'research_article_detail' article.id %}">{{ article.title|truncatewords:5 }}</a></li>
+                <li class="breadcrumb-item active">Contribute</li>
+            </ol>
+        </nav>
+        
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <i class="fas fa-pen fa-3x text-primary mb-3"></i>
+                            <h2 class="fw-bold">Contribute to Research</h2>
+                            <p class="text-muted">{{ article.title }}</p>
+                        </div>
+                        
+                        <!-- Info Alert -->
+                        <div class="alert alert-info">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-info-circle me-2"></i>Contribution Guidelines
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>Write clear, well-researched content</li>
+                                <li>Include proper references if applicable</li>
+                                <li>Your contribution will be reviewed by the Director of Research</li>
+                                <li>If approved, your name will appear on the article</li>
+                            </ul>
+                        </div>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-heading me-2"></i>Section Title *
+                                </label>
+                                {{ form.section_title }}
+                                <small class="form-text text-muted">
+                                    e.g., "Introduction", "Methodology", "Results", "Discussion"
+                                </small>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-file-alt me-2"></i>Content *
+                                </label>
+                                {{ form.content }}
+                                <small class="form-text text-muted">
+                                    Write your contribution here. Be detailed and well-researched.
+                                </small>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-book me-2"></i>References (Optional)
+                                </label>
+                                {{ form.references }}
+                                <small class="form-text text-muted">
+                                    List any references you used for this section
+                                </small>
+                            </div>
+                            
+                            <div class="alert alert-warning">
+                                <strong><i class="fas fa-user me-2"></i>Contributing as:</strong>
+                                {% if contributor_type == 'student' %}
+                                <span class="badge bg-primary">Student</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Guest Contributor</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit Contribution
+                                </button>
+                                <a href="{% url 'research_article_detail' article.id %}" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Tips Sidebar -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-lightbulb me-2 text-warning"></i>Writing Tips
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Use clear, concise language
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Support claims with evidence
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Maintain academic tone
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Properly cite sources
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Proofread before submitting
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,453 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8B1538">
+    <title>404 - Page Not Found | FUTO BME</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
+    <style>
+        :root {
+            --primary-color: #8B1538;
+            --secondary-color: #D4AF37;
+            --accent-purple: #6B3FA0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-purple) 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px 10px;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .error-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.8s ease-out;
+            margin: 0 auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .error-code {
+            font-size: clamp(80px, 15vw, 140px);
+            font-weight: 900;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #fff, var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            20% {
+                transform: translateX(-2px);
+            }
+            40% {
+                transform: translateX(2px);
+            }
+            60% {
+                transform: translateX(-2px);
+            }
+            80% {
+                transform: translateX(2px);
+            }
+        }
+
+        h1 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            margin-bottom: 30px;
+            opacity: 0.95;
+            line-height: 1.8;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .error-btn {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 12px 30px;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .error-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .error-btn.secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .error-btn.secondary:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .search-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-container h3 {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            margin-bottom: 15px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-input:focus {
+            border-color: var(--secondary-color);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .search-btn {
+            padding: 12px 25px;
+            background: var(--secondary-color);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .search-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);
+        }
+
+        .quick-links {
+            margin-top: 30px;
+        }
+
+        .quick-links h3 {
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .quick-link {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+        }
+
+        .quick-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            color: var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px 10px;
+            }
+
+            .error-wrapper {
+                padding: 30px 0;
+            }
+
+            .error-container {
+                padding: 30px 20px;
+                border-radius: 20px;
+            }
+
+            .logo {
+                width: 70px;
+                height: 70px;
+            }
+
+            .btn-container {
+                gap: 10px;
+            }
+
+            .error-btn {
+                padding: 10px 20px;
+                font-size: 0.95rem;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-input {
+                min-width: 100%;
+            }
+
+            .links-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .quick-link {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .error-container {
+                padding: 25px 15px;
+            }
+
+            .search-container {
+                padding: 15px;
+            }
+
+            .quick-links {
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated particles -->
+    <div class="particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 6s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 8s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 10s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 12s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 14s;"></div>
+    </div>
+
+    <div class="error-wrapper">
+        <div class="error-container">
+            <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" 
+                 alt="FUTO BME Logo" class="logo">
+            
+            <div class="error-code">404</div>
+            
+            <h1>🔍 Page Not Found</h1>
+            
+            <p>
+                Oops! The page you're looking for seems to have wandered off. 
+                It might have been moved, deleted, or perhaps it never existed.
+            </p>
+
+            <div class="btn-container">
+                <a href="/" class="error-btn">
+                    <i class="fas fa-home"></i> Go Home
+                </a>
+                <a href="javascript:history.back()" class="error-btn secondary">
+                    <i class="fas fa-arrow-left"></i> Go Back
+                </a>
+            </div>
+
+            <div class="search-container">
+                <h3>🔎 Looking for something specific?</h3>
+                <form action="/" method="get" class="search-box">
+                    <input type="text" name="q" class="search-input" placeholder="Search FUTO BME..." autocomplete="off">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </form>
+            </div>
+
+            <div class="quick-links">
+                <h3>📌 Popular Pages</h3>
+                <div class="links-grid">
+                    <a href="/student/login/" class="quick-link">
+                        <i class="fas fa-user-graduate"></i> Student Portal
+                    </a>
+                    <a href="/past-questions/" class="quick-link">
+                        <i class="fas fa-file-alt"></i> Past Questions
+                    </a>
+                    <a href="/library/" class="quick-link">
+                        <i class="fas fa-book"></i> Library
+                    </a>
+                    <a href="/research/" class="quick-link">
+                        <i class="fas fa-flask"></i> Research Hub
+                    </a>
+                    <a href="/staff/" class="quick-link">
+                        <i class="fas fa-users"></i> Staff
+                    </a>
+                    <a href="/course-handbook/" class="quick-link">
+                        <i class="fas fa-book-open"></i> Handbook
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add random particle positions
+        document.querySelectorAll('.particle').forEach(particle => {
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+        });
+    </script>
+</body>
+</html>

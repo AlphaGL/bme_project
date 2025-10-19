@@ -1,0 +1,90 @@
+{
+  "name": "FUTO BME - Biomedical Engineering Portal",
+  "short_name": "FUTO BME",
+  "description": "Federal University of Technology Owerri - Biomedical Engineering Department Portal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#8B1538",
+  "theme_color": "#8B1538",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+      "sizes": "540x720",
+      "type": "image/jpeg",
+      "form_factor": "narrow"
+    }
+  ],
+  "categories": ["education", "university"],
+  "shortcuts": [
+    {
+      "name": "Student Portal",
+      "short_name": "Portal",
+      "description": "Access student portal",
+      "url": "/student/login/",
+      "icons": [
+        {
+          "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Past Questions",
+      "short_name": "PQs",
+      "description": "Browse past questions",
+      "url": "/past-questions/",
+      "icons": [
+        {
+          "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Library",
+      "short_name": "Library",
+      "description": "Access library resources",
+      "url": "/library/",
+      "icons": [
+        {
+          "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Research Hub",
+      "short_name": "Research",
+      "description": "Explore research projects",
+      "url": "/research/",
+      "icons": [
+        {
+          "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

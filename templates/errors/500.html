@@ -1,0 +1,402 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8B1538">
+    <title>500 - Server Error | FUTO BME</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg">
+    <style>
+        :root {
+            --primary-color: #8B1538;
+            --secondary-color: #D4AF37;
+            --accent-purple: #6B3FA0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, var(--primary-color) 50%, #4a0e4e 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px 10px;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Glitch effect background */
+        .glitch-bg {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            opacity: 0.15;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .glitch-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: white;
+            animation: glitchMove 3s infinite;
+        }
+
+        @keyframes glitchMove {
+            0%, 100% {
+                transform: translateY(0) scaleX(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(50vh) scaleX(0.5);
+                opacity: 0.7;
+            }
+        }
+
+        .error-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInGlitch 1s ease-out;
+            margin: 0 auto;
+        }
+
+        @keyframes fadeInGlitch {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+                filter: blur(5px);
+            }
+            50% {
+                filter: blur(2px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border: 3px solid white;
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .server-icon {
+            font-size: clamp(80px, 15vw, 120px);
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            animation: serverPulse 2s infinite;
+        }
+
+        @keyframes serverPulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        .error-code {
+            font-size: clamp(80px, 15vw, 140px);
+            font-weight: 900;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #fff, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            animation: errorGlitch 2s infinite;
+        }
+
+        @keyframes errorGlitch {
+            0%, 90%, 100% {
+                transform: translateX(0);
+            }
+            92% {
+                transform: translateX(-5px);
+            }
+            94% {
+                transform: translateX(5px);
+            }
+            96% {
+                transform: translateX(-3px);
+            }
+            98% {
+                transform: translateX(3px);
+            }
+        }
+
+        h1 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            margin-bottom: 25px;
+            opacity: 0.95;
+            line-height: 1.8;
+        }
+
+        .info-box {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+
+        .info-box h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            flex-wrap: wrap;
+        }
+
+        .info-list {
+            text-align: left;
+            max-width: 500px;
+            margin: 0 auto;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        .info-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list i {
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .error-btn {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 12px 30px;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .error-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .error-btn.secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .error-btn.secondary:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px 10px;
+            }
+
+            .error-wrapper {
+                padding: 30px 0;
+            }
+
+            .error-container {
+                padding: 30px 20px;
+                border-radius: 20px;
+            }
+
+            .logo {
+                width: 70px;
+                height: 70px;
+            }
+
+            .btn-container {
+                gap: 10px;
+            }
+
+            .error-btn {
+                padding: 10px 20px;
+                font-size: 0.95rem;
+            }
+
+            .info-box {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .error-container {
+                padding: 25px 15px;
+            }
+
+            .info-box h3 {
+                font-size: 1rem;
+            }
+
+            .info-list {
+                font-size: 0.9rem;
+            }
+
+            .error-btn {
+                padding: 10px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Glitch effect background -->
+    <div class="glitch-bg">
+        <div class="glitch-line" style="top: 10%; animation-delay: 0s;"></div>
+        <div class="glitch-line" style="top: 30%; animation-delay: 1s;"></div>
+        <div class="glitch-line" style="top: 50%; animation-delay: 2s;"></div>
+        <div class="glitch-line" style="top: 70%; animation-delay: 1.5s;"></div>
+        <div class="glitch-line" style="top: 90%; animation-delay: 0.5s;"></div>
+    </div>
+
+    <div class="error-wrapper">
+        <div class="error-container">
+            <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" 
+                 alt="FUTO BME Logo" class="logo">
+            
+            <div class="server-icon">
+                <i class="fas fa-server"></i>
+            </div>
+            
+            <div class="error-code">500</div>
+            
+            <h1>⚠️ Internal Server Error</h1>
+            
+            <p>
+                Oops! Something went wrong on our end. 
+                Our team has been notified and is working to fix the issue.
+            </p>
+
+            <div class="info-box">
+                <h3>
+                    <i class="fas fa-info-circle"></i>
+                    <span>What happened?</span>
+                </h3>
+                <ul class="info-list">
+                    <li>
+                        <i class="fas fa-bug"></i>
+                        <span>The server encountered an unexpected condition</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-tools"></i>
+                        <span>Our technical team has been automatically notified</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-clock"></i>
+                        <span>We're working to resolve this as quickly as possible</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Your data is safe and secure</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="btn-container">
+                <a href="/" class="error-btn">
+                    <i class="fas fa-home"></i> Go Home
+                </a>
+                <a href="javascript:location.reload()" class="error-btn secondary">
+                    <i class="fas fa-redo"></i> Try Again
+                </a>
+                <a href="javascript:history.back()" class="error-btn secondary">
+                    <i class="fas fa-arrow-left"></i> Go Back
+                </a>
+            </div>
+
+            <p style="margin-top: 25px; font-size: clamp(0.85rem, 2vw, 0.95rem); opacity: 0.8;">
+                <i class="fas fa-envelope"></i>
+                If the problem persists, please contact our technical support team.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

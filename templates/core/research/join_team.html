@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Join {{ team.name }}{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);">
+    <div class="container text-white">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent text-white">
+                <li class="breadcrumb-item"><a href="{% url 'research_hub' %}" class="text-white">Research Hub</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'research_team_detail' team.id %}" class="text-white">{{ team.name }}</a></li>
+                <li class="breadcrumb-item active text-white">Join Team</li>
+            </ol>
+        </nav>
+        
+        <div class="text-center">
+            <i class="fas fa-user-plus fa-3x mb-3"></i>
+            <h1 class="display-5 fw-bold">Join {{ team.name }}</h1>
+            <p class="lead">Become part of groundbreaking research</p>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Team Info Card -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        {% if team.image %}
+                        <div class="text-center mb-4">
+                            <img src="{{ team.image.url }}" alt="{{ team.name }}" 
+                                 class="img-fluid rounded" style="max-height: 300px;">
+                        </div>
+                        {% endif %}
+                        
+                        <h3 class="fw-bold mb-3">{{ team.name }}</h3>
+                        <p class="text-primary mb-3">
+                            <i class="fas fa-microscope me-2"></i>{{ team.focus_area }}
+                        </p>
+                        <p class="text-muted mb-3">{{ team.description }}</p>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                    <h5 class="fw-bold mb-0">{{ team.get_member_count }}/{{ team.max_members }}</h5>
+                                    <small class="text-muted">Members</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <i class="fas fa-file-alt fa-2x text-success mb-2"></i>
+                                    <h5 class="fw-bold mb-0">{{ team.articles.count }}</h5>
+                                    <small class="text-muted">Articles</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <i class="fas fa-pen fa-2x text-warning mb-2"></i>
+                                    <h5 class="fw-bold mb-0">{{ team.get_contribution_count }}</h5>
+                                    <small class="text-muted">Contributions</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Join Form -->
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h3 class="fw-bold mb-4 text-center">Join This Team</h3>
+                        
+                        <div class="alert alert-info mb-4">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-info-circle me-2"></i>As a Team Member, You Can:
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Contribute to team research articles</li>
+                                <li>Collaborate with other researchers</li>
+                                <li>Get your name on published papers</li>
+                                <li>Access exclusive team resources</li>
+                            </ul>
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-user-tag me-2"></i>Your Role (Optional)
+                                </label>
+                                {{ form.role }}
+                                <small class="form-text text-muted">
+                                    Default: "Member". You can specify a role like "Co-Researcher", "Data Analyst", etc.
+                                </small>
+                                {% if form.role.errors %}
+                                <div class="text-danger small mt-1">{{ form.role.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="alert alert-success mb-4">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-handshake me-2"></i>Team Commitment
+                                </h6>
+                                <p class="mb-0 small">
+                                    By joining this team, you agree to actively participate in research activities, 
+                                    collaborate respectfully with team members, and contribute quality work to ongoing projects.
+                                </p>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                                    <i class="fas fa-user-plus me-2"></i>Join {{ team.name }}
+                                </button>
+                                <a href="{% url 'research_team_detail' team.id %}" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Benefits -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-star me-2 text-warning"></i>Team Member Benefits
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Recognition</strong>
+                                        <p class="text-muted small mb-0">Get credited on publications</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Collaboration</strong>
+                                        <p class="text-muted small mb-0">Work with brilliant minds</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Learning</strong>
+                                        <p class="text-muted small mb-0">Gain research experience</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Portfolio</strong>
+                                        <p class="text-muted small mb-0">Build your CV</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

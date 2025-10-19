@@ -1,12 +1,11 @@
 from django import forms
 from .models import( Staff, Exco, PastQuestion, LibraryResource,
                      Testimonial, Announcement, Student, Semester, Course, 
-                     DepartmentalDues, CourseHandbook, Timetable, AcademicCalendar
+                     DepartmentalDues, CourseHandbook, Timetable, AcademicCalendar,ResearchTeam, ResearchArticle, GuestContributor, 
+                     ResearchContribution, ResearchQuiz, QuizSubmission, TeamMembership
                     )
 
-# ADD THESE FORMS
 
-# Existing forms...
 class StaffForm(forms.ModelForm):
     class Meta:
         model = Staff
@@ -277,3 +276,219 @@ class AcademicCalendarForm(forms.ModelForm):
             }),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+# ==================== RESEARCH FORMS ====================
+
+class ResearchTeamForm(forms.ModelForm):
+    class Meta:
+        model = ResearchTeam
+        fields = ['name', 'description', 'focus_area', 'team_lead', 'image', 'is_active', 'max_members']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Team Alpha'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Describe the team focus and objectives'
+            }),
+            'focus_area': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Medical Imaging, Biomechanics'
+            }),
+            'team_lead': forms.Select(attrs={'class': 'form-control'}),
+            'max_members': forms.NumberInput(attrs={'class': 'form-control', 'min': 5}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class ResearchArticleForm(forms.ModelForm):
+    class Meta:
+        model = ResearchArticle
+        fields = ['team', 'title', 'abstract', 'status']
+        widgets = {
+            'team': forms.Select(attrs={'class': 'form-control'}),
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Research article title'
+            }),
+            'abstract': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Brief overview of the research'
+            }),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
+class GuestContributorForm(forms.ModelForm):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Create a password'
+        }),
+        help_text='Choose a strong password for future contributions'
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm your password'
+        })
+    )
+    
+    class Meta:
+        model = GuestContributor
+        fields = ['full_name', 'email', 'phone', 'institution', 'qualification', 
+                  'area_of_expertise', 'reason_for_contribution']
+        widgets = {
+            'full_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your full name'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'your.email@example.com'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '+234XXXXXXXXXX'
+            }),
+            'institution': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your university or organization'
+            }),
+            'qualification': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., B.Eng, M.Sc, Ph.D'
+            }),
+            'area_of_expertise': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Biomedical Signal Processing'
+            }),
+            'reason_for_contribution': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Why do you want to contribute to our research?'
+            }),
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        
+        if password and confirm_password:
+            if password != confirm_password:
+                raise forms.ValidationError("Passwords do not match!")
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        guest = super().save(commit=False)
+        guest.set_password(self.cleaned_data['password'])
+        if commit:
+            guest.save()
+        return guest
+
+
+class GuestLoginForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your registered email',
+            'autofocus': True
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your password'
+        })
+    )
+
+
+class ResearchContributionForm(forms.ModelForm):
+    class Meta:
+        model = ResearchContribution
+        fields = ['section_title', 'content', 'references']
+        widgets = {
+            'section_title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Introduction, Methodology, Results'
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 10,
+                'placeholder': 'Write your contribution here...'
+            }),
+            'references': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'List your references (optional)'
+            }),
+        }
+
+
+class ResearchQuizForm(forms.ModelForm):
+    class Meta:
+        model = ResearchQuiz
+        fields = ['title', 'question', 'difficulty_level', 'category', 'hints', 'points', 'deadline', 'is_active']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Quiz title'
+            }),
+            'question': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Enter the quiz question'
+            }),
+            'difficulty_level': forms.Select(attrs={'class': 'form-control'}),
+            'category': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Biomechanics'
+            }),
+            'hints': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Optional hints for participants'
+            }),
+            'points': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'deadline': forms.DateTimeInput(attrs={
+                'class': 'form-control',
+                'type': 'datetime-local'
+            }),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class QuizSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = QuizSubmission
+        fields = ['answer', 'explanation', 'attachments']
+        widgets = {
+            'answer': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 6,
+                'placeholder': 'Your answer to the quiz'
+            }),
+            'explanation': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 8,
+                'placeholder': 'Explain your solution process in detail'
+            }),
+        }
+
+
+class TeamJoinForm(forms.Form):
+    """Simple form for students to join a team"""
+    role = forms.CharField(
+        max_length=100,
+        initial='Member',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your role (optional)'
+        }),
+        required=False
+    )

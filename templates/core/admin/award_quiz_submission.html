@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Award Quiz Submission - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <i class="fas fa-trophy fa-4x text-warning"></i>
+                </div>
+                <h2 class="fw-bold text-warning mb-2">Award Quiz Points</h2>
+                <p class="text-muted">
+                    Recognize excellence by awarding points to this submission
+                </p>
+            </div>
+
+            <!-- Submission Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 fw-bold">Submission Summary</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">{{ submission.quiz.title }}</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <strong>Submitter:</strong><br>
+                                {{ submission.get_submitter_name }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <strong>Points to Award:</strong><br>
+                                <span class="badge bg-success fs-5">{{ submission.quiz.points }} pts</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-1"><strong>Answer Preview:</strong></p>
+                        <p class="text-muted mb-0">{{ submission.answer|truncatewords:50 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Award Form -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comment-dots me-2"></i>Award Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="award_comment" class="form-label fw-bold">
+                                Feedback / Comment (Optional)
+                            </label>
+                            <textarea class="form-control" 
+                                      id="award_comment" 
+                                      name="award_comment" 
+                                      rows="5" 
+                                      placeholder="Provide feedback on their solution (e.g., what was excellent, any suggestions for improvement...)"></textarea>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Your feedback will help the submitter understand what they did well
+                            </small>
+                        </div>
+
+                        <!-- Quick Comment Templates -->
+                        <div class="mb-4">
+                            <p class="fw-bold mb-2">Quick comment templates:</p>
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-outline-secondary text-start comment-template" 
+                                        data-comment="Excellent work! Your solution demonstrates a thorough understanding of the topic. The explanation was clear and well-structured.">
+                                    <i class="fas fa-star me-2 text-warning"></i>
+                                    Excellent solution
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary text-start comment-template" 
+                                        data-comment="Great job! Your approach was creative and effective. Keep up the good work!">
+                                    <i class="fas fa-thumbs-up me-2 text-success"></i>
+                                    Creative approach
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary text-start comment-template" 
+                                        data-comment="Well done! Your explanation was clear and your methodology was sound. This shows strong analytical skills.">
+                                    <i class="fas fa-brain me-2 text-primary"></i>
+                                    Strong analytical skills
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary text-start comment-template" 
+                                        data-comment="Outstanding work! Your solution not only answered the question but also provided additional insights. Excellent research and presentation.">
+                                    <i class="fas fa-award me-2 text-danger"></i>
+                                    Outstanding work
+                                </button>
+                            </div>
+                            <small class="form-text text-muted d-block mt-2">
+                                <i class="fas fa-hand-pointer me-1"></i>
+                                Click any template to use it (you can modify it)
+                            </small>
+                        </div>
+
+                        <!-- Award Confirmation -->
+                        <div class="alert alert-warning">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Please Confirm:
+                            </h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="confirm1" required>
+                                <label class="form-check-label" for="confirm1">
+                                    I have thoroughly reviewed the submission
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="confirm2" required>
+                                <label class="form-check-label" for="confirm2">
+                                    The solution demonstrates understanding of the topic
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirm3" required>
+                                <label class="form-check-label" for="confirm3">
+                                    The submission deserves the awarded points
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Award Summary -->
+                        <div class="card bg-success bg-opacity-10 border-success mb-4">
+                            <div class="card-body text-center">
+                                <h5 class="fw-bold mb-3">
+                                    <i class="fas fa-trophy text-warning me-2"></i>
+                                    Award Summary
+                                </h5>
+                                <p class="mb-2">
+                                    <strong>{{ submission.get_submitter_name }}</strong> will receive
+                                </p>
+                                <h2 class="display-4 text-success fw-bold mb-0">
+                                    {{ submission.quiz.points }} Points
+                                </h2>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg" id="awardBtn">
+                                <i class="fas fa-trophy me-2"></i>Confirm Award
+                            </button>
+                            <a href="{% url 'view_quiz_submission_detail' submission.pk %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Review Submission Again
+                            </a>
+                            <a href="{% url 'manage_quiz_submissions' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="card shadow-sm border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-info-circle text-info me-2"></i>
+                        Award Guidelines
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li class="mb-2">Award points only to submissions that demonstrate genuine effort and understanding</li>
+                        <li class="mb-2">Provide constructive feedback to help the submitter improve</li>
+                        <li class="mb-2">Be consistent in your evaluation criteria across all submissions</li>
+                        <li class="mb-2">Recognize both the correctness and the quality of explanation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Comment template selection
+document.addEventListener('DOMContentLoaded', function() {
+    const commentButtons = document.querySelectorAll('.comment-template');
+    const commentTextarea = document.getElementById('award_comment');
+    
+    commentButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const comment = this.getAttribute('data-comment');
+            commentTextarea.value = comment;
+            
+            // Highlight selected template
+            commentButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

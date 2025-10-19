@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Guest Contributor Login{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: linear-gradient(135deg, #8B1538 0%, #6B3FA0 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="text-center text-white mb-4">
+                    <i class="fas fa-user-lock fa-3x mb-3"></i>
+                    <h1 class="display-5 fw-bold">Guest Contributor Login</h1>
+                    <p class="lead">Access your contributor account</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h3 class="fw-bold mb-4 text-center">Welcome Back!</h3>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-2"></i>Email Address
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-lock me-2"></i>Password
+                                </label>
+                                {{ form.password }}
+                                {% if form.password.errors %}
+                                <div class="text-danger small mt-1">{{ form.password.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </button>
+                            </div>
+                            
+                            <div class="text-center">
+                                <a href="{% url 'guest_contributor_choice' %}" class="btn btn-link">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Options
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Additional Info -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>Need Help?
+                        </h6>
+                        <ul class="small text-muted list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Use the email you registered with
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Your account must be approved by admin
+                            </li>
+                            <li>
+                                <i class="fas fa-check text-success me-2"></i>
+                                New contributor? <a href="{% url 'guest_contributor_register' %}">Register here</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Research Article - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">
+                    <i class="fas fa-file-alt text-primary me-2"></i>
+                    {{ action }} Research Article
+                </h2>
+                <a href="{% url 'manage_research_articles' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back
+                </a>
+            </div>
+
+            <!-- Info Alert -->
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Note:</strong> Create the article framework first. Team members will contribute sections which you'll review and approve.
+            </div>
+
+            <!-- Form Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Article Details
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Team Selection -->
+                        <div class="mb-4">
+                            <label for="{{ form.team.id_for_label }}" class="form-label fw-bold">
+                                Research Team
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.team }}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-users me-1"></i>
+                                Select the team that will work on this article
+                            </small>
+                            {% if form.team.errors %}
+                                <div class="text-danger mt-1">{{ form.team.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
+                                Article Title
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.title }}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-heading me-1"></i>
+                                A clear, descriptive title for the research article
+                            </small>
+                            {% if form.title.errors %}
+                                <div class="text-danger mt-1">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Abstract -->
+                        <div class="mb-4">
+                            <label for="{{ form.abstract.id_for_label }}" class="form-label fw-bold">
+                                Abstract
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.abstract }}
+                            <small class="form-text text-muted">
+                                <i class="fas fa-align-left me-1"></i>
+                                Brief overview of the research topic, objectives, and expected outcomes
+                            </small>
+                            {% if form.abstract.errors %}
+                                <div class="text-danger mt-1">{{ form.abstract.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-4">
+                            <label for="{{ form.status.id_for_label }}" class="form-label fw-bold">
+                                Article Status
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.status }}
+                            <small class="form-text text-muted d-block">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Status guide:
+                            </small>
+                            <ul class="small text-muted mt-2 mb-0">
+                                <li><strong>Draft:</strong> Initial planning stage</li>
+                                <li><strong>In Progress:</strong> Team is actively contributing</li>
+                                <li><strong>Under Review:</strong> All sections submitted, pending final review</li>
+                                <li><strong>Published:</strong> Article is complete and public</li>
+                            </ul>
+                            {% if form.status.errors %}
+                                <div class="text-danger mt-1">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Status Indicators -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">Status Badges Preview:</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-file me-1"></i>Draft
+                                    </span>
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-spinner me-1"></i>In Progress
+                                    </span>
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-eye me-1"></i>Under Review
+                                    </span>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>Published
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Save Article
+                            </button>
+                            <a href="{% url 'manage_research_articles' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Workflow Guide -->
+            <div class="card shadow-sm mt-4 border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-route text-primary me-2"></i>
+                        Article Workflow
+                    </h6>
+                    <div class="timeline">
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="badge bg-primary rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">1</div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Create Article</h6>
+                                    <p class="small text-muted mb-0">Set up the article with title, abstract, and team</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="badge bg-warning rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">2</div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Team Contributions</h6>
+                                    <p class="small text-muted mb-0">Team members submit sections (Introduction, Methodology, etc.)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="badge bg-info rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">3</div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Review & Approve</h6>
+                                    <p class="small text-muted mb-0">You review each contribution and approve quality content</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="d-flex align-items-start">
+                                <div class="badge bg-success rounded-circle me-3" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">4</div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Publish</h6>
+                                    <p class="small text-muted mb-0">Change status to "Published" to make it public</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
