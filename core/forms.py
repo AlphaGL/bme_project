@@ -83,6 +83,21 @@ class AnnouncementForm(forms.ModelForm):
 
 # NEW STUDENT FORMS
 class StudentRegistrationForm(forms.ModelForm):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Create a password',
+            'id': 'id_password'
+        }),
+        help_text='Create a secure password (minimum 6 characters recommended)'
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm your password',
+            'id': 'id_confirm_password'
+        })
+    )
     confirm_reg_number = forms.CharField(
         max_length=50,
         widget=forms.TextInput(attrs={
@@ -114,13 +129,28 @@ class StudentRegistrationForm(forms.ModelForm):
         cleaned_data = super().clean()
         reg_number = cleaned_data.get('reg_number')
         confirm_reg_number = cleaned_data.get('confirm_reg_number')
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
 
         if reg_number and confirm_reg_number:
             if reg_number != confirm_reg_number:
                 raise forms.ValidationError("Registration numbers do not match!")
         
+        if password and confirm_password:
+            if password != confirm_password:
+                raise forms.ValidationError("Passwords do not match!")
+            if len(password) < 6:
+                raise forms.ValidationError("Password must be at least 6 characters long!")
+        
         return cleaned_data
-
+    
+    def save(self, commit=True):
+        student = super().save(commit=False)
+        student.set_password(self.cleaned_data['password'])
+        if commit:
+            student.save()
+        return student
+    
 
 class StudentLoginForm(forms.Form):
     reg_number = forms.CharField(
@@ -131,7 +161,61 @@ class StudentLoginForm(forms.Form):
             'autofocus': True
         })
     )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your password',
+            'id': 'id_login_password'
+        })
+    )
 
+
+class PasswordChangeForm(forms.Form):
+    current_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter current password',
+            'id': 'id_current_password'
+        })
+    )
+    new_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter new password',
+            'id': 'id_new_password'
+        }),
+        help_text='Minimum 6 characters recommended'
+    )
+    confirm_new_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm new password',
+            'id': 'id_confirm_new_password'
+        })
+    )
+    
+    def __init__(self, student, *args, **kwargs):
+        self.student = student
+        super().__init__(*args, **kwargs)
+    
+    def clean_current_password(self):
+        current_password = self.cleaned_data.get('current_password')
+        if not self.student.check_password(current_password):
+            raise forms.ValidationError("Current password is incorrect!")
+        return current_password
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get('new_password')
+        confirm_new_password = cleaned_data.get('confirm_new_password')
+        
+        if new_password and confirm_new_password:
+            if new_password != confirm_new_password:
+                raise forms.ValidationError("New passwords do not match!")
+            if len(new_password) < 6:
+                raise forms.ValidationError("Password must be at least 6 characters long!")
+        
+        return cleaned_data
 
 class StudentProfileForm(forms.ModelForm):
     class Meta:

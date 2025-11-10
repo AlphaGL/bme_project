@@ -14,7 +14,7 @@ from .forms import (StaffForm, ExcoForm, PastQuestionForm, LibraryResourceForm, 
                     StudentProfileForm, SemesterForm, CourseForm,  DepartmentalDuesForm,
                     CourseHandbookForm, TimetableForm, AcademicCalendarForm,ResearchTeamForm, ResearchArticleForm, GuestContributorForm,
                     GuestLoginForm, ResearchContributionForm, ResearchQuizForm,
-                    QuizSubmissionForm, TeamJoinForm)
+                    QuizSubmissionForm, TeamJoinForm,PasswordChangeForm)
 import json
 from django.utils import timezone
 from django.http import HttpResponse
@@ -478,17 +478,25 @@ def student_login(request):
         form = StudentLoginForm(request.POST)
         if form.is_valid():
             reg_number = form.cleaned_data['reg_number']
+            password = form.cleaned_data['password']
+            
             try:
                 student = Student.objects.get(reg_number=reg_number)
-                request.session['student_reg_number'] = student.reg_number
-                messages.success(request, f'Welcome back, {student.full_name}!')
-                return redirect('student_dashboard')
+                
+                # Check if password matches
+                if student.check_password(password):
+                    request.session['student_reg_number'] = student.reg_number
+                    messages.success(request, f'Welcome back, {student.full_name}!')
+                    return redirect('student_dashboard')
+                else:
+                    messages.error(request, 'Invalid password. Please try again.')
             except Student.DoesNotExist:
-                messages.error(request, 'Invalid registration number. Please check and try again.')
+                messages.error(request, 'Invalid registration number or password.')
     else:
         form = StudentLoginForm()
     
     return render(request, 'core/student/login.html', {'form': form})
+
 
 
 def student_logout(request):
@@ -506,6 +514,28 @@ def student_required(view_func):
             return redirect('student_login')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+@student_required
+def change_password(request):
+    reg_number = request.session.get('student_reg_number')
+    student = Student.objects.get(reg_number=reg_number)
+    
+    if request.method == 'POST':
+        form = PasswordChangeForm(student, request.POST)
+        if form.is_valid():
+            new_password = form.cleaned_data['new_password']
+            student.set_password(new_password)
+            student.save()
+            messages.success(request, 'Password changed successfully!')
+            return redirect('student_profile')
+    else:
+        form = PasswordChangeForm(student)
+    
+    return render(request, 'core/student/change_password.html', {
+        'form': form,
+        'student': student
+    })
 
 
 # STUDENT DASHBOARD

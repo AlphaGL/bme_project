@@ -137,7 +137,6 @@ class Announcement(models.Model):
         return self.title
 
 
-# NEW STUDENT MODELS
 class Student(models.Model):
     LEVEL_CHOICES = [
         ('100', '100 Level'),
@@ -153,6 +152,10 @@ class Student(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True)
     level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='100')
     profile_image = CloudinaryField('image', blank=True, null=True)
+    
+    # NEW: Add password field
+    password = models.CharField(max_length=128, help_text="Hashed password")
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -161,7 +164,22 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.reg_number} - {self.full_name}"
-
+    
+    # NEW: Password methods
+    def set_password(self, raw_password):
+        """Hash and set the password"""
+        self.password = make_password(raw_password)
+    
+    def check_password(self, raw_password):
+        """Check if the provided password is correct"""
+        return check_password(raw_password, self.password)
+    
+    def save(self, *args, **kwargs):
+        # If this is a new student and no password is set, use reg_number as default
+        if not self.pk and not self.password:
+            self.set_password(self.reg_number)
+        super().save(*args, **kwargs)
+        
 
 class Semester(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='semesters')
