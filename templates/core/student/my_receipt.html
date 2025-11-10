@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}My Receipt - BME FUTO{% endblock %}
+{% block title %}My Receipt - FUTO BME{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -229,7 +229,7 @@
                             <!-- Receipt Preview -->
                             <div class="receipt-preview mb-4">
                                 <div class="preview-watermark">
-                                    <i class="fas fa-stamp"></i> BME FUTO<br>
+                                    <i class="fas fa-stamp"></i> FUTO BME<br>
                                     <div style="font-size: 2rem; margin-top: 10px;">{{ dues.watermark_code }}</div>
                                 </div>
 
@@ -561,11 +561,11 @@
 
 <script>
 function shareReceipt() {
-    const receiptInfo = `My BME FUTO Departmental Dues Receipt\n\nReceipt No: {{ dues.receipt_number }}\nVerification Code: {{ dues.watermark_code }}\nAmount: ₦{{ dues.amount_paid|floatformat:2 }}\nSession: {{ dues.academic_session }}`;
+    const receiptInfo = `My FUTO BME Departmental Dues Receipt\n\nReceipt No: {{ dues.receipt_number }}\nVerification Code: {{ dues.watermark_code }}\nAmount: ₦{{ dues.amount_paid|floatformat:2 }}\nSession: {{ dues.academic_session }}`;
     
     if (navigator.share) {
         navigator.share({
-            title: 'BME FUTO Receipt',
+            title: 'FUTO BME Receipt',
             text: receiptInfo
         }).catch(err => console.log('Share failed:', err));
     } else {

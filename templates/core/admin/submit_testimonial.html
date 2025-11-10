@@ -1,6 +1,6 @@
 <!-- submit_testimonial.html -->
 {% extends 'base.html' %}
-{% block title %}Submit Testimonial - BME FUTO{% endblock %}
+{% block title %}Submit Testimonial - FUTO BME{% endblock %}
 {% block content %}
 <section class="py-5">
     <div class="container">
@@ -9,7 +9,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-5">
                         <h2 class="fw-bold mb-4 text-center">Submit Your Testimonial</h2>
-                        <p class="text-muted text-center mb-4">Share your experience with BME FUTO resources</p>
+                        <p class="text-muted text-center mb-4">Share your experience with FUTO BME resources</p>
                         <form method="post">
                             {% csrf_token %}
                             {{ form.as_p }}
