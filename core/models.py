@@ -4,6 +4,8 @@ from cloudinary.models import CloudinaryField
 from django.core.validators import FileExtensionValidator
 import uuid
 from django.contrib.auth.hashers import make_password, check_password
+import hashlib
+from django.utils import timezone
 import json
 
 class Staff(models.Model):
@@ -231,7 +233,6 @@ class CGPACalculation(models.Model):
         return f"{self.student.reg_number} - CGPA: {self.cgpa}"
 
 
-# DEPARTMENTAL DUES RECEIPT MODEL
 class DepartmentalDues(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='departmental_dues')
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=5000.00)
@@ -242,12 +243,39 @@ class DepartmentalDues(models.Model):
     academic_session = models.CharField(max_length=20, help_text="e.g., 2023/2024")
     receipt_number = models.CharField(max_length=50, unique=True, blank=True)
     watermark_code = models.CharField(max_length=100, blank=True, help_text="Unique code for verification")
+    
+    # ENHANCED SECURITY FIELDS
+    security_hash = models.CharField(max_length=64, blank=True, help_text="SHA-256 hash for verification")
+    qr_code_data = models.TextField(blank=True, help_text="QR code data for verification")
+    print_count = models.IntegerField(default=0, help_text="Number of times receipt was printed")
+    last_printed_at = models.DateTimeField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="IP address of payment submission")
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['-created_at']
         verbose_name_plural = "Departmental Dues"
+    
+    def generate_security_hash(self):
+        """Generate a unique security hash for this receipt"""
+        data = f"{self.student.reg_number}{self.receipt_number}{self.watermark_code}{self.amount_paid}{self.academic_session}"
+        return hashlib.sha256(data.encode()).hexdigest()
+    
+    def generate_qr_data(self):
+        """Generate QR code data for verification"""
+        return f"VERIFY:{self.receipt_number}:{self.watermark_code}:{self.security_hash[:16]}"
+    
+    def verify_authenticity(self, provided_hash):
+        """Verify if the receipt is authentic"""
+        return self.security_hash == provided_hash
+    
+    def increment_print_count(self):
+        """Track printing for audit purposes"""
+        self.print_count += 1
+        self.last_printed_at = timezone.now()
+        self.save(update_fields=['print_count', 'last_printed_at'])
     
     def save(self, *args, **kwargs):
         if not self.receipt_number:
@@ -267,17 +295,59 @@ class DepartmentalDues(models.Model):
             self.receipt_number = f'BME/{year}/{new_number:04d}'
         
         if not self.watermark_code:
-            # Generate unique watermark code for anti-fraud
-            self.watermark_code = f"BME-{uuid.uuid4().hex[:12].upper()}"
+            # Generate unique watermark code with timestamp
+            timestamp = timezone.now().strftime('%Y%m%d%H%M')
+            random_part = uuid.uuid4().hex[:8].upper()
+            self.watermark_code = f"BME-{timestamp}-{random_part}"
         
         if not self.payment_reference:
             self.payment_reference = f"PAY-{uuid.uuid4().hex[:10].upper()}"
+        
+        # Generate security features
+        if not self.security_hash:
+            self.security_hash = self.generate_security_hash()
+        
+        if not self.qr_code_data:
+            self.qr_code_data = self.generate_qr_data()
         
         super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.student.reg_number} - {self.receipt_number}"
+    
 
+# Add this new model for audit logging
+class ReceiptPrintLog(models.Model):
+    """Track all receipt printing for security audit"""
+    receipt = models.ForeignKey(DepartmentalDues, on_delete=models.CASCADE, related_name='print_logs')
+    printed_by_student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    printed_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-printed_at']
+        verbose_name_plural = "Receipt Print Logs"
+    
+    def __str__(self):
+        return f"{self.receipt.receipt_number} printed by {self.printed_by_student.reg_number} at {self.printed_at}"
+
+
+# Add this model for online verification
+class ReceiptVerification(models.Model):
+    """Track verification attempts"""
+    receipt = models.ForeignKey(DepartmentalDues, on_delete=models.CASCADE, related_name='verifications', null=True, blank=True)
+    verification_code = models.CharField(max_length=100)
+    is_valid = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-verified_at']
+    
+    def __str__(self):
+        status = "Valid" if self.is_valid else "Invalid"
+        return f"{self.verification_code} - {status}"
 
 # COURSE HANDBOOK MODEL
 class CourseHandbook(models.Model):

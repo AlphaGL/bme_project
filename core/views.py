@@ -8,7 +8,7 @@ from .models import( Staff, Exco, PastQuestion,
                     Student, Semester, Course, CGPACalculation, DepartmentalDues, 
                     CourseHandbook, Timetable, AcademicCalendar,ResearchTeam, ResearchArticle, GuestContributor, 
                      ResearchContribution, ResearchQuiz, QuizSubmission, 
-                     TeamMembership, ArticleLike)
+                     TeamMembership, ArticleLike,ReceiptVerification,ReceiptPrintLog)
 from .forms import (StaffForm, ExcoForm, PastQuestionForm, LibraryResourceForm, TestimonialForm, 
                     AnnouncementForm, StudentRegistrationForm, StudentLoginForm, 
                     StudentProfileForm, SemesterForm, CourseForm,  DepartmentalDuesForm,
@@ -19,8 +19,21 @@ import json
 from django.utils import timezone
 from django.http import HttpResponse
 from django.template.loader import render_to_string
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import logging
+
+logger = logging.getLogger(__name__)
 
 
+def get_client_ip(request):
+    """Get client IP address"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def custom_404(request, exception):
     """Custom 404 error handler"""
@@ -873,7 +886,7 @@ def my_receipt(request):
 
 @student_required
 def print_receipt(request):
-    """Student prints their receipt"""
+    """Enhanced print receipt with security logging"""
     reg_number = request.session.get('student_reg_number')
     student = Student.objects.get(reg_number=reg_number)
     
@@ -883,11 +896,212 @@ def print_receipt(request):
         messages.error(request, 'Your departmental dues have not been approved yet.')
         return redirect('my_receipt')
     
-    return render(request, 'core/student/print_receipt.html', {
+    # Log the print event
+    ReceiptPrintLog.objects.create(
+        receipt=dues,
+        printed_by_student=student,
+        ip_address=get_client_ip(request),
+        user_agent=request.META.get('HTTP_USER_AGENT', '')
+    )
+    
+    # Increment print count
+    dues.increment_print_count()
+    
+    # Log security event
+    logger.info(f"Receipt {dues.receipt_number} printed by {student.reg_number} from IP {get_client_ip(request)}")
+    
+    context = {
         'student': student,
-        'dues': dues
-    })
+        'dues': dues,
+        'security_verified': True,
+        'print_number': dues.print_count,
+        'current_timestamp': timezone.now()
+    }
+    
+    return render(request, 'core/student/print_receipt.html', context)
 
+
+@require_http_methods(["GET", "POST"])
+def verify_receipt(request):
+    """Public API endpoint for receipt verification"""
+    if request.method == 'GET':
+        return render(request, 'core/verify_receipt.html')
+    
+    # POST request - verify the receipt
+    verification_code = request.POST.get('verification_code', '').strip()
+    receipt_number = request.POST.get('receipt_number', '').strip()
+    
+    result = {
+        'is_valid': False,
+        'message': 'Invalid verification code',
+        'details': None
+    }
+    
+    try:
+        if verification_code:
+            # Try to find by watermark code
+            dues = DepartmentalDues.objects.get(watermark_code=verification_code, is_approved=True)
+        elif receipt_number:
+            # Try to find by receipt number
+            dues = DepartmentalDues.objects.get(receipt_number=receipt_number, is_approved=True)
+        else:
+            raise DepartmentalDues.DoesNotExist
+        
+        # Log verification attempt
+        ReceiptVerification.objects.create(
+            receipt=dues,
+            verification_code=verification_code or receipt_number,
+            is_valid=True,
+            ip_address=get_client_ip(request)
+        )
+        
+        result = {
+            'is_valid': True,
+            'message': 'Receipt is authentic and valid',
+            'details': {
+                'receipt_number': dues.receipt_number,
+                'student_name': dues.student.full_name,
+                'student_reg': dues.student.reg_number,
+                'amount_paid': str(dues.amount_paid),
+                'academic_session': dues.academic_session,
+                'approved_date': dues.approved_at.strftime('%Y-%m-%d'),
+                'verification_code': dues.watermark_code,
+                'print_count': dues.print_count
+            }
+        }
+        
+        logger.info(f"Receipt {dues.receipt_number} verified successfully from IP {get_client_ip(request)}")
+        
+    except DepartmentalDues.DoesNotExist:
+        # Log failed verification attempt
+        ReceiptVerification.objects.create(
+            verification_code=verification_code or receipt_number,
+            is_valid=False,
+            ip_address=get_client_ip(request)
+        )
+        
+        logger.warning(f"Failed receipt verification attempt for code: {verification_code or receipt_number} from IP {get_client_ip(request)}")
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse(result)
+    
+    return render(request, 'core/verify_receipt.html', {'result': result})
+
+@login_required
+def admin_receipt_analytics(request):
+    """Admin view for receipt analytics and fraud detection"""
+    # Get suspicious activities
+    suspicious_prints = ReceiptPrintLog.objects.values('receipt__receipt_number', 'ip_address').annotate(
+        print_count=Count('id')
+    ).filter(print_count__gt=10).order_by('-print_count')
+    
+    failed_verifications = ReceiptVerification.objects.filter(
+        is_valid=False
+    ).values('ip_address').annotate(
+        attempt_count=Count('id')
+    ).filter(attempt_count__gt=5).order_by('-attempt_count')
+    
+    # Recent prints
+    recent_prints = ReceiptPrintLog.objects.select_related('receipt', 'printed_by_student').order_by('-printed_at')[:50]
+    
+    # Statistics
+    stats = {
+        'total_receipts': DepartmentalDues.objects.filter(is_approved=True).count(),
+        'total_prints': ReceiptPrintLog.objects.count(),
+        'total_verifications': ReceiptVerification.objects.filter(is_valid=True).count(),
+        'failed_verifications': ReceiptVerification.objects.filter(is_valid=False).count(),
+        'avg_prints_per_receipt': ReceiptPrintLog.objects.values('receipt').annotate(
+            Count('id')
+        ).aggregate(Avg('id__count'))['id__count__avg'] or 0
+    }
+    
+    context = {
+        'suspicious_prints': suspicious_prints,
+        'failed_verifications': failed_verifications,
+        'recent_prints': recent_prints,
+        'stats': stats
+    }
+    
+    return render(request, 'core/admin/receipt_analytics.html', context)
+
+
+@login_required
+def revoke_receipt(request, pk):
+    """Admin can revoke a receipt if fraud is detected"""
+    dues = get_object_or_404(DepartmentalDues, pk=pk)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('revoke_reason', '')
+        
+        # Mark as unapproved
+        dues.is_approved = False
+        dues.save()
+        
+        # Log the revocation
+        logger.warning(f"Receipt {dues.receipt_number} revoked by {request.user.username}. Reason: {reason}")
+        
+        messages.success(request, f'Receipt {dues.receipt_number} has been revoked.')
+        return redirect('manage_departmental_dues')
+    
+    return render(request, 'core/admin/revoke_receipt.html', {'dues': dues})
+
+
+# API endpoint for mobile app verification
+@require_http_methods(["POST"])
+def api_verify_receipt(request):
+    """API endpoint for mobile verification"""
+    import json
+    
+    try:
+        data = json.loads(request.body)
+        code = data.get('code', '').strip()
+        
+        dues = DepartmentalDues.objects.get(
+            watermark_code=code,
+            is_approved=True
+        )
+        
+        # Log verification
+        ReceiptVerification.objects.create(
+            receipt=dues,
+            verification_code=code,
+            is_valid=True,
+            ip_address=get_client_ip(request)
+        )
+        
+        return JsonResponse({
+            'status': 'success',
+            'valid': True,
+            'data': {
+                'receipt_number': dues.receipt_number,
+                'student': dues.student.full_name,
+                'reg_number': dues.student.reg_number,
+                'amount': str(dues.amount_paid),
+                'session': dues.academic_session,
+                'approved_date': dues.approved_at.isoformat()
+            }
+        })
+        
+    except DepartmentalDues.DoesNotExist:
+        # Log failed attempt
+        ReceiptVerification.objects.create(
+            verification_code=code,
+            is_valid=False,
+            ip_address=get_client_ip(request)
+        )
+        
+        return JsonResponse({
+            'status': 'error',
+            'valid': False,
+            'message': 'Invalid or unrecognized verification code'
+        }, status=404)
+        
+    except Exception as e:
+        logger.error(f"API verification error: {str(e)}")
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Verification service error'
+        }, status=500)
 
 # ==================== COURSE HANDBOOK VIEWS ====================
 

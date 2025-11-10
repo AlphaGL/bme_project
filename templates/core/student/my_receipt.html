@@ -2,213 +2,578 @@
 
 {% block title %}My Receipt - BME FUTO{% endblock %}
 
+{% block extra_css %}
+<style>
+    .receipt-page {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+
+    .status-card {
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .status-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
+    }
+
+    .status-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .receipt-preview {
+        border: 3px solid #dee2e6;
+        border-radius: 15px;
+        padding: 30px;
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .receipt-preview::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            rgba(0,0,0,0.02) 10px,
+            rgba(0,0,0,0.02) 20px
+        );
+        pointer-events: none;
+    }
+
+    .preview-watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        opacity: 0.05;
+        font-size: 4rem;
+        font-weight: bold;
+        white-space: nowrap;
+        color: #8B1538;
+    }
+
+    .info-badge {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid #8B1538;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .action-button {
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .action-button:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+        margin: 20px 0;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -24px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #8B1538;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #8B1538;
+    }
+
+    .security-info {
+        background: linear-gradient(135deg, #fff3cd 0%, #fff8e1 100%);
+        border: 2px solid #ffc107;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .receipt-page { padding: 20px 0; }
+        .status-icon { width: 80px; height: 80px; }
+        .action-button { padding: 12px 20px; font-size: 1rem; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="py-5">
+<section class="receipt-page">
     <div class="container">
+        <!-- Page Header -->
         <div class="row mb-4">
             <div class="col">
-                <h1 class="fw-bold">
-                    <i class="fas fa-receipt me-2"></i>My Departmental Receipt
-                </h1>
-                <p class="text-muted">View your departmental dues receipt</p>
+                <div class="text-center text-white mb-4">
+                    <h1 class="fw-bold mb-2">
+                        <i class="fas fa-receipt me-3"></i>My Departmental Receipt
+                    </h1>
+                    <p class="lead mb-0">View and manage your departmental dues receipt</p>
+                </div>
             </div>
         </div>
 
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-10 col-xl-9">
                 {% if dues %}
                     {% if dues.is_approved %}
-                    <!-- Approved Receipt -->
-                    <div class="card border-success shadow-lg">
-                        <div class="card-header bg-success text-white text-center py-4">
-                            <i class="fas fa-check-circle fa-3x mb-3"></i>
-                            <h3 class="fw-bold mb-0">Receipt Approved</h3>
+                    <!-- APPROVED RECEIPT -->
+                    <div class="status-card card border-0 shadow-lg mb-4">
+                        <div class="card-header text-white text-center py-4" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                            <div class="status-icon" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-check-circle fa-3x text-white"></i>
+                            </div>
+                            <h3 class="fw-bold mb-1">Receipt Approved ✓</h3>
+                            <p class="mb-0">Your departmental dues payment has been verified and approved</p>
                         </div>
-                        <div class="card-body p-5">
-                            <div class="text-center mb-4">
-                                <h5 class="text-success fw-bold">
-                                    <i class="fas fa-check-circle me-2"></i>
-                                    Your departmental dues have been approved!
-                                </h5>
-                                <p class="text-muted">You can now print your receipt</p>
+                        
+                        <div class="card-body p-4 p-md-5">
+                            <!-- Quick Info -->
+                            <div class="row mb-4">
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <div class="info-badge">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-hashtag fa-2x text-primary me-3"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Receipt No.</small>
+                                                <strong style="font-family: monospace;">{{ dues.receipt_number }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <div class="info-badge">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-money-bill-wave fa-2x text-success me-3"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Amount Paid</small>
+                                                <strong class="text-success">₦{{ dues.amount_paid|floatformat:2 }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="info-badge">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-calendar-check fa-2x text-info me-3"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Approved On</small>
+                                                <strong>{{ dues.approved_at|date:"M d, Y" }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Receipt Preview -->
-                            <div class="border rounded p-4 mb-4 bg-light position-relative" style="min-height: 400px;">
-                                <!-- Watermark -->
-                                <div class="position-absolute top-50 start-50 translate-middle" 
-                                     style="opacity: 0.1; font-size: 5rem; transform: rotate(-45deg); pointer-events: none; z-index: 1;">
-                                    <div class="text-center">
-                                        <i class="fas fa-stamp d-block mb-2"></i>
-                                        <strong>BME FUTO</strong>
-                                        <div class="small">{{ dues.watermark_code }}</div>
-                                    </div>
+                            <div class="receipt-preview mb-4">
+                                <div class="preview-watermark">
+                                    <i class="fas fa-stamp"></i> BME FUTO<br>
+                                    <div style="font-size: 2rem; margin-top: 10px;">{{ dues.watermark_code }}</div>
                                 </div>
 
-                                <!-- Receipt Content -->
-                                <div class="position-relative" style="z-index: 2;">
-                                    <div class="text-center mb-4">
-                                        <h4 class="fw-bold text-primary">BIOMEDICAL ENGINEERING DEPARTMENT</h4>
-                                        <p class="mb-1">Federal University of Technology, Owerri</p>
-                                        <p class="mb-0 small text-muted">PMB 1526, Owerri, Imo State, Nigeria</p>
-                                        <hr class="my-3">
-                                        <h5 class="fw-bold text-uppercase">Departmental Dues Receipt</h5>
+                                <div style="position: relative; z-index: 2;">
+                                    <!-- Mini Header -->
+                                    <div class="text-center mb-4 pb-3 border-bottom">
+                                        <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" 
+                                             alt="Logo" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #8B1538;">
+                                        <h5 class="fw-bold mt-3 mb-1" style="color: #8B1538;">BIOMEDICAL ENGINEERING DEPARTMENT</h5>
+                                        <p class="small text-muted mb-0">Federal University of Technology, Owerri</p>
+                                        <p class="small fw-bold mt-2 mb-0">DEPARTMENTAL DUES RECEIPT</p>
                                     </div>
 
+                                    <!-- Student Info -->
                                     <div class="row mb-3">
-                                        <div class="col-6">
-                                            <p class="mb-2"><strong>Receipt No:</strong> {{ dues.receipt_number }}</p>
-                                            <p class="mb-2"><strong>Session:</strong> {{ dues.academic_session }}</p>
-                                        </div>
-                                        <div class="col-6 text-end">
-                                            <p class="mb-2"><strong>Date:</strong> {{ dues.approved_at|date:"M d, Y" }}</p>
-                                            <p class="mb-2"><strong>Payment Ref:</strong> {{ dues.payment_reference }}</p>
-                                        </div>
-                                    </div>
-
-                                    <hr>
-
-                                    <div class="mb-3">
-                                        <h6 class="fw-bold text-uppercase mb-3">Student Information</h6>
-                                        <table class="table table-borderless">
-                                            <tr>
-                                                <td width="40%"><strong>Full Name:</strong></td>
-                                                <td>{{ student.full_name }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Registration Number:</strong></td>
-                                                <td>{{ student.reg_number }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Level:</strong></td>
-                                                <td>{{ student.level }} Level</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Email:</strong></td>
-                                                <td>{{ student.email|default:"N/A" }}</td>
-                                            </tr>
-                                        </table>
-                                    </div>
-
-                                    <hr>
-
-                                    <div class="mb-3">
-                                        <h6 class="fw-bold text-uppercase mb-3">Payment Details</h6>
-                                        <table class="table table-bordered">
-                                            <thead class="table-light">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
                                                 <tr>
-                                                    <th>Description</th>
-                                                    <th width="30%" class="text-end">Amount</th>
+                                                    <td class="text-muted" width="40%">Name:</td>
+                                                    <td class="fw-semibold">{{ student.full_name }}</td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
                                                 <tr>
-                                                    <td>Departmental Dues ({{ dues.academic_session }})</td>
-                                                    <td class="text-end">₦{{ dues.amount_paid|floatformat:2 }}</td>
+                                                    <td class="text-muted">Reg. Number:</td>
+                                                    <td class="fw-semibold">{{ student.reg_number }}</td>
                                                 </tr>
-                                                <tr class="table-success">
-                                                    <td><strong>Total Paid</strong></td>
-                                                    <td class="text-end"><strong>₦{{ dues.amount_paid|floatformat:2 }}</strong></td>
+                                                <tr>
+                                                    <td class="text-muted">Level:</td>
+                                                    <td class="fw-semibold">{{ student.level }} Level</td>
                                                 </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div class="mt-4 pt-3 border-top">
-                                        <div class="row">
-                                            <div class="col-6">
-                                                <p class="mb-1 small"><strong>Approved By:</strong></p>
-                                                <p class="mb-0 text-muted">{{ dues.approved_by.username }}</p>
-                                            </div>
-                                            <div class="col-6 text-end">
-                                                <p class="mb-1 small"><strong>Verification Code:</strong></p>
-                                                <p class="mb-0"><span class="badge bg-dark">{{ dues.watermark_code }}</span></p>
-                                            </div>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr>
+                                                    <td class="text-muted" width="40%">Session:</td>
+                                                    <td class="fw-semibold">{{ dues.academic_session }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-muted">Amount:</td>
+                                                    <td class="fw-semibold text-success">₦{{ dues.amount_paid|floatformat:2 }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-muted">Reference:</td>
+                                                    <td class="fw-semibold small">{{ dues.payment_reference }}</td>
+                                                </tr>
+                                            </table>
                                         </div>
                                     </div>
 
-                                    <div class="alert alert-warning mt-4 mb-0">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>
-                                        <strong>Anti-Fraud Notice:</strong> This receipt contains a unique watermark and verification code. Any reproduction without these security features is invalid.
+                                    <!-- Verification Code -->
+                                    <div class="text-center mt-4 pt-3 border-top">
+                                        <small class="text-muted d-block mb-2">Verification Code</small>
+                                        <span class="badge bg-dark px-3 py-2" style="font-size: 0.9rem; font-family: monospace; letter-spacing: 2px;">
+                                            {{ dues.watermark_code }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Notice -->
+                            <div class="security-info mb-4">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="fas fa-shield-alt me-2"></i>Security Features
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li class="mb-2"><strong>Unique Watermark:</strong> Each receipt has embedded watermarks visible when printed</li>
+                                    <li class="mb-2"><strong>Verification Code:</strong> <code>{{ dues.watermark_code }}</code> - Can be verified online</li>
+                                    <li class="mb-2"><strong>Receipt Number:</strong> <code>{{ dues.receipt_number }}</code> - Sequentially generated</li>
+                                    <li class="mb-0"><strong>Digital Signature:</strong> Approved by {{ dues.approved_by.username }} on {{ dues.approved_at|date:"Y-m-d" }}</li>
+                                </ul>
+                            </div>
+
+                            <!-- Timeline -->
+                            <div class="card bg-light mb-4">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3"><i class="fas fa-history me-2"></i>Payment Timeline</h6>
+                                    <div class="timeline">
+                                        <div class="timeline-item">
+                                            <strong>Payment Submitted</strong>
+                                            <p class="text-muted small mb-0">{{ dues.created_at|date:"F d, Y - h:i A" }}</p>
+                                        </div>
+                                        <div class="timeline-item">
+                                            <strong>Payment Verified</strong>
+                                            <p class="text-muted small mb-0">{{ dues.approved_at|date:"F d, Y - h:i A" }}</p>
+                                        </div>
+                                        <div class="timeline-item">
+                                            <strong>Receipt Generated</strong>
+                                            <p class="text-muted small mb-0">Available for printing</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="d-grid gap-2">
-                                <a href="{% url 'print_receipt' %}" class="btn btn-success btn-lg" target="_blank">
-                                    <i class="fas fa-print me-2"></i>Print Receipt
+                            <div class="d-grid gap-3">
+                                <a href="{% url 'print_receipt' %}" target="_blank" class="btn btn-success btn-lg action-button shadow">
+                                    <i class="fas fa-print me-2"></i>Print Official Receipt
                                 </a>
-                                <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <a href="{% url 'student_dashboard' %}" class="btn btn-outline-primary w-100 action-button">
+                                            <i class="fas fa-home me-2"></i>Back to Dashboard
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button onclick="shareReceipt()" class="btn btn-outline-secondary w-100 action-button">
+                                            <i class="fas fa-share-alt me-2"></i>Share Receipt Info
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <!-- PENDING APPROVAL -->
+                    <div class="status-card card border-0 shadow-lg mb-4">
+                        <div class="card-header text-dark text-center py-4" style="background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);">
+                            <div class="status-icon" style="background: rgba(255,255,255,0.3);">
+                                <i class="fas fa-clock fa-3x text-white"></i>
+                            </div>
+                            <h3 class="fw-bold mb-1">Pending Approval</h3>
+                            <p class="mb-0">Your payment is being processed</p>
+                        </div>
+                        
+                        <div class="card-body p-4 p-md-5">
+                            <div class="text-center mb-4">
+                                <div class="spinner-border text-warning mb-3" style="width: 4rem; height: 4rem;" role="status">
+                                    <span class="visually-hidden">Processing...</span>
+                                </div>
+                                <h5 class="fw-bold mb-3">Your Receipt is Being Processed</h5>
+                                <p class="lead text-muted mb-4">
+                                    Your departmental dues payment has been recorded and is currently awaiting approval from the department administrator.
+                                </p>
+                            </div>
+
+                            <!-- Payment Details -->
+                            <div class="card bg-light border-0 mb-4">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-2"></i>Payment Details</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="info-badge">
+                                                <small class="text-muted d-block">Amount Paid</small>
+                                                <strong class="text-success fs-5">₦{{ dues.amount_paid|floatformat:2 }}</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="info-badge">
+                                                <small class="text-muted d-block">Academic Session</small>
+                                                <strong>{{ dues.academic_session }}</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="info-badge">
+                                                <small class="text-muted d-block">Payment Reference</small>
+                                                <code class="small">{{ dues.payment_reference }}</code>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="info-badge">
+                                                <small class="text-muted d-block">Submitted On</small>
+                                                <strong>{{ dues.created_at|date:"M d, Y - h:i A" }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- What's Next -->
+                            <div class="alert alert-info border-info" style="border-left-width: 5px;">
+                                <h6 class="fw-bold mb-2"><i class="fas fa-lightbulb me-2"></i>What Happens Next?</h6>
+                                <ol class="mb-0 small">
+                                    <li class="mb-2">The department admin will verify your payment details</li>
+                                    <li class="mb-2">Once approved, your receipt will be generated with security features</li>
+                                    <li class="mb-2">You'll be able to print your official receipt immediately</li>
+                                    <li class="mb-0">The receipt can be verified using the unique verification code</li>
+                                </ol>
+                            </div>
+
+                            <!-- Tips -->
+                            <div class="card border-warning mb-4">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3"><i class="fas fa-tips me-2 text-warning"></i>Important Tips</h6>
+                                    <ul class="mb-0 small">
+                                        <li class="mb-2">Keep your payment reference number safe: <code>{{ dues.payment_reference }}</code></li>
+                                        <li class="mb-2">Approval typically takes 1-3 business days</li>
+                                        <li class="mb-2">Check back regularly or contact the department for updates</li>
+                                        <li class="mb-0">Once approved, print your receipt immediately</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-grid gap-2">
+                                <button onclick="location.reload()" class="btn btn-warning btn-lg action-button">
+                                    <i class="fas fa-sync-alt me-2"></i>Refresh Status
+                                </button>
+                                <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary btn-lg action-button">
                                     <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
                                 </a>
                             </div>
                         </div>
                     </div>
-                    {% else %}
-                    <!-- Pending Approval -->
-                    <div class="card border-warning shadow-lg">
-                        <div class="card-header bg-warning text-dark text-center py-4">
-                            <i class="fas fa-clock fa-3x mb-3"></i>
-                            <h3 class="fw-bold mb-0">Pending Approval</h3>
-                        </div>
-                        <div class="card-body p-5 text-center">
-                            <i class="fas fa-hourglass-half fa-4x text-warning mb-4"></i>
-                            <h4 class="fw-bold mb-3">Your Receipt is Being Processed</h4>
-                            <p class="lead text-muted mb-4">
-                                Your departmental dues payment has been recorded and is currently awaiting approval from the department admin.
-                            </p>
-                            
-                            <div class="alert alert-info text-start">
-                                <h6 class="fw-bold mb-3">Payment Details:</h6>
-                                <p class="mb-2"><strong>Amount:</strong> ₦{{ dues.amount_paid|floatformat:2 }}</p>
-                                <p class="mb-2"><strong>Session:</strong> {{ dues.academic_session }}</p>
-                                <p class="mb-2"><strong>Payment Reference:</strong> {{ dues.payment_reference }}</p>
-                                <p class="mb-0"><strong>Submitted:</strong> {{ dues.created_at|date:"M d, Y - h:i A" }}</p>
-                            </div>
-
-                            <div class="alert alert-warning">
-                                <i class="fas fa-info-circle me-2"></i>
-                                You will be able to print your receipt once it has been approved by the admin.
-                            </div>
-
-                            <a href="{% url 'student_dashboard' %}" class="btn btn-primary">
-                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                            </a>
-                        </div>
-                    </div>
                     {% endif %}
+
                 {% else %}
-                <!-- No Receipt Found -->
-                <div class="card border-danger shadow-lg">
-                    <div class="card-header bg-danger text-white text-center py-4">
-                        <i class="fas fa-times-circle fa-3x mb-3"></i>
-                        <h3 class="fw-bold mb-0">No Receipt Found</h3>
+                <!-- NO RECEIPT FOUND -->
+                <div class="status-card card border-0 shadow-lg mb-4">
+                    <div class="card-header text-white text-center py-4" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                        <div class="status-icon" style="background: rgba(255,255,255,0.2);">
+                            <i class="fas fa-times-circle fa-3x text-white"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1">No Receipt Found</h3>
+                        <p class="mb-0">No payment record exists for your account</p>
                     </div>
-                    <div class="card-body p-5 text-center">
-                        <i class="fas fa-receipt fa-4x text-muted mb-4"></i>
-                        <h4 class="fw-bold mb-3">No Departmental Dues Record</h4>
-                        <p class="lead text-muted mb-4">
-                            We couldn't find any departmental dues payment record for your account.
-                        </p>
-                        
-                        <div class="alert alert-info text-start">
-                            <h6 class="fw-bold mb-2">What to do:</h6>
-                            <ul class="mb-0">
-                                <li>Ensure you have paid your departmental dues</li>
-                                <li>Contact the department admin to register your payment</li>
-                                <li>The admin will create your receipt once payment is confirmed</li>
-                            </ul>
+                    
+                    <div class="card-body p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-receipt fa-4x text-muted mb-4"></i>
+                            <h5 class="fw-bold mb-3">No Departmental Dues Record</h5>
+                            <p class="lead text-muted mb-4">
+                                We couldn't find any departmental dues payment record associated with your registration number.
+                            </p>
                         </div>
 
-                        <a href="{% url 'student_dashboard' %}" class="btn btn-primary">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                        </a>
+                        <!-- What to Do -->
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3"><i class="fas fa-question-circle me-2"></i>What Should You Do?</h6>
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <strong>Step 1: Make Payment</strong>
+                                        <p class="text-muted small mb-0">Ensure you have paid your departmental dues for the current session</p>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <strong>Step 2: Contact Admin</strong>
+                                        <p class="text-muted small mb-0">Visit the department office or contact the admin to register your payment</p>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <strong>Step 3: Provide Proof</strong>
+                                        <p class="text-muted small mb-0">Bring your payment receipt or evidence of transaction</p>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <strong>Step 4: Wait for Processing</strong>
+                                        <p class="text-muted small mb-0">The admin will create your receipt once payment is confirmed</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Info -->
+                        <div class="alert alert-primary border-primary" style="border-left-width: 5px;">
+                            <h6 class="fw-bold mb-2"><i class="fas fa-money-bill-wave me-2"></i>Departmental Dues Information</h6>
+                            <p class="mb-2"><strong>Amount:</strong> ₦15,000.00 for 100L students and ₦10,000.00 for other level students</p>
+                            <p class="mb-2"><strong>Payment Method:</strong> Bank transfer or cash at department office</p>
+                            <p class="mb-0"><strong>Required Documents:</strong> Student ID, Payment evidence</p>
+                        </div>
+
+                        <!-- Contact Info -->
+                        <div class="card border-info mb-4">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3"><i class="fas fa-phone-alt me-2 text-info"></i>Need Help?</h6>
+                                <p class="mb-2"><i class="fas fa-map-marker-alt me-2"></i><strong></strong> Meet any of the Executives or Excos for proper guidance</p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'student_dashboard' %}" class="btn btn-primary btn-lg action-button">
+                                <i class="fas fa-home me-2"></i>Back to Dashboard
+                            </a>
+                            <button onclick="location.reload()" class="btn btn-outline-secondary btn-lg action-button">
+                                <i class="fas fa-sync-alt me-2"></i>Refresh Page
+                            </button>
+                        </div>
                     </div>
                 </div>
                 {% endif %}
+
+                <!-- Help Section -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-question-circle me-2 text-primary"></i>Frequently Asked Questions</h6>
+                        <div class="accordion" id="faqAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                        How do I verify my receipt is authentic?
+                                    </button>
+                                </h2>
+                                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body small">
+                                        Authentic receipts contain multiple security features: watermarks, unique verification codes, QR codes, and official stamps. Never accept a receipt without these features.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                        Can I print my receipt multiple times?
+                                    </button>
+                                </h2>
+                                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body small">
+                                        Yes, once approved, you can print your receipt as many times as needed. Each print maintains the same security features and verification code.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                        What if I lose my printed receipt?
+                                    </button>
+                                </h2>
+                                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body small">
+                                        Don't worry! You can always log back into your student portal and print another copy. Your receipt data is securely stored in the system.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+function shareReceipt() {
+    const receiptInfo = `My BME FUTO Departmental Dues Receipt\n\nReceipt No: {{ dues.receipt_number }}\nVerification Code: {{ dues.watermark_code }}\nAmount: ₦{{ dues.amount_paid|floatformat:2 }}\nSession: {{ dues.academic_session }}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'BME FUTO Receipt',
+            text: receiptInfo
+        }).catch(err => console.log('Share failed:', err));
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(receiptInfo).then(() => {
+            alert('Receipt information copied to clipboard!');
+        });
+    }
+}
+</script>
 {% endblock %}
