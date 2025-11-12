@@ -3,139 +3,157 @@
 {% block title %}Student Registration - FUTO BME{% endblock %}
 
 {% block content %}
-<section class="py-5 bg-light min-vh-100">
+<section class="py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
+            <div class="col-lg-6 col-md-8">
                 <div class="card border-0 shadow-lg">
                     <div class="card-body p-5">
                         <div class="text-center mb-4">
-                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
                                  style="width: 80px; height: 80px;">
-                                <i class="fas fa-user-plus fa-3x text-success"></i>
+                                <i class="fas fa-user-plus fa-3x text-primary"></i>
                             </div>
-                            <h2 class="fw-bold">Create Student Account</h2>
-                            <p class="text-muted">Join the FUTO BME Student Portal</p>
+                            <h3 class="fw-bold">Student Registration</h3>
+                            <p class="text-muted">Create your FUTO BME Portal account</p>
                         </div>
-                        
-                        <form method="post">
+
+                        <!-- Registration Info Alert -->
+                        <div class="alert alert-info mb-4">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-info-circle me-2"></i>Before You Register
+                            </h6>
+                            <ul class="small mb-0">
+                                <li>Only registered BME students can create accounts</li>
+                                <li>One-time payment of <strong>₦1,250</strong> required after registration</li>
+                                <li>This gives you lifetime access to the portal</li>
+                            </ul>
+                        </div>
+
+                        <form method="post" id="registrationForm">
                             {% csrf_token %}
                             
                             {% if form.non_field_errors %}
-                                <div class="alert alert-danger">
-                                    {{ form.non_field_errors }}
-                                </div>
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
                             {% endif %}
-                            
+
                             <div class="mb-3">
                                 <label for="id_reg_number" class="form-label fw-bold">
-                                    <i class="fas fa-id-card me-2"></i>Registration Number
+                                    <i class="fas fa-id-card me-2"></i>Registration Number <span class="text-danger">*</span>
                                 </label>
                                 {{ form.reg_number }}
                                 {% if form.reg_number.errors %}
-                                    <div class="text-danger small mt-1">{{ form.reg_number.errors.0 }}</div>
+                                    <div class="alert alert-danger mt-2">
+                                        {{ form.reg_number.errors }}
+                                    </div>
                                 {% endif %}
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="id_confirm_reg_number" class="form-label fw-bold">
-                                    <i class="fas fa-check-circle me-2"></i>Confirm Registration Number
+                                    <i class="fas fa-redo me-2"></i>Confirm Registration Number <span class="text-danger">*</span>
                                 </label>
                                 {{ form.confirm_reg_number }}
-                                {% if form.confirm_reg_number.errors %}
-                                    <div class="text-danger small mt-1">{{ form.confirm_reg_number.errors.0 }}</div>
-                                {% endif %}
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="id_full_name" class="form-label fw-bold">
-                                    <i class="fas fa-user me-2"></i>Full Name
+                                    <i class="fas fa-user me-2"></i>Full Name <span class="text-danger">*</span>
                                 </label>
                                 {{ form.full_name }}
                                 {% if form.full_name.errors %}
-                                    <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
+                                    <div class="text-danger small">{{ form.full_name.errors }}</div>
                                 {% endif %}
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="id_email" class="form-label fw-bold">
-                                    <i class="fas fa-envelope me-2"></i>Email (Optional)
+                                    <i class="fas fa-envelope me-2"></i>Email Address <span class="text-danger">*</span>
                                 </label>
                                 {{ form.email }}
+                                <small class="text-muted d-block">For payment receipts and notifications</small>
                                 {% if form.email.errors %}
-                                    <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                                    <div class="text-danger small">{{ form.email.errors }}</div>
                                 {% endif %}
                             </div>
-                            
+
                             <div class="mb-3">
-                                <label for="id_level" class="form-label fw-bold">
-                                    <i class="fas fa-graduation-cap me-2"></i>Current Level
+                                <label for="id_phone" class="form-label fw-bold">
+                                    <i class="fas fa-phone me-2"></i>Phone Number
                                 </label>
-                                {{ form.level }}
-                                {% if form.level.errors %}
-                                    <div class="text-danger small mt-1">{{ form.level.errors.0 }}</div>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger small">{{ form.phone.errors }}</div>
                                 {% endif %}
                             </div>
-                            
-                            <hr class="my-4">
-                            
-                            <h5 class="fw-bold mb-3">
-                                <i class="fas fa-shield-alt me-2 text-primary"></i>Create Your Password
-                            </h5>
-                            
+
                             <div class="mb-3">
                                 <label for="id_password" class="form-label fw-bold">
-                                    <i class="fas fa-lock me-2"></i>Password
+                                    <i class="fas fa-lock me-2"></i>Password <span class="text-danger">*</span>
                                 </label>
-                                <div class="position-relative">
-                                    {{ form.password }}
-                                    <button type="button" class="btn btn-link position-absolute end-0 top-0 text-muted" 
-                                            onclick="togglePassword('id_password', this)"
-                                            style="text-decoration: none; padding: 0.375rem 0.75rem;">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
+                                {{ form.password }}
+                                <small class="text-muted d-block">Minimum 6 characters</small>
                                 {% if form.password.errors %}
-                                    <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                                    <div class="text-danger small">{{ form.password.errors }}</div>
                                 {% endif %}
-                                <small class="text-muted">Minimum 6 characters recommended</small>
                             </div>
-                            
+
                             <div class="mb-4">
                                 <label for="id_confirm_password" class="form-label fw-bold">
-                                    <i class="fas fa-check-circle me-2"></i>Confirm Password
+                                    <i class="fas fa-lock me-2"></i>Confirm Password <span class="text-danger">*</span>
                                 </label>
-                                <div class="position-relative">
-                                    {{ form.confirm_password }}
-                                    <button type="button" class="btn btn-link position-absolute end-0 top-0 text-muted" 
-                                            onclick="togglePassword('id_confirm_password', this)"
-                                            style="text-decoration: none; padding: 0.375rem 0.75rem;">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                                {% if form.confirm_password.errors %}
-                                    <div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>
-                                {% endif %}
+                                {{ form.confirm_password }}
                             </div>
-                            
-                            <button type="submit" class="btn btn-success w-100 btn-lg mb-3">
-                                <i class="fas fa-user-check me-2"></i>Create Account
-                            </button>
+
+                            <!-- Payment Agreement -->
+                            <div class="card bg-light mb-4">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        {{ form.accept_terms }}
+                                        <label class="form-check-label" for="id_accept_terms">
+                                            I agree to pay <strong>₦1,250</strong> for one-time portal access
+                                        </label>
+                                    </div>
+                                    {% if form.accept_terms.errors %}
+                                        <div class="text-danger small mt-1">{{ form.accept_terms.errors }}</div>
+                                    {% endif %}
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        ₦1,000 department fee + ₦250 transaction charges
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-user-plus me-2"></i>Register & Proceed to Payment
+                                </button>
+                            </div>
                         </form>
-                        
-                        <div class="text-center">
-                            <p class="text-muted mb-2">Already have an account?</p>
-                            <a href="{% url 'student_login' %}" class="btn btn-outline-primary">
-                                <i class="fas fa-sign-in-alt me-2"></i>Login
+
+                        <!-- Registration Number Not Found? -->
+                        <hr class="my-4">
+                        <div class="alert alert-warning">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Registration Number Not Found?
+                            </h6>
+                            <p class="small mb-2">
+                                If you're a BME student but your registration number is not recognized, 
+                                you can submit a request to be added to our system.
+                            </p>
+                            <a href="{% url 'registration_request' %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-paper-plane me-2"></i>Request to be Added
                             </a>
                         </div>
-                        
-                        <hr class="my-4">
-                        
-                        <div class="text-center">
-                            <a href="{% url 'index' %}" class="text-muted">
-                                <i class="fas fa-arrow-left me-2"></i>Back to Home
-                            </a>
+
+                        <!-- Already Have Account -->
+                        <div class="text-center mt-4">
+                            <p class="mb-0">
+                                Already have an account?
+                                <a href="{% url 'student_login' %}" class="fw-bold">Login here</a>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -145,16 +163,17 @@
 </section>
 
 <script>
-function togglePassword(fieldId, button) {
-    const passwordField = document.getElementById(fieldId);
-    const icon = button.querySelector('i');
+// Show/hide password toggle
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling;
     
-    if (passwordField.type === 'password') {
-        passwordField.type = 'text';
+    if (input.type === 'password') {
+        input.type = 'text';
         icon.classList.remove('fa-eye');
         icon.classList.add('fa-eye-slash');
     } else {
-        passwordField.type = 'password';
+        input.type = 'password';
         icon.classList.remove('fa-eye-slash');
         icon.classList.add('fa-eye');
     }

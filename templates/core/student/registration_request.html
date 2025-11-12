@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Registration - FUTO BME{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-user-plus fa-3x text-warning"></i>
+                            </div>
+                            <h3 class="fw-bold">Request Registration</h3>
+                            <p class="text-muted">Not in our system? Submit a request to be added</p>
+                        </div>
+
+                        <!-- Information Alert -->
+                        <div class="alert alert-info">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-info-circle me-2"></i>Important Information
+                            </h6>
+                            <p class="small mb-2">
+                                If you are a BME student but cannot register, it means your registration number 
+                                is not yet in our system. This could be because:
+                            </p>
+                            <ul class="small mb-2">
+                                <li>You are a newly admitted 100 level student</li>
+                                <li>You transferred from another department</li>
+                                <li>Your registration was missed during bulk import</li>
+                            </ul>
+                            <p class="small mb-0">
+                                <strong>Submit this form and we'll review your request within 24-48 hours.</strong>
+                            </p>
+                        </div>
+
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_reg_number" class="form-label fw-bold">
+                                        <i class="fas fa-id-card me-2"></i>Registration Number <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.reg_number }}
+                                    {% if form.reg_number.errors %}
+                                        <div class="text-danger small">{{ form.reg_number.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_full_name" class="form-label fw-bold">
+                                        <i class="fas fa-user me-2"></i>Full Name <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.full_name }}
+                                    {% if form.full_name.errors %}
+                                        <div class="text-danger small">{{ form.full_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_email" class="form-label fw-bold">
+                                        <i class="fas fa-envelope me-2"></i>Email Address <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.email }}
+                                    <small class="text-muted d-block">We'll contact you at this email</small>
+                                    {% if form.email.errors %}
+                                        <div class="text-danger small">{{ form.email.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_phone" class="form-label fw-bold">
+                                        <i class="fas fa-phone me-2"></i>Phone Number
+                                    </label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger small">{{ form.phone.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_level" class="form-label fw-bold">
+                                    <i class="fas fa-graduation-cap me-2"></i>Current Level <span class="text-danger">*</span>
+                                </label>
+                                {{ form.level }}
+                                {% if form.level.errors %}
+                                    <div class="text-danger small">{{ form.level.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_reason" class="form-label fw-bold">
+                                    <i class="fas fa-comment-alt me-2"></i>Reason for Request <span class="text-danger">*</span>
+                                </label>
+                                {{ form.reason }}
+                                <small class="text-muted d-block">
+                                    Explain why you should be added (e.g., newly admitted, transferred, etc.)
+                                </small>
+                                {% if form.reason.errors %}
+                                    <div class="text-danger small">{{ form.reason.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="id_proof_document" class="form-label fw-bold">
+                                    <i class="fas fa-file-upload me-2"></i>Proof Document (Optional but Recommended)
+                                </label>
+                                {{ form.proof_document }}
+                                <small class="text-muted d-block">
+                                    Upload admission letter, student ID, or any proof that you're a BME student
+                                    (Max 5MB - PDF, JPG, PNG)
+                                </small>
+                                {% if form.proof_document.errors %}
+                                    <div class="text-danger small">{{ form.proof_document.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- What Happens Next -->
+                            <div class="alert alert-light mb-4">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-tasks me-2"></i>What Happens Next?
+                                </h6>
+                                <ol class="small mb-0 ps-3">
+                                    <li>Your request will be reviewed by admin</li>
+                                    <li>We'll verify your information</li>
+                                    <li>If approved, your reg number will be added to the system</li>
+                                    <li>You'll receive an email notification</li>
+                                    <li>You can then register and make payment</li>
+                                </ol>
+                                <p class="small mb-0 mt-2">
+                                    <strong>Review Time:</strong> Usually 24-48 hours (weekdays)
+                                </p>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-warning btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit Request
+                                </button>
+                                <a href="{% url 'student_register' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Registration
+                                </a>
+                            </div>
+                        </form>
+
+                        <!-- Contact Information -->
+                        <hr class="my-4">
+                        <div class="alert alert-light">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-headset me-2"></i>Urgent? Contact Us Directly
+                            </h6>
+                            <p class="small mb-0">
+                                <strong>Email:</strong> admin@futobme.edu.ng<br>
+                                <strong>Phone:</strong> +234 XXX XXX XXXX<br>
+                                <strong>Office:</strong> BME Department, FUTO
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

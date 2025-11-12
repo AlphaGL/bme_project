@@ -151,6 +151,8 @@ class Student(models.Model):
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default='100')
+    has_paid = models.BooleanField(default=False)
+    payment_verified_at = models.DateTimeField(null=True, blank=True)
     profile_image = CloudinaryField('image', blank=True, null=True)
     
     # NEW: Add password field
@@ -178,6 +180,106 @@ class Student(models.Model):
         # If this is a new student and no password is set, use reg_number as default
         if not self.pk and not self.password:
             self.set_password(self.reg_number)
+        super().save(*args, **kwargs)
+
+
+# Add these new models to your existing models.py
+
+class RegisteredRegNumber(models.Model):
+    """Store registered BME student registration numbers"""
+    reg_number = models.CharField(max_length=50, unique=True, primary_key=True)
+    full_name = models.CharField(max_length=200, blank=True, null=True)
+    level = models.CharField(max_length=10, choices=Student.LEVEL_CHOICES)
+    date_registered = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    registered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['reg_number']
+        verbose_name_plural = "Registered Registration Numbers"
+    
+    def __str__(self):
+        return f"{self.reg_number} - {self.full_name or 'Not Assigned'}"
+
+
+class RegistrationRequest(models.Model):
+    """Handle registration requests from students not in the system"""
+    reg_number = models.CharField(max_length=50)
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    level = models.CharField(max_length=10, choices=Student.LEVEL_CHOICES)
+    reason = models.TextField(help_text="Why you should be added")
+    proof_document = CloudinaryField('document', blank=True, null=True, 
+                                     help_text="Upload proof (admission letter, ID card, etc)")
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_requests')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    admin_notes = models.TextField(blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Registration Requests"
+    
+    def __str__(self):
+        return f"{self.reg_number} - {self.full_name} ({self.status})"
+
+
+class StudentPayment(models.Model):
+    """Track student payments for portal access"""
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='payment')
+    
+    # Payment details
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=1250.00)
+    department_amount = models.DecimalField(max_digits=10, decimal_places=2, default=1000.00)
+    charges = models.DecimalField(max_digits=10, decimal_places=2, default=250.00)
+    
+    # Paystack details
+    reference = models.CharField(max_length=100, unique=True)
+    paystack_reference = models.CharField(max_length=100, blank=True, null=True)
+    access_code = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Payment status
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Metadata
+    paid_at = models.DateTimeField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    payment_method = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Verification
+    is_verified = models.BooleanField(default=False)
+    verification_data = models.TextField(blank=True, null=True)  # Store JSON response
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Student Payments"
+    
+    def __str__(self):
+        return f"{self.student.reg_number} - {self.reference} ({self.status})"
+    
+    def save(self, *args, **kwargs):
+        if not self.reference:
+            import uuid
+            self.reference = f"BME-{uuid.uuid4().hex[:12].upper()}"
         super().save(*args, **kwargs)
         
 

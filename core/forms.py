@@ -2,7 +2,7 @@ from django import forms
 from .models import( Staff, Exco, PastQuestion, LibraryResource,
                      Testimonial, Announcement, Student, Semester, Course, 
                      DepartmentalDues, CourseHandbook, Timetable, AcademicCalendar,ResearchTeam, ResearchArticle, GuestContributor, 
-                     ResearchContribution, ResearchQuiz, QuizSubmission, TeamMembership
+                     ResearchContribution, ResearchQuiz, QuizSubmission, TeamMembership, RegistrationRequest
                     )
 
 
@@ -105,10 +105,16 @@ class StudentRegistrationForm(forms.ModelForm):
             'placeholder': 'Confirm Registration Number'
         })
     )
+    
+    accept_terms = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        label='I agree to pay ₦1,250 for portal access (one-time payment)'
+    )
 
     class Meta:
         model = Student
-        fields = ['reg_number', 'full_name', 'email', 'level']
+        fields = ['reg_number', 'full_name', 'email', 'phone']
         widgets = {
             'reg_number': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -120,10 +126,32 @@ class StudentRegistrationForm(forms.ModelForm):
             }),
             'email': forms.EmailInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'your.email@example.com (optional)'
+                'placeholder': 'your.email@example.com'
             }),
-            'level': forms.Select(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '+234XXXXXXXXXX'
+            }),
         }
+
+    def clean_reg_number(self):
+        reg_number = self.cleaned_data.get('reg_number')
+        
+        # Check if reg number exists in RegisteredRegNumber
+        from core.models import RegisteredRegNumber
+        if not RegisteredRegNumber.objects.filter(reg_number=reg_number, is_active=True).exists():
+            raise forms.ValidationError(
+                "This registration number is not registered in our system. "
+                "If you are a BME student, please contact the admin to add your registration number."
+            )
+        
+        # Check if already registered
+        if Student.objects.filter(reg_number=reg_number).exists():
+            raise forms.ValidationError(
+                "This registration number is already registered. Please login instead."
+            )
+        
+        return reg_number
 
     def clean(self):
         cleaned_data = super().clean()
@@ -147,11 +175,71 @@ class StudentRegistrationForm(forms.ModelForm):
     def save(self, commit=True):
         student = super().save(commit=False)
         student.set_password(self.cleaned_data['password'])
+        
+        # Get level from RegisteredRegNumber
+        from core.models import RegisteredRegNumber
+        try:
+            reg_entry = RegisteredRegNumber.objects.get(reg_number=student.reg_number)
+            student.level = reg_entry.level
+        except RegisteredRegNumber.DoesNotExist:
+            pass
+        
         if commit:
             student.save()
-        return student
-    
+        return student 
 
+
+class RegistrationRequestForm(forms.ModelForm):
+    """Form for students not in the system to request registration"""
+    
+    class Meta:
+        model = RegistrationRequest
+        fields = ['reg_number', 'full_name', 'email', 'phone', 'level', 'reason', 'proof_document']
+        widgets = {
+            'reg_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., 2024/1/12345'
+            }),
+            'full_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your full name'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'your.email@example.com'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '+234XXXXXXXXXX'
+            }),
+            'level': forms.Select(attrs={'class': 'form-control'}),
+            'reason': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Explain why you should be added to the system (e.g., newly admitted student, transferred from another department, etc.)'
+            }),
+        }
+    
+    def clean_reg_number(self):
+        reg_number = self.cleaned_data.get('reg_number')
+        
+        # Check if already registered
+        if Student.objects.filter(reg_number=reg_number).exists():
+            raise forms.ValidationError(
+                "This registration number is already registered. Please login instead."
+            )
+        
+        # Check if request already exists
+        if RegistrationRequest.objects.filter(
+            reg_number=reg_number, 
+            status='pending'
+        ).exists():
+            raise forms.ValidationError(
+                "You have already submitted a registration request. Please wait for admin approval."
+            )
+        
+        return reg_number
+    
 class StudentLoginForm(forms.Form):
     reg_number = forms.CharField(
         max_length=50,

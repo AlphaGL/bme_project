@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Complete Payment - FUTO BME{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-credit-card fa-3x text-primary"></i>
+                            </div>
+                            <h3 class="fw-bold">Complete Your Payment</h3>
+                            <p class="text-muted">One-time payment for portal access</p>
+                        </div>
+
+                        <!-- Student Info -->
+                        <div class="alert alert-info">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-user me-2"></i>Account Details
+                            </h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ student.full_name }}</p>
+                            <p class="mb-0"><strong>Reg Number:</strong> {{ student.reg_number }}</p>
+                        </div>
+
+                        <!-- Payment Breakdown -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">Payment Breakdown</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Portal Access Fee</span>
+                                    <span class="fw-bold">₦{{ department_amount }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Transaction Charges</span>
+                                    <span class="text-muted">₦{{ charges }}</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold">Total Amount</span>
+                                    <span class="fw-bold text-primary h5 mb-0">₦{{ amount }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Features -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3">What you get:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Lifetime access to student portal
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    CGPA calculator & tracking
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Access to past questions
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Course handbook & timetables
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Departmental dues receipt
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Research hub participation
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Payment Status -->
+                        {% if payment and payment.status == 'success' %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Payment already completed!
+                            <a href="{% url 'student_dashboard' %}" class="alert-link">Go to Dashboard</a>
+                        </div>
+                        {% elif payment and payment.status == 'processing' %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            Payment is being processed...
+                        </div>
+                        {% endif %}
+
+                        <!-- Pay Now Button -->
+                        <form method="post" id="paymentForm">
+                            {% csrf_token %}
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" id="payButton">
+                                    <i class="fas fa-lock me-2"></i>Pay Now - ₦{{ amount }}
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Security Notice -->
+                        <div class="text-center mt-4">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Secured by Paystack. Your payment information is safe.
+                            </small>
+                        </div>
+
+                        <!-- Help Section -->
+                        <hr class="my-4">
+                        <div class="alert alert-light">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-question-circle me-2"></i>Need Help?
+                            </h6>
+                            <p class="small mb-0">
+                                If you encounter any issues with payment, please contact:
+                                <br><strong>Email:</strong> support@futobme.edu.ng
+                                <br><strong>Phone:</strong> +234 XXX XXX XXXX
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back to Login -->
+                <div class="text-center mt-3">
+                    <a href="{% url 'student_login' %}" class="text-muted">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Add loading state to payment button
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    const button = document.getElementById('payButton');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+});
+</script>
+{% endblock %}

@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here')
 
 # DEBUG = config('DEBUG', default=True, cast=bool)
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -123,3 +123,8 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 # Login URLs
 LOGIN_URL = 'admin_login'
 LOGIN_REDIRECT_URL = 'admin_dashboard'
+
+
+# Paystack Configuration
+PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='')
+PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='')

@@ -14,6 +14,9 @@ urlpatterns = [
     
     # Student Portal
     path('student/register/', views.student_register, name='student_register'),
+    path('student/registration-request/', views.registration_request, name='registration_request'),
+    path('student/payment/', views.student_payment, name='student_payment'),
+    path('student/payment/verify/', views.verify_payment, name='verify_payment'),
     path('student/login/', views.student_login, name='student_login'),
     path('student/logout/', views.student_logout, name='student_logout'),
     path('student/dashboard/', views.student_dashboard, name='student_dashboard'),
@@ -31,6 +34,21 @@ urlpatterns = [
     path('student/course/<int:pk>/delete/', views.delete_course, name='delete_course'),
     path('student/calculate-cgpa/', views.calculate_cgpa, name='calculate_cgpa'),
     path('student/cgpa-history/', views.cgpa_history, name='cgpa_history'),
+
+    # Admin - Registration Requests Management
+    path('encrypted/admin/futobme/registration-requests/', views.manage_registration_requests, name='manage_registration_requests'),
+    path('encrypted/admin/futobme/registration-requests/approve/<int:pk>/', views.approve_registration_request, name='approve_registration_request'),
+    path('encrypted/admin/futobme/registration-requests/reject/<int:pk>/', views.reject_registration_request, name='reject_registration_request'),
+    
+    # Admin - Registered Numbers Management
+    path('encrypted/admin/futobme/registered-numbers/', views.manage_registered_numbers, name='manage_registered_numbers'),
+    path('encrypted/admin/futobme/registered-numbers/add/', views.add_registered_number, name='add_registered_number'),
+    path('encrypted/admin/futobme/registered-numbers/delete/<str:pk>/', views.delete_registered_number, name='delete_registered_number'),
+    path('encrypted/admin/futobme/registered-numbers/bulk-import/', views.bulk_import_numbers, name='bulk_import_numbers'),
+    
+    # Admin - Payments Management
+    path('encrypted/admin/futobme/payments/', views.manage_payments, name='manage_payments'),
+    path('encrypted/admin/futobme/payments/<int:pk>/', views.view_payment_detail, name='view_payment_detail'),
     
     # Admin Authentication
     path('encrypted/admin/futobme/login/', views.admin_login, name='admin_login'),

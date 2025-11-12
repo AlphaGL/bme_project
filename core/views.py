@@ -2,19 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count, Sum, Avg
-from .models import( Staff, Exco, PastQuestion, 
-                    LibraryResource, Testimonial, Announcement, 
-                    Student, Semester, Course, CGPACalculation, DepartmentalDues, 
-                    CourseHandbook, Timetable, AcademicCalendar,ResearchTeam, ResearchArticle, GuestContributor, 
-                     ResearchContribution, ResearchQuiz, QuizSubmission, 
-                     TeamMembership, ArticleLike,ReceiptVerification,ReceiptPrintLog)
-from .forms import (StaffForm, ExcoForm, PastQuestionForm, LibraryResourceForm, TestimonialForm, 
-                    AnnouncementForm, StudentRegistrationForm, StudentLoginForm, 
-                    StudentProfileForm, SemesterForm, CourseForm,  DepartmentalDuesForm,
-                    CourseHandbookForm, TimetableForm, AcademicCalendarForm,ResearchTeamForm, ResearchArticleForm, GuestContributorForm,
-                    GuestLoginForm, ResearchContributionForm, ResearchQuizForm,
-                    QuizSubmissionForm, TeamJoinForm,PasswordChangeForm)
+from django.db.models import Count, Sum, Avg, Q
+from .models import *
+from .forms import *
 import json
 from django.utils import timezone
 from django.http import HttpResponse
@@ -22,9 +12,39 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 import logging
+from core.paystack import initialize_student_payment, verify_student_payment
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+import hashlib
+import hmac
+
 
 logger = logging.getLogger(__name__)
 
+@csrf_exempt
+def paystack_webhook(request):
+    if request.method == 'POST':
+        # Verify signature
+        signature = request.headers.get('X-Paystack-Signature')
+        body = request.body
+        
+        hash_value = hmac.new(
+            settings.PAYSTACK_SECRET_KEY.encode('utf-8'),
+            body,
+            hashlib.sha512
+        ).hexdigest()
+        
+        if hash_value == signature:
+            import json
+            data = json.loads(body)
+            
+            if data['event'] == 'charge.success':
+                reference = data['data']['reference']
+                verify_student_payment(reference)
+                
+            return JsonResponse({'status': 'success'})
+    
+    return JsonResponse({'status': 'error'}, status=400)
 
 def get_client_ip(request):
     """Get client IP address"""
@@ -321,8 +341,29 @@ def admin_dashboard(request):
         'library_count': LibraryResource.objects.count(),
         'testimonials_pending': Testimonial.objects.filter(is_approved=False).count(),
         'announcements_active': Announcement.objects.filter(is_active=True).count(),
+        
+        # NEW STATS
+        'registered_students': Student.objects.count(),
+        'paid_students': Student.objects.filter(has_paid=True).count(),
+        'pending_payments': Student.objects.filter(has_paid=False).count(),
+        'registration_requests': RegistrationRequest.objects.filter(status='pending').count(),
+        'total_revenue': StudentPayment.objects.filter(
+            status='success'
+        ).aggregate(Sum('department_amount'))['department_amount__sum'] or 0,
     }
-    return render(request, 'core/admin/dashboard.html', {'stats': stats})
+    
+    # Recent registrations
+    recent_students = Student.objects.order_by('-created_at')[:5]
+    pending_requests = RegistrationRequest.objects.filter(status='pending').order_by('-created_at')[:5]
+    recent_payments = StudentPayment.objects.order_by('-created_at')[:5]
+    
+    context = {
+        'stats': stats,
+        'recent_students': recent_students,
+        'pending_requests': pending_requests,
+        'recent_payments': recent_payments,
+    }
+    return render(request, 'core/admin/dashboard.html', context)
 
 # Staff Management
 @login_required
@@ -454,6 +495,7 @@ def manage_library(request):
 
 # STUDENT AUTHENTICATION
 def student_register(request):
+    """Updated registration view with payment"""
     if request.session.get('student_reg_number'):
         return redirect('student_dashboard')
     
@@ -461,16 +503,109 @@ def student_register(request):
         form = StudentRegistrationForm(request.POST)
         if form.is_valid():
             student = form.save()
-            request.session['student_reg_number'] = student.reg_number
-            messages.success(request, f'Welcome {student.full_name}! Your account has been created successfully.')
-            return redirect('student_dashboard')
+            
+            # Store student reg number in session temporarily
+            request.session['pending_payment_student'] = student.reg_number
+            
+            messages.success(
+                request, 
+                f'Account created successfully! Please complete payment to access your dashboard.'
+            )
+            return redirect('student_payment')
     else:
         form = StudentRegistrationForm()
     
     return render(request, 'core/student/register.html', {'form': form})
 
+def student_payment(request):
+    """Payment page for new students"""
+    reg_number = request.session.get('pending_payment_student')
+    
+    if not reg_number:
+        messages.error(request, 'Please register first.')
+        return redirect('student_register')
+    
+    try:
+        student = Student.objects.get(reg_number=reg_number)
+    except Student.DoesNotExist:
+        messages.error(request, 'Student account not found.')
+        return redirect('student_register')
+    
+    # Check if already paid
+    if student.has_paid:
+        request.session['student_reg_number'] = student.reg_number
+        if 'pending_payment_student' in request.session:
+            del request.session['pending_payment_student']
+        return redirect('student_dashboard')
+    
+    # Check for existing payment
+    try:
+        payment = StudentPayment.objects.get(student=student)
+        if payment.status == 'success' and payment.is_verified:
+            student.has_paid = True
+            student.save()
+            request.session['student_reg_number'] = student.reg_number
+            if 'pending_payment_student' in request.session:
+                del request.session['pending_payment_student']
+            return redirect('student_dashboard')
+    except StudentPayment.DoesNotExist:
+        payment = None
+    
+    # Initialize payment on POST
+    if request.method == 'POST':
+        result = initialize_student_payment(student, request)
+        
+        if result.get('status'):
+            # Redirect to Paystack payment page
+            return redirect(result['authorization_url'])
+        else:
+            messages.error(request, result.get('message', 'Payment initialization failed'))
+    
+    context = {
+        'student': student,
+        'amount': 1250,
+        'department_amount': 1000,
+        'charges': 250,
+        'payment': payment,
+        'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY
+    }
+    
+    return render(request, 'core/student/payment.html', context)
+
+
+def verify_payment(request):
+    """Verify payment callback from Paystack"""
+    reference = request.GET.get('reference')
+    
+    if not reference:
+        messages.error(request, 'No payment reference provided')
+        return redirect('student_login')
+    
+    # Verify payment
+    result = verify_student_payment(reference)
+    
+    if result.get('status'):
+        student = result['student']
+        
+        # Log the student in
+        request.session['student_reg_number'] = student.reg_number
+        
+        # Clear pending payment session
+        if 'pending_payment_student' in request.session:
+            del request.session['pending_payment_student']
+        
+        messages.success(
+            request, 
+            f'Payment successful! Welcome to FUTO BME Portal, {student.full_name}!'
+        )
+        return redirect('student_dashboard')
+    else:
+        messages.error(request, result.get('message', 'Payment verification failed'))
+        return redirect('student_payment')
+    
 
 def student_login(request):
+    """Updated login view to check payment status"""
     if request.session.get('student_reg_number'):
         return redirect('student_dashboard')
     
@@ -485,6 +620,12 @@ def student_login(request):
                 
                 # Check if password matches
                 if student.check_password(password):
+                    # Check if student has paid
+                    if not student.has_paid:
+                        request.session['pending_payment_student'] = student.reg_number
+                        messages.warning(request, 'Please complete payment to access your dashboard.')
+                        return redirect('student_payment')
+                    
                     request.session['student_reg_number'] = student.reg_number
                     messages.success(request, f'Welcome back, {student.full_name}!')
                     return redirect('student_dashboard')
@@ -496,8 +637,6 @@ def student_login(request):
         form = StudentLoginForm()
     
     return render(request, 'core/student/login.html', {'form': form})
-
-
 
 def student_logout(request):
     if 'student_reg_number' in request.session:
@@ -512,9 +651,310 @@ def student_required(view_func):
         if not request.session.get('student_reg_number'):
             messages.error(request, 'Please login to access the student portal.')
             return redirect('student_login')
+        
+        # Verify payment status
+        reg_number = request.session.get('student_reg_number')
+        try:
+            student = Student.objects.get(reg_number=reg_number)
+            if not student.has_paid:
+                request.session['pending_payment_student'] = student.reg_number
+                del request.session['student_reg_number']
+                messages.warning(request, 'Please complete payment to access your dashboard.')
+                return redirect('student_payment')
+        except Student.DoesNotExist:
+            del request.session['student_reg_number']
+            messages.error(request, 'Student account not found.')
+            return redirect('student_login')
+        
         return view_func(request, *args, **kwargs)
     return wrapper
 
+
+def registration_request(request):
+    """Allow students not in system to request registration"""
+    if request.method == 'POST':
+        form = RegistrationRequestForm(request.POST, request.FILES)
+        if form.is_valid():
+            req = form.save()
+            messages.success(
+                request,
+                'Your registration request has been submitted successfully! '
+                'Admin will review your request and contact you via email.'
+            )
+            return redirect('index')
+    else:
+        form = RegistrationRequestForm()
+    
+    return render(request, 'core/student/registration_request.html', {'form': form})
+
+
+@login_required
+def manage_registered_numbers(request):
+    """Admin view to manage registered registration numbers"""
+    numbers = RegisteredRegNumber.objects.all().order_by('-date_registered')
+    
+    # Search functionality
+    search = request.GET.get('search', '')
+    if search:
+        numbers = numbers.filter(
+            Q(reg_number__icontains=search) | 
+            Q(full_name__icontains=search)
+        )
+    
+    # Level filter
+    level = request.GET.get('level', '')
+    if level:
+        numbers = numbers.filter(level=level)
+    
+    context = {
+        'numbers': numbers,
+        'total_count': numbers.count(),
+        'active_count': numbers.filter(is_active=True).count(),
+        'search': search,
+        'selected_level': level,
+    }
+    return render(request, 'core/admin/manage_registered_numbers.html', context)
+
+
+@login_required
+def add_registered_number(request):
+    """Admin manually adds a registration number"""
+    if request.method == 'POST':
+        reg_number = request.POST.get('reg_number', '').strip()
+        full_name = request.POST.get('full_name', '').strip()
+        level = request.POST.get('level', '100')
+        
+        if reg_number:
+            obj, created = RegisteredRegNumber.objects.update_or_create(
+                reg_number=reg_number,
+                defaults={
+                    'full_name': full_name if full_name else None,
+                    'level': level,
+                    'registered_by': request.user,
+                    'is_active': True
+                }
+            )
+            
+            if created:
+                messages.success(request, f'Successfully added registration number: {reg_number}')
+            else:
+                messages.success(request, f'Successfully updated registration number: {reg_number}')
+        else:
+            messages.error(request, 'Registration number is required')
+        
+        return redirect('manage_registered_numbers')
+    
+    return render(request, 'core/admin/add_registered_number.html')
+
+
+@login_required
+def delete_registered_number(request, pk):
+    """Admin deletes a registration number"""
+    number = get_object_or_404(RegisteredRegNumber, pk=pk)
+    
+    # Check if any student is using this reg number
+    if Student.objects.filter(reg_number=pk).exists():
+        messages.error(
+            request, 
+            f'Cannot delete {pk}. A student account already exists with this number.'
+        )
+        return redirect('manage_registered_numbers')
+    
+    if request.method == 'POST':
+        number.delete()
+        messages.success(request, f'Successfully deleted registration number: {pk}')
+        return redirect('manage_registered_numbers')
+    
+    return render(request, 'core/admin/confirm_delete.html', {
+        'object': number,
+        'type': 'Registration Number'
+    })
+
+
+@login_required
+def bulk_import_numbers(request):
+    """Admin uploads CSV to bulk import registration numbers"""
+    if request.method == 'POST':
+        csv_file = request.FILES.get('csv_file')
+        
+        if not csv_file:
+            messages.error(request, 'Please upload a CSV file')
+            return redirect('manage_registered_numbers')
+        
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, 'File must be a CSV')
+            return redirect('manage_registered_numbers')
+        
+        try:
+            import csv
+            from io import TextIOWrapper
+            
+            success_count = 0
+            error_count = 0
+            errors = []
+            
+            # Read CSV
+            file_wrapper = TextIOWrapper(csv_file.file, encoding='utf-8')
+            reader = csv.DictReader(file_wrapper)
+            
+            for row in reader:
+                try:
+                    reg_number = row.get('reg_number', '').strip()
+                    full_name = row.get('full_name', '').strip()
+                    level = row.get('level', '100').strip()
+                    
+                    if not reg_number:
+                        continue
+                    
+                    RegisteredRegNumber.objects.update_or_create(
+                        reg_number=reg_number,
+                        defaults={
+                            'full_name': full_name if full_name else None,
+                            'level': level,
+                            'registered_by': request.user,
+                            'is_active': True
+                        }
+                    )
+                    success_count += 1
+                    
+                except Exception as e:
+                    error_count += 1
+                    errors.append(f"Row {row}: {str(e)}")
+            
+            if success_count > 0:
+                messages.success(
+                    request, 
+                    f'Successfully imported {success_count} registration numbers'
+                )
+            
+            if error_count > 0:
+                messages.warning(
+                    request,
+                    f'{error_count} errors occurred. Check logs for details.'
+                )
+            
+        except Exception as e:
+            messages.error(request, f'Import failed: {str(e)}')
+        
+        return redirect('manage_registered_numbers')
+    
+    return render(request, 'core/admin/bulk_import_numbers.html')
+
+
+@login_required
+def view_payment_detail(request, pk):
+    """View detailed payment information"""
+    payment = get_object_or_404(StudentPayment, pk=pk)
+    
+    # Parse verification data if exists
+    verification_data = None
+    if payment.verification_data:
+        import json
+        try:
+            verification_data = json.loads(payment.verification_data)
+        except:
+            pass
+    
+    context = {
+        'payment': payment,
+        'verification_data': verification_data,
+    }
+    return render(request, 'core/admin/payment_detail.html', context)
+
+
+# Admin views for managing registration requests
+@login_required
+def manage_registration_requests(request):
+    """Admin view to manage registration requests"""
+    requests_list = RegistrationRequest.objects.all().order_by('-created_at')
+    
+    pending_count = requests_list.filter(status='pending').count()
+    approved_count = requests_list.filter(status='approved').count()
+    rejected_count = requests_list.filter(status='rejected').count()
+    
+    context = {
+        'requests': requests_list,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+    }
+    return render(request, 'core/admin/manage_registration_requests.html', context)
+
+
+@login_required
+def approve_registration_request(request, pk):
+    """Approve a registration request and add to registered numbers"""
+    reg_request = get_object_or_404(RegistrationRequest, pk=pk)
+    
+    if request.method == 'POST':
+        # Add to registered numbers
+        RegisteredRegNumber.objects.create(
+            reg_number=reg_request.reg_number,
+            full_name=reg_request.full_name,
+            level=reg_request.level,
+            registered_by=request.user
+        )
+        
+        # Update request status
+        reg_request.status = 'approved'
+        reg_request.reviewed_by = request.user
+        reg_request.reviewed_at = timezone.now()
+        reg_request.admin_notes = request.POST.get('notes', '')
+        reg_request.save()
+        
+        messages.success(
+            request,
+            f'Registration request approved! {reg_request.reg_number} can now register.'
+        )
+        
+        # TODO: Send email notification to student
+        
+        return redirect('manage_registration_requests')
+    
+    return render(request, 'core/admin/approve_registration_request.html', {
+        'reg_request': reg_request
+    })
+
+
+@login_required
+def reject_registration_request(request, pk):
+    """Reject a registration request"""
+    reg_request = get_object_or_404(RegistrationRequest, pk=pk)
+    
+    if request.method == 'POST':
+        reg_request.status = 'rejected'
+        reg_request.reviewed_by = request.user
+        reg_request.reviewed_at = timezone.now()
+        reg_request.admin_notes = request.POST.get('notes', '')
+        reg_request.save()
+        
+        messages.success(request, 'Registration request rejected.')
+        
+        # TODO: Send email notification to student
+        
+        return redirect('manage_registration_requests')
+    
+    return render(request, 'core/admin/reject_registration_request.html', {
+        'reg_request': reg_request
+    })
+
+
+@login_required
+def manage_payments(request):
+    """Admin view to see all payments"""
+    payments = StudentPayment.objects.all().select_related('student').order_by('-created_at')
+    
+    total_revenue = payments.filter(status='success').aggregate(
+        Sum('department_amount')
+    )['department_amount__sum'] or 0
+    
+    context = {
+        'payments': payments,
+        'total_revenue': total_revenue,
+        'total_payments': payments.filter(status='success').count(),
+        'pending_payments': payments.filter(status='pending').count(),
+    }
+    return render(request, 'core/admin/manage_payments.html', context)
 
 @student_required
 def change_password(request):
