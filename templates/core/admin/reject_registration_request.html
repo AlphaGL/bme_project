@@ -1,0 +1,299 @@
+{% extends 'core/admin/base.html' %}
+{% load static %}
+
+{% block title %}Reject Registration Request - FUTO BME Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'manage_registration_requests' %}">Registration Requests</a></li>
+                    <li class="breadcrumb-item active">Reject Request</li>
+                </ol>
+            </nav>
+
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-times-circle text-danger me-2"></i>
+                    Reject Registration Request
+                </h2>
+                <a href="{% url 'manage_registration_requests' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back
+                </a>
+            </div>
+
+            <!-- Request Details Card -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user-times me-2"></i>
+                                Request Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Student Information -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Registration Number</h6>
+                                    <p class="fs-5 fw-bold text-danger">{{ reg_request.reg_number }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Full Name</h6>
+                                    <p class="fs-5">{{ reg_request.full_name }}</p>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Email Address</h6>
+                                    <p>
+                                        <i class="fas fa-envelope me-2"></i>
+                                        {{ reg_request.email }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Phone Number</h6>
+                                    <p>
+                                        <i class="fas fa-phone me-2"></i>
+                                        {{ reg_request.phone|default:"Not provided" }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Level</h6>
+                                    <p>
+                                        <span class="badge bg-info">{{ reg_request.get_level_display }}</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Request Date</h6>
+                                    <p>
+                                        <i class="fas fa-calendar me-2"></i>
+                                        {{ reg_request.created_at|date:"F j, Y g:i A" }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Reason for Request -->
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Reason for Registration Request</h6>
+                                <div class="border rounded p-3 bg-light">
+                                    <p class="mb-0">{{ reg_request.reason }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Proof Document -->
+                            {% if reg_request.proof_document %}
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Proof Document</h6>
+                                <a href="{{ reg_request.proof_document.url }}" 
+                                   target="_blank" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-file-download me-2"></i>
+                                    View Uploaded Document
+                                </a>
+                            </div>
+                            <hr>
+                            {% endif %}
+
+                            <!-- Rejection Form -->
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Warning:</strong> Rejecting this request will permanently remove it from the pending list. The student will NOT be able to register for the portal.
+                            </div>
+
+                            <form method="post" class="mt-4">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">
+                                        <i class="fas fa-sticky-note me-2"></i>
+                                        Reason for Rejection <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea name="notes" 
+                                              id="notes" 
+                                              class="form-control" 
+                                              rows="4" 
+                                              placeholder="Please provide a detailed reason for rejecting this request. This helps maintain transparency and proper record keeping."
+                                              required></textarea>
+                                    <small class="text-muted">
+                                        This reason will be saved for internal records and may be shared with the student if they inquire.
+                                    </small>
+                                </div>
+
+                                <!-- Common Rejection Reasons -->
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-list me-2"></i>
+                                        Quick Select Common Reasons:
+                                    </label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary reason-btn" 
+                                                data-reason="Registration number does not match FUTO BME records">
+                                            Not a BME Student
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary reason-btn" 
+                                                data-reason="Insufficient proof of enrollment provided">
+                                            Insufficient Proof
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary reason-btn" 
+                                                data-reason="Registration number format is incorrect">
+                                            Invalid Format
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary reason-btn" 
+                                                data-reason="Duplicate registration request detected">
+                                            Duplicate Request
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary reason-btn" 
+                                                data-reason="Request does not meet department requirements">
+                                            Does Not Meet Requirements
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Confirmation Checkbox -->
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           id="confirmRejection" 
+                                           required>
+                                    <label class="form-check-label" for="confirmRejection">
+                                        I confirm that I have carefully reviewed this request and want to reject it. I understand this action will remove the request permanently.
+                                    </label>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'manage_registration_requests' %}" 
+                                       class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-danger btn-lg">
+                                        <i class="fas fa-times-circle me-2"></i>
+                                        Reject Request
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Info Card -->
+                    <div class="card mt-3 border-info">
+                        <div class="card-body">
+                            <h6 class="text-info mb-2">
+                                <i class="fas fa-info-circle me-2"></i>
+                                What Happens After Rejection?
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>The request will be marked as "Rejected" in the system</li>
+                                <li>The student's registration number will NOT be added to approved list</li>
+                                <li>The student can submit a new request with better documentation</li>
+                                <li>All rejection details are logged for audit purposes</li>
+                                <li>You can view rejected requests in the "Rejected" filter</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.badge {
+    padding: 0.5em 1em;
+    font-size: 0.9rem;
+}
+
+.btn {
+    border-radius: 6px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.form-check-input:checked {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.reason-btn {
+    transition: all 0.2s ease;
+}
+
+.reason-btn:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.05);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quick select reason buttons
+    const reasonButtons = document.querySelectorAll('.reason-btn');
+    const notesTextarea = document.getElementById('notes');
+    
+    reasonButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const reason = this.getAttribute('data-reason');
+            const currentText = notesTextarea.value.trim();
+            
+            if (currentText === '') {
+                notesTextarea.value = reason;
+            } else {
+                notesTextarea.value = currentText + '\n\n' + reason;
+            }
+            
+            // Visual feedback
+            this.classList.add('active');
+            setTimeout(() => {
+                this.classList.remove('active');
+            }, 300);
+        });
+    });
+    
+    // Form submission confirmation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const confirmed = confirm(
+            'Are you sure you want to reject this registration request?\n\n' +
+            'This action cannot be undone. The student will need to submit a new request if needed.'
+        );
+        
+        if (!confirmed) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

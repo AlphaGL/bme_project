@@ -1,0 +1,216 @@
+{% extends 'core/admin/base.html' %}
+{% load static %}
+
+{% block title %}Approve Registration Request - FUTO BME Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'manage_registration_requests' %}">Registration Requests</a></li>
+                    <li class="breadcrumb-item active">Approve Request</li>
+                </ol>
+            </nav>
+
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    Approve Registration Request
+                </h2>
+                <a href="{% url 'manage_registration_requests' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back
+                </a>
+            </div>
+
+            <!-- Request Details Card -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user-check me-2"></i>
+                                Request Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Student Information -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Registration Number</h6>
+                                    <p class="fs-5 fw-bold text-primary">{{ reg_request.reg_number }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Full Name</h6>
+                                    <p class="fs-5">{{ reg_request.full_name }}</p>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Email Address</h6>
+                                    <p>
+                                        <i class="fas fa-envelope me-2"></i>
+                                        {{ reg_request.email }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Phone Number</h6>
+                                    <p>
+                                        <i class="fas fa-phone me-2"></i>
+                                        {{ reg_request.phone|default:"Not provided" }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Level</h6>
+                                    <p>
+                                        <span class="badge bg-info">{{ reg_request.get_level_display }}</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">Request Date</h6>
+                                    <p>
+                                        <i class="fas fa-calendar me-2"></i>
+                                        {{ reg_request.created_at|date:"F j, Y g:i A" }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Reason for Request -->
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Reason for Registration Request</h6>
+                                <div class="border rounded p-3 bg-light">
+                                    <p class="mb-0">{{ reg_request.reason }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Proof Document -->
+                            {% if reg_request.proof_document %}
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Proof Document</h6>
+                                <a href="{{ reg_request.proof_document.url }}" 
+                                   target="_blank" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-file-download me-2"></i>
+                                    View Uploaded Document
+                                </a>
+                            </div>
+                            <hr>
+                            {% endif %}
+
+                            <!-- Approval Form -->
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> Approving this request will add the registration number to the system and allow the student to register for the portal.
+                            </div>
+
+                            <form method="post" class="mt-4">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">
+                                        <i class="fas fa-sticky-note me-2"></i>
+                                        Admin Notes (Optional)
+                                    </label>
+                                    <textarea name="notes" 
+                                              id="notes" 
+                                              class="form-control" 
+                                              rows="3" 
+                                              placeholder="Add any notes about this approval..."></textarea>
+                                    <small class="text-muted">These notes are for internal record keeping only.</small>
+                                </div>
+
+                                <!-- Confirmation Checkbox -->
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           id="confirmApproval" 
+                                           required>
+                                    <label class="form-check-label" for="confirmApproval">
+                                        I confirm that I have verified the student's information and want to approve this registration request.
+                                    </label>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'manage_registration_requests' %}" 
+                                       class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        Approve Request
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Warning Card -->
+                    <div class="card mt-3 border-warning">
+                        <div class="card-body">
+                            <h6 class="text-warning mb-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Important Information
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>Once approved, the student will receive an email notification (if email system is configured)</li>
+                                <li>The registration number will be added to the approved list</li>
+                                <li>The student can immediately register for portal access</li>
+                                <li>This action can be reversed later if needed</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.badge {
+    padding: 0.5em 1em;
+    font-size: 0.9rem;
+}
+
+.btn {
+    border-radius: 6px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+</style>
+{% endblock %}
