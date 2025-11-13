@@ -42,7 +42,7 @@
   font-size: 1.1rem;
 }
 
-/* Mobile adjustments - ALWAYS show text on all screens */
+/* Mobile adjustments - Keep text visible on all screen sizes */
 @media (max-width: 768px) {
   .pwa-install-btn {
     bottom: 70px;
@@ -50,18 +50,9 @@
     padding: 10px 18px;
     font-size: 0.85rem;
   }
-  
-  /* Ensure text is always visible */
-  .pwa-install-btn .install-text {
-    display: inline !important;
-  }
-  
-  .pwa-install-btn i {
-    margin-right: 0.5rem !important;
-  }
 }
 
-/* Extra small screens - slightly smaller but text still visible */
+/* Extra small screens - slightly smaller but still shows text */
 @media (max-width: 400px) {
   .pwa-install-btn {
     bottom: 70px;
@@ -70,14 +61,8 @@
     font-size: 0.8rem;
   }
   
-  /* Keep text visible even on tiny screens */
-  .pwa-install-btn .install-text {
-    display: inline !important;
-  }
-  
   .pwa-install-btn i {
     font-size: 1rem;
-    margin-right: 0.4rem !important;
   }
 }
 
