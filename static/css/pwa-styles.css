@@ -42,21 +42,27 @@
   font-size: 1.1rem;
 }
 
-/* Mobile adjustments */
+/* Mobile adjustments - Keep text visible on all screen sizes */
 @media (max-width: 768px) {
   .pwa-install-btn {
     bottom: 70px;
     right: 15px;
-    padding: 10px 20px;
-    font-size: 0.9rem;
+    padding: 10px 18px;
+    font-size: 0.85rem;
   }
+}
 
-  .pwa-install-btn .install-text {
-    display: none;
+/* Extra small screens - slightly smaller but still shows text */
+@media (max-width: 400px) {
+  .pwa-install-btn {
+    bottom: 70px;
+    right: 10px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
   }
-
+  
   .pwa-install-btn i {
-    margin-right: 0 !important;
+    font-size: 1rem;
   }
 }
 
