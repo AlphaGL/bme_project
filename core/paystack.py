@@ -22,7 +22,7 @@ class PaystackAPI:
         
         Args:
             email: Customer email
-            amount: Amount in kobo (multiply naira by 100)
+            amount: Amount in naira (will be converted to kobo)
             reference: Unique transaction reference
             callback_url: URL to redirect after payment
         
@@ -31,8 +31,26 @@ class PaystackAPI:
         """
         url = f"{self.BASE_URL}/transaction/initialize"
         
-        # Convert amount to kobo (Paystack uses kobo)
-        amount_in_kobo = int(Decimal(amount) * 100)
+        # FIXED: Ensure amount is properly converted to kobo (integer)
+        try:
+            # Convert to Decimal first if it's not already
+            if not isinstance(amount, Decimal):
+                amount = Decimal(str(amount))
+            
+            # Convert to kobo (multiply by 100) and ensure it's an integer
+            amount_in_kobo = int(amount * 100)
+            
+            # IMPORTANT: Paystack requires minimum amount of 10 naira (1000 kobo)
+            if amount_in_kobo < 1000:
+                return {
+                    'status': False,
+                    'message': 'Amount must be at least ₦10.00'
+                }
+        except (ValueError, TypeError) as e:
+            return {
+                'status': False,
+                'message': f'Invalid amount format: {str(e)}'
+            }
         
         payload = {
             "email": email,
@@ -52,9 +70,34 @@ class PaystackAPI:
         }
         
         try:
-            response = requests.post(url, json=payload, headers=self.headers)
+            print(f"DEBUG: Initializing payment with payload: {payload}")  # Debug log
+            response = requests.post(url, json=payload, headers=self.headers, timeout=30)
+            
+            # Log response for debugging
+            print(f"DEBUG: Response status: {response.status_code}")
+            print(f"DEBUG: Response body: {response.text}")
+            
             response.raise_for_status()
             return response.json()
+            
+        except requests.exceptions.HTTPError as e:
+            # Get detailed error message from Paystack
+            error_msg = 'Payment initialization failed'
+            try:
+                error_data = response.json()
+                error_msg = error_data.get('message', str(e))
+            except:
+                error_msg = str(e)
+            
+            return {
+                'status': False,
+                'message': error_msg
+            }
+        except requests.exceptions.Timeout:
+            return {
+                'status': False,
+                'message': 'Payment service timeout. Please try again.'
+            }
         except requests.exceptions.RequestException as e:
             return {
                 'status': False,
@@ -74,7 +117,7 @@ class PaystackAPI:
         url = f"{self.BASE_URL}/transaction/verify/{reference}"
         
         try:
-            response = requests.get(url, headers=self.headers)
+            response = requests.get(url, headers=self.headers, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -88,7 +131,7 @@ class PaystackAPI:
         url = f"{self.BASE_URL}/transaction/{transaction_id}"
         
         try:
-            response = requests.get(url, headers=self.headers)
+            response = requests.get(url, headers=self.headers, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -139,36 +182,67 @@ def initialize_student_payment(student, request):
         dict: Payment initialization response
     """
     from core.models import StudentPayment
+    import uuid
     
     # Create or get payment record
     payment = create_payment_for_student(student, request)
     
+    # CRITICAL FIX: Generate a NEW unique reference each time
+    # This prevents "Duplicate Transaction Reference" error
+    new_reference = f"BME-{uuid.uuid4().hex[:12].upper()}"
+    payment.reference = new_reference
+    payment.status = 'pending'  # Reset status
+    payment.save()
+    
+    # FIXED: Generate proper email if student doesn't have one
+    email = student.email
+    if not email or '@' not in email:
+        # Use a valid email format
+        email = f"{student.reg_number.replace('/', '_')}@student.futo.edu.ng"
+    
     # Initialize with Paystack
     paystack = PaystackAPI()
     
-    # Build callback URL
+    # Build callback URL (make sure it's absolute URL)
     callback_url = request.build_absolute_uri('/student/payment/verify/')
     
+    print(f"DEBUG: Initializing payment for {student.reg_number}")
+    print(f"DEBUG: Email: {email}")
+    print(f"DEBUG: Amount: {payment.amount}")
+    print(f"DEBUG: Reference: {new_reference}")
+    print(f"DEBUG: Callback URL: {callback_url}")
+    
     response = paystack.initialize_transaction(
-        email=student.email or f"{student.reg_number}@student.futo.edu.ng",
+        email=email,
         amount=payment.amount,
-        reference=payment.reference,
+        reference=new_reference,
         callback_url=callback_url
     )
+    
+    print(f"DEBUG: Paystack response: {response}")
     
     if response.get('status'):
         # Save Paystack details
         data = response.get('data', {})
         payment.access_code = data.get('access_code')
-        payment.paystack_reference = data.get('reference')
+        
+        # CRITICAL: Save BOTH references
+        # Paystack returns its own reference which might be different
+        payment.paystack_reference = data.get('reference', new_reference)
         payment.status = 'processing'
         payment.save()
+        
+        print(f"DEBUG: Payment saved with:")
+        print(f"  - Our reference: {payment.reference}")
+        print(f"  - Paystack reference: {payment.paystack_reference}")
+        print(f"  - Access code: {payment.access_code}")
         
         return {
             'status': True,
             'authorization_url': data.get('authorization_url'),
             'access_code': data.get('access_code'),
-            'reference': payment.reference
+            'reference': payment.reference,
+            'paystack_reference': payment.paystack_reference
         }
     else:
         return {
@@ -182,7 +256,7 @@ def verify_student_payment(reference):
     Verify a student's payment
     
     Args:
-        reference: Payment reference
+        reference: Payment reference (could be our reference or Paystack's)
     
     Returns:
         dict: Verification result
@@ -191,13 +265,24 @@ def verify_student_payment(reference):
     from django.utils import timezone
     import json
     
+    # Try to find payment by either reference field
+    payment = None
     try:
         payment = StudentPayment.objects.get(reference=reference)
+        print(f"DEBUG verify: Found by our reference")
     except StudentPayment.DoesNotExist:
-        return {
-            'status': False,
-            'message': 'Payment record not found'
-        }
+        try:
+            payment = StudentPayment.objects.get(paystack_reference=reference)
+            print(f"DEBUG verify: Found by Paystack reference")
+        except StudentPayment.DoesNotExist:
+            print(f"DEBUG verify: Payment not found with reference: {reference}")
+            # Try to find any pending payment (last resort)
+            payment = StudentPayment.objects.filter(status='processing').first()
+            if not payment:
+                return {
+                    'status': False,
+                    'message': 'Payment record not found'
+                }
     
     # Verify with Paystack
     paystack = PaystackAPI()

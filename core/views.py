@@ -581,7 +581,46 @@ def verify_payment(request):
         messages.error(request, 'No payment reference provided')
         return redirect('student_login')
     
-    # Verify payment
+    # DEBUG: Log what we're looking for
+    print(f"DEBUG: Looking for payment with reference: {reference}")
+    
+    # Try to find payment by either our reference OR Paystack's reference
+    from core.models import StudentPayment
+    
+    try:
+        # First try to find by our reference
+        payment = StudentPayment.objects.get(reference=reference)
+        print(f"DEBUG: Found payment by our reference")
+    except StudentPayment.DoesNotExist:
+        try:
+            # If not found, try by Paystack reference
+            payment = StudentPayment.objects.get(paystack_reference=reference)
+            print(f"DEBUG: Found payment by Paystack reference")
+        except StudentPayment.DoesNotExist:
+            # If still not found, check if student has a pending payment
+            if request.session.get('pending_payment_student'):
+                reg_number = request.session.get('pending_payment_student')
+                try:
+                    from core.models import Student
+                    student = Student.objects.get(reg_number=reg_number)
+                    payment = StudentPayment.objects.filter(student=student).first()
+                    
+                    if payment:
+                        print(f"DEBUG: Found payment by student lookup")
+                        # Update the reference to match what Paystack returned
+                        payment.paystack_reference = reference
+                        payment.save()
+                    else:
+                        raise StudentPayment.DoesNotExist
+                except:
+                    messages.error(request, 'Payment record not found. Please contact support.')
+                    return redirect('student_payment')
+            else:
+                messages.error(request, 'Payment record not found. Please contact support.')
+                return redirect('student_login')
+    
+    # Verify payment with Paystack
+    from core.paystack import verify_student_payment
     result = verify_student_payment(reference)
     
     if result.get('status'):
@@ -601,8 +640,7 @@ def verify_payment(request):
         return redirect('student_dashboard')
     else:
         messages.error(request, result.get('message', 'Payment verification failed'))
-        return redirect('student_payment')
-    
+        return redirect('student_payment') 
 
 def student_login(request):
     """Updated login view to check payment status"""

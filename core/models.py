@@ -277,9 +277,9 @@ class StudentPayment(models.Model):
         return f"{self.student.reg_number} - {self.reference} ({self.status})"
     
     def save(self, *args, **kwargs):
-        if not self.reference:
-            import uuid
-            self.reference = f"BME-{uuid.uuid4().hex[:12].upper()}"
+        # Always generate a new reference (don't check if it exists)
+        import uuid
+        self.reference = f"BME-{uuid.uuid4().hex[:12].upper()}"
         super().save(*args, **kwargs)
         
 

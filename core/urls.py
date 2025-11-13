@@ -1,6 +1,7 @@
 # core/urls.py
 from django.urls import path
 from . import views
+from django.views.generic import TemplateView
 
 urlpatterns = [
     # Public Pages
@@ -183,4 +184,7 @@ urlpatterns = [
     path('encrypted/admin/futobme/research/submissions/', views.manage_quiz_submissions, name='manage_quiz_submissions'),
     path('encrypted/admin/futobme/research/submissions/award/<int:pk>/', views.award_quiz_submission, name='award_quiz_submission'),
     path('encrypted/admin/futobme/research/submissions/detail/<int:pk>/', views.view_quiz_submission_detail, name='view_quiz_submission_detail'),
+
+
+    path('offline/', TemplateView.as_view(template_name='core/offline.html'), name='offline'),
 ]

@@ -1,31 +1,24 @@
 {
-  "name": "FUTO BME - Biomedical Engineering Portal",
+  "name": "FUTO BME Portal",
   "short_name": "FUTO BME",
-  "description": "Federal University of Technology Owerri - Biomedical Engineering Department Portal",
+  "description": "Federal University of Technology Owerri - Biomedical Engineering Department Portal. Access past questions, library resources, research hub, and student portal.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#8B1538",
   "theme_color": "#8B1538",
   "orientation": "portrait-primary",
-  "scope": "/",
   "icons": [
     {
       "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
       "sizes": "192x192",
       "type": "image/jpeg",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
       "sizes": "512x512",
       "type": "image/jpeg",
-      "purpose": "any"
-    },
-    {
-      "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
-      "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
   "screenshots": [
@@ -36,7 +29,7 @@
       "form_factor": "narrow"
     }
   ],
-  "categories": ["education", "university"],
+  "categories": ["education", "productivity"],
   "shortcuts": [
     {
       "name": "Student Portal",
@@ -52,7 +45,7 @@
     },
     {
       "name": "Past Questions",
-      "short_name": "PQs",
+      "short_name": "Questions",
       "description": "Browse past questions",
       "url": "/past-questions/",
       "icons": [
@@ -73,18 +66,7 @@
           "sizes": "96x96"
         }
       ]
-    },
-    {
-      "name": "Research Hub",
-      "short_name": "Research",
-      "description": "Explore research projects",
-      "url": "/research/",
-      "icons": [
-        {
-          "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
-          "sizes": "96x96"
-        }
-      ]
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }
