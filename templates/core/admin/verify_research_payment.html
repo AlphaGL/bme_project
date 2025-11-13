@@ -1,0 +1,88 @@
+<!-- templates/core/admin/verify_research_payment.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2 class="mb-4">Verify Research Club Registration</h2>
+            
+            <!-- Student Info -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Student Information</h5>
+                    <p><strong>Name:</strong> {{ registration.student.full_name }}</p>
+                    <p><strong>Reg Number:</strong> {{ registration.student.reg_number }}</p>
+                    <p><strong>Email:</strong> {{ registration.student.email }}</p>
+                    <p><strong>Level:</strong> {{ registration.student.get_level_display }}</p>
+                </div>
+            </div>
+            
+            <!-- Payment Details -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Payment Details</h5>
+                    <p><strong>Amount:</strong> ₦{{ registration.amount_paid }}</p>
+                    <p><strong>Reference:</strong> {{ registration.payment_reference }}</p>
+                    <p><strong>Description Used:</strong> {{ registration.transaction_description }}</p>
+                    <p><strong>Payment Date:</strong> {{ registration.payment_date }}</p>
+                    <p><strong>Registered:</strong> {{ registration.registered_at|date:"F d, Y g:i A" }}</p>
+                </div>
+            </div>
+            
+            <!-- Payment Proof -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Payment Proof</h5>
+                    {% if registration.payment_proof %}
+                        <img src="{{ registration.payment_proof.url }}" 
+                             class="img-fluid" 
+                             alt="Payment Proof"
+                             style="max-height: 500px;">
+                    {% else %}
+                        <p class="text-muted">No proof uploaded</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Action Form -->
+            <div class="card">
+                <div class="card-body">
+                    <h5>Verification Action</h5>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Rejection Reason (if rejecting)</label>
+                            <textarea name="rejection_reason" 
+                                      class="form-control" 
+                                      rows="3"
+                                      placeholder="Reason for rejection..."></textarea>
+                        </div>
+                        
+                        <div class="btn-group w-100">
+                            <button type="submit" 
+                                    name="action" 
+                                    value="verify" 
+                                    class="btn btn-success btn-lg"
+                                    onclick="return confirm('Verify this payment?')">
+                                <i class="fas fa-check me-2"></i>
+                                Verify & Approve
+                            </button>
+                            <button type="submit" 
+                                    name="action" 
+                                    value="reject" 
+                                    class="btn btn-danger btn-lg"
+                                    onclick="return confirm('Reject this registration?')">
+                                <i class="fas fa-times me-2"></i>
+                                Reject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

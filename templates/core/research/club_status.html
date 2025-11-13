@@ -1,0 +1,108 @@
+<!-- templates/core/research/club_status.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5 text-center">
+                    {% if registration.is_approved %}
+                        <!-- APPROVED -->
+                        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                        <h2 class="text-success mb-3">Registration Approved!</h2>
+                        <p class="lead">You are now a research club member</p>
+                        <div class="my-4 p-3 bg-light rounded">
+                            <p class="mb-2"><strong>Reference:</strong> {{ registration.payment_reference }}</p>
+                            <p class="mb-2"><strong>Amount:</strong> ₦{{ registration.amount_paid }}</p>
+                            <p class="mb-0"><strong>Approved:</strong> {{ registration.approved_at|date:"F d, Y" }}</p>
+                        </div>
+                        <a href="{% url 'research_hub' %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-flask me-2"></i>
+                            Go to Research Hub
+                        </a>
+                    
+                    {% elif registration.payment_status == 'pending' %}
+                        <!-- PENDING -->
+                        <i class="fas fa-clock fa-4x text-warning mb-3"></i>
+                        <h2 class="text-warning mb-3">Pending Verification</h2>
+                        <p class="lead">Your payment is being verified</p>
+                        <div class="my-4 p-3 bg-light rounded">
+                            <p class="mb-2"><strong>Reference:</strong> {{ registration.payment_reference }}</p>
+                            <p class="mb-2"><strong>Amount:</strong> ₦{{ registration.amount_paid }}</p>
+                            <p class="mb-2"><strong>Submitted:</strong> {{ registration.registered_at|date:"F d, Y" }}</p>
+                            <p class="mb-0"><strong>Status:</strong> Awaiting admin approval</p>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            The Director of Research will verify your payment soon. You'll be notified once approved.
+                        </div>
+                        
+                        <!-- WhatsApp Notification Button -->
+                        <button id="notifyDirector" class="btn btn-success mt-3">
+                            <i class="fab fa-whatsapp me-2"></i>
+                            Notify Director of Research
+                        </button>
+                    
+                    {% else %}
+                        <!-- REJECTED -->
+                        <i class="fas fa-times-circle fa-4x text-danger mb-3"></i>
+                        <h2 class="text-danger mb-3">Registration Rejected</h2>
+                        <div class="alert alert-danger">
+                            <strong>Reason:</strong> {{ registration.rejection_reason }}
+                        </div>
+                        <a href="{% url 'research_club_register' %}" class="btn btn-primary">
+                            Register Again
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notifyBtn = document.getElementById('notifyDirector');
+    
+    if (notifyBtn) {
+        notifyBtn.addEventListener('click', function() {
+            // Get registration details
+            const userName = "{{ registration.student.full_name }}";
+            const regNumber = "{{ registration.student.reg_number }}";
+            const level = "{{ registration.student.get_level_display }}";
+            const reference = "{{ registration.payment_reference }}";
+            const amount = "{{ registration.amount_paid }}";
+            const date = "{{ registration.registered_at|date:'F d, Y' }}";
+            
+            // This is a student registration (ResearchClubRegistration is for students only)
+            const membershipType = 'Student';
+            
+            // Create WhatsApp message
+            const message = `🔬 *New Research Club Payment*\n\n` +
+                          `👤 *Name:* ${userName}\n` +
+                          `🎓 *Reg Number:* ${regNumber}\n` +
+                          `📚 *Level:* ${level}\n` +
+                          `📋 *Type:* ${membershipType}\n` +
+                          `💰 *Amount:* ₦${amount}\n` +
+                          `🔖 *Reference:* ${reference}\n` +
+                          `📅 *Date:* ${date}\n\n` +
+                          `Please verify and approve this payment.`;
+            
+            // WhatsApp API URL
+            const phoneNumber = '2349071720720'; // Director's number
+            const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            
+            // Open WhatsApp
+            window.open(whatsappURL, '_blank');
+            
+            // Update button to show message was sent
+            notifyBtn.innerHTML = '<i class="fas fa-check me-2"></i>Notification Sent';
+            notifyBtn.classList.remove('btn-success');
+            notifyBtn.classList.add('btn-secondary');
+            notifyBtn.disabled = true;
+        });
+    }
+});
+</script>
+{% endblock %}

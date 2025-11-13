@@ -334,35 +334,292 @@ def admin_logout(request):
 # Admin Dashboard
 @login_required
 def admin_dashboard(request):
-    stats = {
+    """Comprehensive admin dashboard with all statistics"""
+    from django.db.models import Sum, Avg, Count, Q
+    from datetime import timedelta
+    
+    # ==================== CONTENT MANAGEMENT STATS ====================
+    content_stats = {
         'staff_count': Staff.objects.count(),
         'excos_count': Exco.objects.count(),
         'past_questions_count': PastQuestion.objects.count(),
         'library_count': LibraryResource.objects.count(),
+        'testimonials_total': Testimonial.objects.count(),
         'testimonials_pending': Testimonial.objects.filter(is_approved=False).count(),
+        'testimonials_approved': Testimonial.objects.filter(is_approved=True).count(),
+        'announcements_total': Announcement.objects.count(),
         'announcements_active': Announcement.objects.filter(is_active=True).count(),
-        
-        # NEW STATS
-        'registered_students': Student.objects.count(),
+    }
+    
+    # ==================== STUDENT PORTAL STATS ====================
+    student_stats = {
+        'total_registered': Student.objects.count(),
         'paid_students': Student.objects.filter(has_paid=True).count(),
         'pending_payments': Student.objects.filter(has_paid=False).count(),
-        'registration_requests': RegistrationRequest.objects.filter(status='pending').count(),
+        'registered_numbers': RegisteredRegNumber.objects.filter(is_active=True).count(),
+        'registration_requests_pending': RegistrationRequest.objects.filter(status='pending').count(),
+        'registration_requests_total': RegistrationRequest.objects.count(),
+    }
+    
+    # Payment Statistics
+    payment_stats = {
+        'total_payments': StudentPayment.objects.count(),
+        'successful_payments': StudentPayment.objects.filter(status='success').count(),
+        'pending_payments': StudentPayment.objects.filter(status='pending').count(),
+        'failed_payments': StudentPayment.objects.filter(status='failed').count(),
         'total_revenue': StudentPayment.objects.filter(
             status='success'
         ).aggregate(Sum('department_amount'))['department_amount__sum'] or 0,
+        'total_charges': StudentPayment.objects.filter(
+            status='success'
+        ).aggregate(Sum('charges'))['charges__sum'] or 0,
     }
     
-    # Recent registrations
-    recent_students = Student.objects.order_by('-created_at')[:5]
-    pending_requests = RegistrationRequest.objects.filter(status='pending').order_by('-created_at')[:5]
-    recent_payments = StudentPayment.objects.order_by('-created_at')[:5]
+    # ==================== ACADEMIC RESOURCES STATS ====================
+    academic_stats = {
+        'course_handbook_total': CourseHandbook.objects.count(),
+        'course_handbook_by_level': CourseHandbook.objects.values('level').annotate(
+            count=Count('id')
+        ).order_by('level'),
+        'timetables_total': Timetable.objects.count(),
+        'timetables_active': Timetable.objects.filter(is_active=True).count(),
+        'exam_timetables': Timetable.objects.filter(timetable_type='Exam').count(),
+        'class_timetables': Timetable.objects.filter(timetable_type='Class').count(),
+        'calendars_total': AcademicCalendar.objects.count(),
+        'calendars_active': AcademicCalendar.objects.filter(is_active=True).count(),
+    }
     
+    # ==================== DEPARTMENTAL DUES STATS ====================
+    dues_stats = {
+        'total_dues': DepartmentalDues.objects.count(),
+        'approved_dues': DepartmentalDues.objects.filter(is_approved=True).count(),
+        'pending_dues': DepartmentalDues.objects.filter(is_approved=False).count(),
+        'dues_revenue': DepartmentalDues.objects.filter(
+            is_approved=True
+        ).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0,
+        'recent_prints': ReceiptPrintLog.objects.count(),
+        'verification_attempts': ReceiptVerification.objects.count(),
+        'valid_verifications': ReceiptVerification.objects.filter(is_valid=True).count(),
+    }
+    
+    # ==================== RESEARCH CLUB STATS ====================
+    research_stats = {
+        # Teams
+        'teams_total': ResearchTeam.objects.count(),
+        'teams_active': ResearchTeam.objects.filter(is_active=True).count(),
+        'total_team_members': TeamMembership.objects.count(),
+        
+        # Articles
+        'articles_total': ResearchArticle.objects.count(),
+        'articles_draft': ResearchArticle.objects.filter(status='Draft').count(),
+        'articles_in_progress': ResearchArticle.objects.filter(status='In Progress').count(),
+        'articles_under_review': ResearchArticle.objects.filter(status='Under Review').count(),
+        'articles_published': ResearchArticle.objects.filter(status='Published').count(),
+        'total_article_views': ResearchArticle.objects.aggregate(Sum('views_count'))['views_count__sum'] or 0,
+        'total_article_likes': ResearchArticle.objects.aggregate(Sum('likes_count'))['likes_count__sum'] or 0,
+        
+        # Contributions
+        'contributions_total': ResearchContribution.objects.count(),
+        'contributions_pending': ResearchContribution.objects.filter(is_approved=False).count(),
+        'contributions_approved': ResearchContribution.objects.filter(is_approved=True).count(),
+        'student_contributions': ResearchContribution.objects.filter(
+            student_contributor__isnull=False
+        ).count(),
+        'guest_contributions': ResearchContribution.objects.filter(
+            guest_contributor__isnull=False
+        ).count(),
+        
+        # Registrations
+        'club_registrations_total': ResearchClubRegistration.objects.count(),
+        'club_registrations_pending': ResearchClubRegistration.objects.filter(
+            payment_status='pending'
+        ).count(),
+        'club_registrations_verified': ResearchClubRegistration.objects.filter(
+            payment_status='verified'
+        ).count(),
+        'club_registrations_approved': ResearchClubRegistration.objects.filter(
+            is_approved=True
+        ).count(),
+        'club_revenue': ResearchClubRegistration.objects.filter(
+            payment_status='verified'
+        ).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0,
+        
+        # Guest Contributors
+        'guests_total': GuestContributor.objects.count(),
+        'guests_pending': GuestContributor.objects.filter(payment_status='pending').count(),
+        'guests_verified': GuestContributor.objects.filter(payment_status='verified').count(),
+        'guests_approved': GuestContributor.objects.filter(is_approved=True).count(),
+        'guest_revenue': GuestContributor.objects.filter(
+            payment_status='verified'
+        ).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0,
+        
+        # Quizzes
+        'quizzes_total': ResearchQuiz.objects.count(),
+        'quizzes_active': ResearchQuiz.objects.filter(is_active=True).count(),
+        'quiz_submissions_total': QuizSubmission.objects.count(),
+        'quiz_submissions_pending': QuizSubmission.objects.filter(is_awarded=False).count(),
+        'quiz_submissions_awarded': QuizSubmission.objects.filter(is_awarded=True).count(),
+    }
+    
+    # ==================== FINANCIAL SUMMARY ====================
+    financial_summary = {
+        'portal_fees': payment_stats['total_revenue'],
+        'departmental_dues': dues_stats['dues_revenue'],
+        'research_club': research_stats['club_revenue'],
+        'guest_contributors': research_stats['guest_revenue'],
+        'platform_charges': payment_stats['total_charges'],
+    }
+    financial_summary['total_revenue'] = sum([
+        financial_summary['portal_fees'],
+        financial_summary['departmental_dues'],
+        financial_summary['research_club'],
+        financial_summary['guest_contributors'],
+    ])
+    financial_summary['net_revenue'] = (
+        financial_summary['total_revenue'] - financial_summary['platform_charges']
+    )
+    
+    # ==================== RECENT ACTIVITIES ====================
+    # Get recent items (last 7 days for some, all-time top 5 for others)
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    
+    recent_activities = {
+        'students': Student.objects.order_by('-created_at')[:5],
+        'payments': StudentPayment.objects.filter(
+            status='success'
+        ).order_by('-created_at')[:5],
+        'registration_requests': RegistrationRequest.objects.filter(
+            status='pending'
+        ).order_by('-created_at')[:5],
+        'dues_pending': DepartmentalDues.objects.filter(
+            is_approved=False
+        ).order_by('-created_at')[:5],
+        'testimonials_pending': Testimonial.objects.filter(
+            is_approved=False
+        ).order_by('-created_at')[:5],
+        'club_registrations_pending': ResearchClubRegistration.objects.filter(
+            payment_status='pending'
+        ).order_by('-registered_at')[:5],
+        'guests_pending': GuestContributor.objects.filter(
+            payment_status='pending'
+        ).order_by('-created_at')[:5],
+        'contributions_pending': ResearchContribution.objects.filter(
+            is_approved=False
+        ).select_related('article', 'student_contributor', 'guest_contributor').order_by('-created_at')[:5],
+        'quiz_submissions_pending': QuizSubmission.objects.filter(
+            is_awarded=False
+        ).select_related('quiz', 'student_submitter', 'guest_submitter').order_by('-created_at')[:5],
+    }
+    
+    # ==================== CHARTS DATA ====================
+    # Student registration trend (last 30 days)
+    from django.db.models.functions import TruncDate
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    
+    registration_trend = Student.objects.filter(
+        created_at__gte=thirty_days_ago
+    ).annotate(
+        date=TruncDate('created_at')
+    ).values('date').annotate(
+        count=Count('reg_number')
+    ).order_by('date')
+    
+    # Payment status distribution
+    payment_distribution = {
+        'success': StudentPayment.objects.filter(status='success').count(),
+        'pending': StudentPayment.objects.filter(status='pending').count(),
+        'failed': StudentPayment.objects.filter(status='failed').count(),
+    }
+    
+    # Research articles by status
+    article_distribution = {
+        'draft': research_stats['articles_draft'],
+        'in_progress': research_stats['articles_in_progress'],
+        'under_review': research_stats['articles_under_review'],
+        'published': research_stats['articles_published'],
+    }
+    
+    # Top contributors
+    top_contributors = ResearchContribution.objects.filter(
+        is_approved=True,
+        student_contributor__isnull=False
+    ).values(
+        'student_contributor__full_name',
+        'student_contributor__reg_number'
+    ).annotate(
+        contribution_count=Count('id')
+    ).order_by('-contribution_count')[:5]
+    
+    # ==================== ALERTS & WARNINGS ====================
+    alerts = []
+    
+    # Check for pending items
+    if recent_activities['registration_requests'].count() > 0:
+        alerts.append({
+            'type': 'warning',
+            'message': f"{recent_activities['registration_requests'].count()} registration requests pending approval",
+            'url': 'manage_registration_requests'
+        })
+    
+    if recent_activities['dues_pending'].count() > 0:
+        alerts.append({
+            'type': 'info',
+            'message': f"{recent_activities['dues_pending'].count()} departmental dues pending approval",
+            'url': 'manage_departmental_dues'
+        })
+    
+    if recent_activities['testimonials_pending'].count() > 0:
+        alerts.append({
+            'type': 'info',
+            'message': f"{recent_activities['testimonials_pending'].count()} testimonials pending review",
+            'url': 'manage_testimonials'
+        })
+    
+    if research_stats['contributions_pending'] > 0:
+        alerts.append({
+            'type': 'warning',
+            'message': f"{research_stats['contributions_pending']} research contributions pending approval",
+            'url': 'manage_contributions'
+        })
+    
+    if research_stats['club_registrations_pending'] > 0:
+        alerts.append({
+            'type': 'warning',
+            'message': f"{research_stats['club_registrations_pending']} research club registrations pending verification",
+            'url': 'manage_research_registrations'
+        })
+    
+    if research_stats['guests_pending'] > 0:
+        alerts.append({
+            'type': 'info',
+            'message': f"{research_stats['guests_pending']} guest contributor applications pending",
+            'url': 'manage_guest_contributors'
+        })
+    
+    if research_stats['quiz_submissions_pending'] > 0:
+        alerts.append({
+            'type': 'info',
+            'message': f"{research_stats['quiz_submissions_pending']} quiz submissions pending review",
+            'url': 'manage_quiz_submissions'
+        })
+    
+    # Compile all data
     context = {
-        'stats': stats,
-        'recent_students': recent_students,
-        'pending_requests': pending_requests,
-        'recent_payments': recent_payments,
+        'content_stats': content_stats,
+        'student_stats': student_stats,
+        'payment_stats': payment_stats,
+        'academic_stats': academic_stats,
+        'dues_stats': dues_stats,
+        'research_stats': research_stats,
+        'financial_summary': financial_summary,
+        'recent_activities': recent_activities,
+        'registration_trend': list(registration_trend),
+        'payment_distribution': payment_distribution,
+        'article_distribution': article_distribution,
+        'top_contributors': list(top_contributors),
+        'alerts': alerts,
     }
+    
     return render(request, 'core/admin/dashboard.html', context)
 
 # Staff Management
@@ -1019,11 +1276,15 @@ def change_password(request):
 # STUDENT DASHBOARD
 @student_required
 def student_dashboard(request):
+    """Comprehensive student dashboard with all information"""
+    from django.db.models import Sum, Count
+    
     reg_number = request.session.get('student_reg_number')
     student = Student.objects.get(reg_number=reg_number)
     
-    # Get all semesters and their GPAs
-    semesters = student.semesters.all()
+    # ==================== ACADEMIC STATISTICS ====================
+    # CGPA Calculations
+    semesters = student.semesters.all().prefetch_related('courses')
     semester_data = []
     total_credits = 0
     total_points = 0
@@ -1041,29 +1302,334 @@ def student_dashboard(request):
             'semester': semester,
             'gpa': gpa,
             'courses_count': courses.count(),
-            'credits': semester_credits
+            'credits': semester_credits,
+            'courses': courses
         })
     
-    # Calculate CGPA
+    # Calculate overall CGPA
     cgpa = round(total_points / total_credits, 2) if total_credits > 0 else 0.0
     
     # Get latest CGPA calculation
     latest_cgpa = student.cgpa_calculations.first()
     
-    # Recent announcements
-    announcements = Announcement.objects.filter(is_active=True)[:3]
+    # Get all CGPA history for trend
+    cgpa_history = student.cgpa_calculations.all()[:10]
     
-    context = {
-        'student': student,
-        'semesters': semester_data,
+    # Academic Classification
+    classification = "N/A"
+    if cgpa >= 4.50:
+        classification = "First Class"
+    elif cgpa >= 3.50:
+        classification = "Second Class Upper"
+    elif cgpa >= 2.40:
+        classification = "Second Class Lower"
+    elif cgpa >= 1.50:
+        classification = "Third Class"
+    elif cgpa > 0:
+        classification = "Pass"
+    
+    academic_stats = {
         'cgpa': cgpa,
         'total_credits': total_credits,
-        'latest_cgpa': latest_cgpa,
+        'total_semesters': semesters.count(),
+        'total_courses': sum(s['courses_count'] for s in semester_data),
+        'classification': classification,
+        'latest_calculation': latest_cgpa,
+        'history_count': cgpa_history.count(),
+    }
+    
+    # ==================== FINANCIAL STATUS ====================
+    # Departmental Dues
+    dues_status = {
+        'exists': False,
+        'is_approved': False,
+        'amount_paid': 0,
+        'receipt_number': None,
+        'academic_session': None,
+        'can_print': False,
+    }
+    
+    try:
+        dues = DepartmentalDues.objects.get(student=student)
+        dues_status = {
+            'exists': True,
+            'is_approved': dues.is_approved,
+            'amount_paid': dues.amount_paid,
+            'receipt_number': dues.receipt_number,
+            'academic_session': dues.academic_session,
+            'can_print': dues.is_approved,
+            'watermark_code': dues.watermark_code,
+            'approved_at': dues.approved_at,
+            'print_count': dues.print_count,
+        }
+    except DepartmentalDues.DoesNotExist:
+        pass
+    
+    # Portal Payment Status
+    portal_payment = {
+        'has_paid': student.has_paid,
+        'payment_verified_at': student.payment_verified_at,
+    }
+    
+    try:
+        payment = StudentPayment.objects.get(student=student)
+        portal_payment['amount'] = payment.amount
+        portal_payment['reference'] = payment.reference
+        portal_payment['status'] = payment.status
+        portal_payment['paid_at'] = payment.paid_at
+    except StudentPayment.DoesNotExist:
+        pass
+    
+    # ==================== RESEARCH CLUB STATUS ====================
+    research_status = {
+        'registered': False,
+        'is_approved': False,
+        'payment_status': None,
+        'amount_paid': 0,
+        'can_join_teams': False,
+        'can_contribute': False,
+    }
+    
+    try:
+        registration = student.research_club_registration
+        research_status = {
+            'registered': True,
+            'is_approved': registration.is_approved,
+            'payment_status': registration.payment_status,
+            'amount_paid': registration.amount_paid,
+            'registered_at': registration.registered_at,
+            'can_join_teams': registration.is_approved,
+            'can_contribute': registration.is_approved,
+            'payment_reference': registration.payment_reference,
+        }
+    except ResearchClubRegistration.DoesNotExist:
+        pass
+    
+    # ==================== RESEARCH ACTIVITIES ====================
+    # Team Memberships
+    team_memberships = TeamMembership.objects.filter(
+        student=student
+    ).select_related('team')
+    
+    teams_data = []
+    for membership in team_memberships:
+        team = membership.team
+        teams_data.append({
+            'membership': membership,
+            'team': team,
+            'member_count': team.get_member_count(),
+            'article_count': team.articles.count(),
+            'published_count': team.articles.filter(status='Published').count(),
+        })
+    
+    # Research Contributions
+    contributions = ResearchContribution.objects.filter(
+        student_contributor=student
+    ).select_related('article', 'article__team')
+    
+    contributions_stats = {
+        'total': contributions.count(),
+        'approved': contributions.filter(is_approved=True).count(),
+        'pending': contributions.filter(is_approved=False).count(),
+        'by_article': contributions.values(
+            'article__title', 'article__id'
+        ).annotate(count=Count('id')),
+    }
+    
+    # Quiz Activities
+    quiz_submissions = QuizSubmission.objects.filter(
+        student_submitter=student
+    ).select_related('quiz')
+    
+    quiz_stats = {
+        'total': quiz_submissions.count(),
+        'awarded': quiz_submissions.filter(is_awarded=True).count(),
+        'pending': quiz_submissions.filter(is_awarded=False).count(),
+        'total_points': quiz_submissions.filter(
+            is_awarded=True
+        ).aggregate(
+            total=Sum('quiz__points')
+        )['total'] or 0,
+    }
+    
+    # Article Interactions
+    liked_articles = ArticleLike.objects.filter(
+        student=student
+    ).select_related('article')
+    
+    article_comments = ArticleComment.objects.filter(
+        student=student
+    ).select_related('article')
+    
+    interaction_stats = {
+        'liked_count': liked_articles.count(),
+        'comments_count': article_comments.count(),
+        'articles_viewed': 0,  # This would require tracking
+    }
+    
+    # ==================== ANNOUNCEMENTS & UPDATES ====================
+    announcements = Announcement.objects.filter(is_active=True).order_by('-created_at')[:5]
+    
+    # ==================== ACADEMIC RESOURCES ====================
+    # Resources for student's level
+    past_questions = PastQuestion.objects.filter(
+        level=student.level
+    ).order_by('-year')[:5]
+    
+    library_resources = LibraryResource.objects.filter(
+        Q(level=student.level) | Q(level__isnull=True)
+    ).order_by('-created_at')[:5]
+    
+    # Course Handbook for current level
+    course_handbook = CourseHandbook.objects.filter(
+        level=student.level
+    ).order_by('semester', 'course_code')
+    
+    first_semester_courses = course_handbook.filter(semester='First')
+    second_semester_courses = course_handbook.filter(semester='Second')
+    
+    # Timetables
+    current_timetables = Timetable.objects.filter(
+        is_active=True,
+        level__in=[student.level, 'All']
+    ).order_by('-created_at')[:3]
+    
+    # Academic Calendar
+    active_calendar = AcademicCalendar.objects.filter(is_active=True).first()
+    
+    resources_stats = {
+        'past_questions_count': PastQuestion.objects.filter(level=student.level).count(),
+        'library_resources_count': LibraryResource.objects.filter(
+            Q(level=student.level) | Q(level__isnull=True)
+        ).count(),
+        'first_sem_courses': first_semester_courses.count(),
+        'second_sem_courses': second_semester_courses.count(),
+        'timetables_available': current_timetables.count(),
+        'calendar_available': active_calendar is not None,
+    }
+    
+    # ==================== QUICK STATS SUMMARY ====================
+    quick_stats = {
+        'cgpa': cgpa,
+        'classification': classification,
+        'semesters': semesters.count(),
+        'total_credits': total_credits,
+        'research_teams': team_memberships.count(),
+        'contributions': contributions_stats['total'],
+        'quiz_points': quiz_stats['total_points'],
+        'liked_articles': interaction_stats['liked_count'],
+    }
+    
+    # ==================== ACTIVITY SUMMARY ====================
+    activity_summary = {
+        'last_login': student.updated_at,
+        'cgpa_calculations': student.cgpa_calculations.count(),
+        'semesters_added': semesters.count(),
+        'recent_contribution': contributions.order_by('-created_at').first(),
+        'recent_quiz': quiz_submissions.order_by('-created_at').first(),
+        'dues_status': 'Approved' if dues_status['is_approved'] else 'Pending' if dues_status['exists'] else 'Not Paid',
+        'research_status': 'Active' if research_status['is_approved'] else 'Pending' if research_status['registered'] else 'Not Registered',
+    }
+    
+    # ==================== RECOMMENDATIONS ====================
+    recommendations = []
+    
+    # Academic recommendations
+    if semesters.count() == 0:
+        recommendations.append({
+            'type': 'academic',
+            'icon': 'calculator',
+            'title': 'Start CGPA Tracking',
+            'message': 'Add your first semester to start tracking your CGPA',
+            'action': 'Add Semester',
+            'url': 'add_semester'
+        })
+    
+    if cgpa > 0 and cgpa < 2.40:
+        recommendations.append({
+            'type': 'warning',
+            'icon': 'exclamation-triangle',
+            'title': 'Academic Support Needed',
+            'message': f'Your current CGPA ({cgpa}) is below Second Class Lower. Consider academic support.',
+            'action': 'View Resources',
+            'url': 'library'
+        })
+    
+    # Financial recommendations
+    if not dues_status['exists']:
+        recommendations.append({
+            'type': 'info',
+            'icon': 'receipt',
+            'title': 'Pay Departmental Dues',
+            'message': 'Complete your departmental dues payment to get your receipt',
+            'action': 'Contact Admin',
+            'url': '#'
+        })
+    
+    # Research recommendations
+    if not research_status['registered']:
+        recommendations.append({
+            'type': 'research',
+            'icon': 'flask',
+            'title': 'Join Research Club',
+            'message': 'Register for the research club to join teams and contribute to articles',
+            'action': 'Register Now',
+            'url': 'research_club_register'
+        })
+    elif research_status['is_approved'] and team_memberships.count() == 0:
+        recommendations.append({
+            'type': 'research',
+            'icon': 'users',
+            'title': 'Join a Research Team',
+            'message': 'Explore available teams and start contributing to research',
+            'action': 'Browse Teams',
+            'url': 'research_hub'
+        })
+    
+    # Quiz recommendations
+    if research_status['is_approved']:
+        active_quizzes = ResearchQuiz.objects.filter(is_active=True).exclude(
+            submissions__student_submitter=student
+        ).count()
+        
+        if active_quizzes > 0:
+            recommendations.append({
+                'type': 'quiz',
+                'icon': 'trophy',
+                'title': 'Active Quizzes Available',
+                'message': f'{active_quizzes} quiz(zes) available. Test your knowledge and earn points!',
+                'action': 'View Quizzes',
+                'url': 'research_quizzes'
+            })
+    
+    # ==================== COMPILE CONTEXT ====================
+    context = {
+        'student': student,
+        'quick_stats': quick_stats,
+        'academic_stats': academic_stats,
+        'semesters': semester_data,
+        'cgpa_history': cgpa_history,
+        'dues_status': dues_status,
+        'portal_payment': portal_payment,
+        'research_status': research_status,
+        'teams_data': teams_data,
+        'contributions_stats': contributions_stats,
+        'quiz_stats': quiz_stats,
+        'interaction_stats': interaction_stats,
         'announcements': announcements,
+        'past_questions': past_questions,
+        'library_resources': library_resources,
+        'first_semester_courses': first_semester_courses,
+        'second_semester_courses': second_semester_courses,
+        'current_timetables': current_timetables,
+        'active_calendar': active_calendar,
+        'resources_stats': resources_stats,
+        'activity_summary': activity_summary,
+        'recommendations': recommendations,
+        'latest_cgpa': latest_cgpa,
     }
     
     return render(request, 'core/student/dashboard.html', context)
-
 
 # PROFILE MANAGEMENT
 @student_required
@@ -1873,7 +2439,38 @@ def research_team_detail(request, team_id):
     }
     return render(request, 'core/research/team_detail.html', context)
 
+def research_club_required(view_func):
+    """Decorator to check if student has paid and been approved for research club"""
+    def wrapper(request, *args, **kwargs):
+        if not request.session.get('student_reg_number'):
+            messages.error(request, 'Please login first.')
+            return redirect('student_login')
+        
+        reg_number = request.session.get('student_reg_number')
+        student = Student.objects.get(reg_number=reg_number)
+        
+        # Check if registered and approved for research club
+        try:
+            registration = student.research_club_registration
+            if not registration.is_approved:
+                messages.warning(
+                    request, 
+                    'Please register for the research club to access this feature. '
+                    'Registration fee: ₦1,000'
+                )
+                return redirect('research_club_register')
+        except ResearchClubRegistration.DoesNotExist:
+            messages.warning(
+                request,
+                'Please register for the research club to join teams. '
+                'Registration fee: ₦1,000'
+            )
+            return redirect('research_club_register')
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
+@research_club_required
 def join_research_team(request, team_id):
     """Student joins a research team"""
     if not request.session.get('student_reg_number'):
@@ -2464,3 +3061,178 @@ def view_quiz_submission_detail(request, pk):
     """Admin views detailed quiz submission"""
     submission = get_object_or_404(QuizSubmission, pk=pk)
     return render(request, 'core/admin/quiz_submission_detail.html', {'submission': submission})
+
+
+
+
+@student_required
+def research_club_register(request):
+    """Student registers for research club with manual payment"""
+    reg_number = request.session.get('student_reg_number')
+    student = Student.objects.get(reg_number=reg_number)
+    
+    # Check if already registered
+    if hasattr(student, 'research_club_registration'):
+        registration = student.research_club_registration
+        if registration.is_approved:
+            messages.info(request, 'You are already a research club member!')
+            return redirect('research_hub')
+        elif registration.payment_status == 'pending':
+            messages.warning(request, 'Your registration is pending verification.')
+            return redirect('research_club_status')
+    
+    if request.method == 'POST':
+        form = ResearchClubRegistrationForm(request.POST, request.FILES)
+        if form.is_valid():
+            registration = form.save(commit=False)
+            registration.student = student
+            registration.amount_paid = 1000.00
+            registration.payment_status = 'pending'
+            registration.save()
+            
+            messages.success(
+                request,
+                'Registration submitted! Your payment proof is being verified. '
+                'You will be notified once approved.'
+            )
+            return redirect('research_club_status')
+    else:
+        form = ResearchClubRegistrationForm()
+    
+    context = {
+        'form': form,
+        'student': student,
+        'account_number': '9071720720',
+        'bank_name': 'Moniepoint',
+        'account_name': 'Julius Omolara',
+        'amount': 1000,
+    }
+    return render(request, 'core/research/club_register.html', context)
+
+
+@student_required
+def research_club_status(request):
+    """Check registration status"""
+    reg_number = request.session.get('student_reg_number')
+    student = Student.objects.get(reg_number=reg_number)
+    
+    try:
+        registration = student.research_club_registration
+    except ResearchClubRegistration.DoesNotExist:
+        messages.error(request, 'You have not registered yet.')
+        return redirect('research_club_register')
+    
+    context = {
+        'registration': registration,
+        'student': student,
+    }
+    return render(request, 'core/research/club_status.html', context)
+
+
+# ADMIN VIEWS
+
+@login_required
+def manage_research_registrations(request):
+    """Admin verifies and approves registrations"""
+    registrations = ResearchClubRegistration.objects.all().select_related('student').order_by('-registered_at')
+    
+    pending = registrations.filter(payment_status='pending')
+    verified = registrations.filter(payment_status='verified', is_approved=True)
+    rejected = registrations.filter(payment_status='rejected')
+    
+    context = {
+        'registrations': registrations,
+        'pending_count': pending.count(),
+        'verified_count': verified.count(),
+        'rejected_count': rejected.count(),
+    }
+    return render(request, 'core/admin/manage_research_registrations.html', context)
+
+
+
+@login_required
+def verify_research_payment(request, pk):
+    """Admin verifies payment proof"""
+    registration = get_object_or_404(ResearchClubRegistration, pk=pk)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'verify':
+            registration.payment_status = 'verified'
+            registration.is_approved = True
+            registration.approved_by = request.user
+            registration.approved_at = timezone.now()
+            registration.save()
+            
+            messages.success(
+                request,
+                f'Payment verified for {registration.student.full_name}! '
+                f'They can now access research features.'
+            )
+        
+        elif action == 'reject':
+            reason = request.POST.get('rejection_reason', '')
+            registration.payment_status = 'rejected'
+            registration.rejection_reason = reason
+            registration.save()
+            
+            messages.success(request, 'Registration rejected.')
+        
+        return redirect('manage_research_registrations')
+    
+    context = {
+        'registration': registration,
+    }
+    return render(request, 'core/admin/verify_research_payment.html', context)
+
+@login_required
+def manage_guest_payments(request):
+    """Admin manages guest contributor payments"""
+    guests = GuestContributor.objects.all().order_by('-created_at')
+    
+    pending = guests.filter(payment_status='pending')
+    approved = guests.filter(is_approved=True)
+    
+    context = {
+        'guests': guests,
+        'pending_count': pending.count(),
+        'approved_count': approved.count(),
+    }
+    return render(request, 'core/admin/manage_guest_payments.html', context)
+
+
+@login_required
+def verify_guest_payment(request, pk):
+    """Admin verifies guest payment"""
+    guest = get_object_or_404(GuestContributor, pk=pk)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'verify':
+            guest.payment_status = 'verified'
+            guest.is_approved = True
+            guest.approved_by = request.user
+            guest.approved_at = timezone.now()
+            guest.save()
+            
+            messages.success(
+                request,
+                f'{guest.full_name} approved as guest contributor!'
+            )
+        
+        elif action == 'reject':
+            reason = request.POST.get('rejection_reason', '')
+            guest.payment_status = 'rejected'
+            guest.rejection_reason = reason
+            guest.save()
+            
+            messages.success(request, 'Guest application rejected.')
+        
+        return redirect('manage_guest_payments')
+    
+    context = {
+        'guest': guest,
+    }
+    return render(request, 'core/admin/verify_guest_payment.html', context)

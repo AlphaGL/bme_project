@@ -1,9 +1,5 @@
 from django import forms
-from .models import( Staff, Exco, PastQuestion, LibraryResource,
-                     Testimonial, Announcement, Student, Semester, Course, 
-                     DepartmentalDues, CourseHandbook, Timetable, AcademicCalendar,ResearchTeam, ResearchArticle, GuestContributor, 
-                     ResearchContribution, ResearchQuiz, QuizSubmission, TeamMembership, RegistrationRequest
-                    )
+from .models import *
 
 
 class StaffForm(forms.ModelForm):
@@ -189,6 +185,182 @@ class StudentRegistrationForm(forms.ModelForm):
         return student 
 
 
+# ==================== RESEARCH CLUB REGISTRATION FORMS ====================
+
+class ResearchClubRegistrationForm(forms.ModelForm):
+    """Student registers for research club"""
+    payment_proof = forms.ImageField(
+        required=True,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*'
+        }),
+        help_text='Upload screenshot of your bank transfer'
+    )
+    
+    transaction_description = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'What description did you use? (e.g., your reg number)'
+        })
+    )
+    
+    payment_date = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        }),
+        help_text='Date shown on your payment receipt'
+    )
+    
+    confirm_payment = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        label='I confirm that I have transferred ₦1,000 to the account provided'
+    )
+    
+    class Meta:
+        model = ResearchClubRegistration
+        fields = ['payment_proof', 'transaction_description', 'payment_date']
+
+
+class GuestContributorRegistrationForm(forms.ModelForm):
+    """Updated guest registration form with ₦2000 manual payment"""
+    
+    # Password fields
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Create a password'
+        }),
+        help_text='Choose a strong password for future login'
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm your password'
+        })
+    )
+    
+    # Payment proof fields
+    payment_proof = forms.ImageField(
+        required=True,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*'
+        }),
+        help_text='Upload screenshot of your ₦2,000 bank transfer'
+    )
+    
+    transaction_description = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'What description did you use? (e.g., your email or name)'
+        }),
+        help_text='The description/narration you used in the bank transfer'
+    )
+    
+    payment_date = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        }),
+        help_text='Date shown on your payment receipt'
+    )
+    
+    # Terms acceptance
+    confirm_payment = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        label='I confirm that I have transferred ₦2,000 to the account provided'
+    )
+    
+    accept_terms = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        label='I agree to the terms and conditions of guest contribution'
+    )
+    
+    class Meta:
+        model = GuestContributor
+        fields = ['full_name', 'email', 'phone', 'institution', 'qualification', 
+                  'area_of_expertise', 'reason_for_contribution',
+                  'payment_proof', 'transaction_description', 'payment_date']
+        widgets = {
+            'full_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your full name'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'your.email@example.com'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '+234XXXXXXXXXX'
+            }),
+            'institution': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your university or organization'
+            }),
+            'qualification': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., B.Eng, M.Sc, Ph.D'
+            }),
+            'area_of_expertise': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Biomedical Signal Processing'
+            }),
+            'reason_for_contribution': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Why do you want to contribute to our research?'
+            }),
+        }
+    
+    def clean_email(self):
+        """Check if email already exists"""
+        email = self.cleaned_data.get('email')
+        if GuestContributor.objects.filter(email=email).exists():
+            raise forms.ValidationError(
+                "This email is already registered. Please login instead."
+            )
+        return email
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        
+        # Validate passwords match
+        if password and confirm_password:
+            if password != confirm_password:
+                raise forms.ValidationError("Passwords do not match!")
+            if len(password) < 6:
+                raise forms.ValidationError("Password must be at least 6 characters long!")
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        guest = super().save(commit=False)
+        
+        # Set password
+        guest.set_password(self.cleaned_data['password'])
+        
+        # Set payment status to pending
+        guest.payment_status = 'pending'
+        guest.is_approved = False
+        
+        if commit:
+            guest.save()
+        return guest
+    
 class RegistrationRequestForm(forms.ModelForm):
     """Form for students not in the system to request registration"""
     
@@ -581,18 +753,18 @@ class GuestLoginForm(forms.Form):
 
 
 class ResearchContributionForm(forms.ModelForm):
+    """Enhanced contribution form with section types"""
     class Meta:
         model = ResearchContribution
         fields = ['section_title', 'content', 'references']
         widgets = {
-            'section_title': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'e.g., Introduction, Methodology, Results'
+            'section_title': forms.Select(attrs={
+                'class': 'form-control'
             }),
             'content': forms.Textarea(attrs={
                 'class': 'form-control',
-                'rows': 10,
-                'placeholder': 'Write your contribution here...'
+                'rows': 15,
+                'placeholder': 'Write your contribution here... Be detailed and well-researched.'
             }),
             'references': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -600,7 +772,6 @@ class ResearchContributionForm(forms.ModelForm):
                 'placeholder': 'List your references (optional)'
             }),
         }
-
 
 class ResearchQuizForm(forms.ModelForm):
     class Meta:
@@ -653,14 +824,42 @@ class QuizSubmissionForm(forms.ModelForm):
         }
 
 
-class TeamJoinForm(forms.Form):
-    """Simple form for students to join a team"""
-    role = forms.CharField(
-        max_length=100,
-        initial='Member',
-        widget=forms.TextInput(attrs={
+class TeamJoinForm(forms.ModelForm):
+    """Form for students to join a team with role selection"""
+    class Meta:
+        model = TeamMembership
+        fields = ['role']
+        widgets = {
+            'role': forms.Select(attrs={
+                'class': 'form-control'
+            })
+        }
+        help_texts = {
+            'role': 'Select your role in the team'
+        }
+
+
+class ApproveContributionForm(forms.Form):
+    """Form for proofreaders to approve contributions with section ordering"""
+    section_order = forms.IntegerField(
+        min_value=1,
+        widget=forms.NumberInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Your role (optional)'
+            'placeholder': 'Enter section order (1, 2, 3...)'
         }),
-        required=False
+        help_text='Order in which this section should appear in the article'
     )
+
+
+class ArticleCommentForm(forms.ModelForm):
+    """Form for students to comment on articles"""
+    class Meta:
+        model = ArticleComment
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Add your comment...'
+            })
+        }

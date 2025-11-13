@@ -1,41 +1,28 @@
-const CACHE_NAME = 'futo-bme-v1.0.1';
-const STATIC_CACHE = 'futo-bme-static-v1';
-const DYNAMIC_CACHE = 'futo-bme-dynamic-v1';
+// Service Worker for FUTO BME PWA
+const CACHE_NAME = 'futo-bme-v1.0.0';
+const OFFLINE_URL = '/offline/';
 
-// Assets to cache on install
-const STATIC_ASSETS = [
+// Files to cache immediately on install
+const STATIC_CACHE = [
   '/',
-  '/student/login/',
-  '/past-questions/',
-  '/library/',
-  '/course-handbook/',
-  '/staff/',
-  '/excos/',
+  '/static/css/style.css',
+  '/static/js/pwa-install.js',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg'
 ];
 
-// Install event - cache static assets
+// Install event - cache static resources
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing...');
   event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then((cache) => {
-        console.log('[Service Worker] Caching static assets');
-        // Don't fail if some assets can't be cached
-        return Promise.all(
-          STATIC_ASSETS.map(url => {
-            return cache.add(url).catch(err => {
-              console.log('[Service Worker] Failed to cache:', url);
-            });
-          })
-        );
-      })
-      .catch((error) => {
-        console.error('[Service Worker] Cache failed:', error);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[Service Worker] Caching static assets');
+      return cache.addAll(STATIC_CACHE).catch((err) => {
+        console.error('[Service Worker] Cache addAll error:', err);
+      });
+    })
   );
   self.skipWaiting();
 });
@@ -47,7 +34,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE && cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME) {
             console.log('[Service Worker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -58,122 +45,86 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - network first, falling back to cache
+// Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  
   // Skip non-GET requests
-  if (request.method !== 'GET') {
-    return;
-  }
+  if (event.request.method !== 'GET') return;
 
-  // Skip chrome extensions and other non-http(s) requests
-  if (!request.url.startsWith('http')) {
-    return;
-  }
+  // Skip chrome extension requests
+  if (event.request.url.startsWith('chrome-extension://')) return;
 
-  // Skip Django admin and encrypted URLs
-  if (request.url.includes('/ibeawuchi242') || 
-      request.url.includes('/encrypted/admin/')) {
-    return;
-  }
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      // Return cached version if available
+      if (cachedResponse) {
+        return cachedResponse;
+      }
 
-  // Network first strategy for API calls and dynamic content
-  if (request.url.includes('/student/') || 
-      request.url.includes('/encrypted/') ||
-      request.url.includes('/research/') ||
-      request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(request)
+      // Otherwise fetch from network
+      return fetch(event.request)
         .then((response) => {
-          // Clone the response before caching
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(request, responseClone);
+          // Don't cache non-successful responses
+          if (!response || response.status !== 200 || response.type === 'error') {
+            return response;
+          }
+
+          // Clone the response
+          const responseToCache = response.clone();
+
+          // Cache certain types of requests
+          const url = new URL(event.request.url);
+          if (
+            url.origin === location.origin ||
+            event.request.destination === 'image' ||
+            event.request.destination === 'style' ||
+            event.request.destination === 'script'
+          ) {
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
             });
           }
+
           return response;
         })
         .catch(() => {
-          // Return cached version if available
-          return caches.match(request).then(cachedResponse => {
-            if (cachedResponse) {
-              return cachedResponse;
-            }
-            // Return offline page for navigation requests
-            if (request.mode === 'navigate') {
-              return caches.match('/');
-            }
-          });
-        })
-    );
-    return;
-  }
-
-  // Cache first strategy for static assets
-  event.respondWith(
-    caches.match(request)
-      .then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        
-        // If not in cache, fetch from network
-        return fetch(request)
-          .then((response) => {
-            // Don't cache non-successful responses
-            if (!response || response.status !== 200 || response.type === 'error') {
-              return response;
-            }
-
-            // Clone and cache the response
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(request, responseClone);
-            });
-
-            return response;
-          })
-          .catch(() => {
-            // Return homepage for navigation requests when offline
-            if (request.mode === 'navigate') {
-              return caches.match('/');
-            }
-          });
-      })
+          // Return offline page for navigation requests
+          if (event.request.mode === 'navigate') {
+            return caches.match(OFFLINE_URL);
+          }
+        });
+    })
   );
 });
 
-// Background sync for offline submissions
-self.addEventListener('sync', (event) => {
-  console.log('[Service Worker] Background sync:', event.tag);
-  if (event.tag === 'sync-submissions') {
-    event.waitUntil(syncSubmissions());
+// Handle messages from the client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });
 
-async function syncSubmissions() {
-  // Handle offline form submissions when back online
-  console.log('[Service Worker] Syncing offline submissions...');
+// Background sync for offline form submissions (future enhancement)
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-forms') {
+    event.waitUntil(syncForms());
+  }
+});
+
+async function syncForms() {
+  // Placeholder for syncing offline form submissions
+  console.log('[Service Worker] Syncing offline forms...');
 }
 
-// Push notifications
+// Push notification support (future enhancement)
 self.addEventListener('push', (event) => {
-  console.log('[Service Worker] Push notification received');
   const data = event.data ? event.data.json() : {};
-  
-  const title = data.title || 'FUTO BME';
+  const title = data.title || 'FUTO BME Notification';
   const options = {
-    body: data.body || 'New update available',
+    body: data.body || 'You have a new notification',
     icon: 'https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg',
     badge: 'https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg',
     vibrate: [200, 100, 200],
-    data: data.url || '/',
-    actions: [
-      { action: 'open', title: 'Open', icon: '' },
-      { action: 'close', title: 'Close', icon: '' }
-    ]
+    data: data.url || '/'
   };
 
   event.waitUntil(
@@ -181,21 +132,10 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Notification click handler
+// Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
-  if (event.action === 'open') {
-    const urlToOpen = event.notification.data || '/';
-    event.waitUntil(
-      clients.openWindow(urlToOpen)
-    );
-  }
-});
-
-// Handle messages from clients
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  event.waitUntil(
+    clients.openWindow(event.notification.data)
+  );
 });

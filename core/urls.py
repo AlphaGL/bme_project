@@ -187,4 +187,13 @@ urlpatterns = [
 
 
     path('offline/', TemplateView.as_view(template_name='core/offline.html'), name='offline'),
+
+
+    # ==================== RESEARCH CLUB REGISTRATION URLs ====================
+    path('research/club/register/', views.research_club_register, name='research_club_register'),
+    path('research/club/status/', views.research_club_status, name='research_club_status'),
+    
+    # ==================== ADMIN - RESEARCH CLUB MANAGEMENT ====================
+    path('encrypted/admin/futobme/research/club-registrations/', views.manage_research_registrations, name='manage_research_registrations'),
+    path('encrypted/admin/futobme/research/club-registrations/verify/<int:pk>/', views.verify_research_payment, name='verify_research_payment'),
 ]

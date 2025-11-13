@@ -580,15 +580,87 @@ class AcademicCalendar(models.Model):
     
 # ==================== RESEARCH MODELS ====================
 
+class ResearchClubRegistration(models.Model):
+    """Student registration for research club with manual payment"""
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, 
+                                   related_name='research_club_registration')
+    
+    # Payment details
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=1000.00)
+    payment_reference = models.CharField(max_length=100, unique=True, blank=True)
+    
+    # Payment proof
+    payment_proof = CloudinaryField('image', blank=True, null=True, 
+                                   help_text="Screenshot of bank transfer")
+    transaction_description = models.CharField(max_length=200, blank=True,
+                                              help_text="Description used in bank transfer")
+    payment_date = models.DateField(null=True, blank=True,
+                                   help_text="Date of payment as shown on receipt")
+    
+    # Verification status
+    PAYMENT_STATUS = [
+        ('pending', 'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, 
+                                     default='pending')
+    
+    # Admin approval
+    is_approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, 
+                                   blank=True, related_name='approved_research_registrations')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True, null=True)
+    
+    # Timestamps
+    registered_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-registered_at']
+        verbose_name_plural = "Research Club Registrations"
+    
+    def __str__(self):
+        return f"{self.student.reg_number} - ₦{self.amount_paid} ({self.payment_status})"
+    
+    def save(self, *args, **kwargs):
+        if not self.payment_reference:
+            # Generate unique reference: RC-YEAR-NUMBER
+            import datetime
+            year = datetime.datetime.now().year
+            last = ResearchClubRegistration.objects.filter(
+                payment_reference__startswith=f'RC-{year}-'
+            ).order_by('-payment_reference').first()
+            
+            if last:
+                last_num = int(last.payment_reference.split('-')[-1])
+                new_num = last_num + 1
+            else:
+                new_num = 1
+            
+            self.payment_reference = f'RC-{year}-{new_num:04d}'
+        
+        super().save(*args, **kwargs)
+
+
 class ResearchTeam(models.Model):
-    """Research teams that students can join and contribute to"""
+    """Research teams with defined roles"""
+    TEAM_ROLES = [
+        ('Researchers', 'Researchers'),
+        ('Writers', 'Writers'),
+        ('Proofreaders', 'Proofreaders'),
+        ('Graphic Designers', 'Graphic Designers'),
+    ]
+    
     name = models.CharField(max_length=100, unique=True, help_text="e.g., Team Alpha, Team Beta")
     description = models.TextField()
     focus_area = models.CharField(max_length=200, help_text="e.g., Medical Imaging, Biomechanics")
-    team_lead = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='led_teams')
+    team_lead = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, 
+                                   related_name='led_teams', help_text="Director of Research assigns team lead")
     image = CloudinaryField('image', blank=True, null=True)
     is_active = models.BooleanField(default=True)
-    max_members = models.IntegerField(default=15, help_text="Maximum team members")
+    max_members = models.IntegerField(default=15, help_text="Maximum 15 members per team")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -603,11 +675,11 @@ class ResearchTeam(models.Model):
         return self.members.count()
     
     def get_contribution_count(self):
-        return ResearchContribution.objects.filter(article__team=self).count()
+        return ResearchContribution.objects.filter(article__team=self).filter(is_approved=True).count()
 
 
 class ResearchArticle(models.Model):
-    """Main research article that team members contribute to"""
+    """Research articles with collaborative sections"""
     STATUS_CHOICES = [
         ('Draft', 'Draft'),
         ('In Progress', 'In Progress'),
@@ -617,12 +689,13 @@ class ResearchArticle(models.Model):
     
     team = models.ForeignKey(ResearchTeam, on_delete=models.CASCADE, related_name='articles')
     title = models.CharField(max_length=300)
-    abstract = models.TextField(help_text="Brief overview of the research")
+    abstract = models.TextField(help_text="Introduction/Brief overview created by Director")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, help_text="Director of Research")
     published_date = models.DateTimeField(null=True, blank=True)
     views_count = models.IntegerField(default=0)
     likes_count = models.IntegerField(default=0)
+    comments_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -634,28 +707,25 @@ class ResearchArticle(models.Model):
         return f"{self.team.name} - {self.title}"
     
     def get_approved_contributions(self):
+        """Get contributions ordered by section order"""
         return self.contributions.filter(is_approved=True).order_by('section_order')
     
     def get_total_contributors(self):
         """Count unique contributors (both students and guests)"""
         approved_contributions = self.contributions.filter(is_approved=True)
         
-        # Count unique student contributors
         student_contributors = approved_contributions.filter(
             student_contributor__isnull=False
         ).values_list('student_contributor', flat=True).distinct().count()
         
-        # Count unique guest contributors
         guest_contributors = approved_contributions.filter(
             guest_contributor__isnull=False
         ).values_list('guest_contributor', flat=True).distinct().count()
         
-        # Return total unique contributors
         return student_contributors + guest_contributors
     
-
 class GuestContributor(models.Model):
-    """Non-student contributors who need approval"""
+    """External contributors who need approval - Pay ₦2000"""
     full_name = models.CharField(max_length=200)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -663,9 +733,31 @@ class GuestContributor(models.Model):
     qualification = models.CharField(max_length=200, help_text="e.g., B.Eng, M.Sc, Ph.D")
     area_of_expertise = models.CharField(max_length=200)
     reason_for_contribution = models.TextField()
-    password = models.CharField(max_length=128)  # Hashed password
+    password = models.CharField(max_length=128)
+    
+    # Payment for guest access (₦2000)
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=2000.00)
+    payment_reference = models.CharField(max_length=100, unique=True, blank=True)
+
+        # Payment proof
+    payment_proof = CloudinaryField('image', blank=True, null=True,
+                                   help_text="Screenshot of bank transfer")
+    transaction_description = models.CharField(max_length=200, blank=True)
+    payment_date = models.DateField(null=True, blank=True)
+    
+    # Payment status
+    PAYMENT_STATUS = [
+        ('pending', 'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS,
+                                     default='pending')
+    
+    # Approval
     is_approved = models.BooleanField(default=False)
-    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_guests')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
+                                    related_name='approved_guests')
     approved_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -682,40 +774,55 @@ class GuestContributor(models.Model):
     
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)
-
+    
+    def save(self, *args, **kwargs):
+        if not self.payment_reference:
+            self.payment_reference = f"GUEST-{uuid.uuid4().hex[:10].upper()}"
+        super().save(*args, **kwargs)
 
 class ResearchContribution(models.Model):
-    """Individual contributions to research articles"""
+    """Article sections contributed by team members or guests"""
+    SECTION_TYPES = [
+        ('Introduction', 'Introduction'),
+        ('Background/Definition', 'Background/Definition'),
+        ('Main Body', 'Main Body'),
+        ('Connection/Integration', 'Connection/Integration'),
+        ('Conclusion', 'Conclusion'),
+    ]
+    
     article = models.ForeignKey(ResearchArticle, on_delete=models.CASCADE, related_name='contributions')
     
-    # Contributor can be either a student or guest
-    student_contributor = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='research_contributions')
-    guest_contributor = models.ForeignKey(GuestContributor, on_delete=models.SET_NULL, null=True, blank=True, related_name='research_contributions')
+    # Contributor (student team member or guest)
+    student_contributor = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, 
+                                           related_name='research_contributions')
+    guest_contributor = models.ForeignKey(GuestContributor, on_delete=models.SET_NULL, null=True, blank=True, 
+                                         related_name='research_contributions')
     
-    section_title = models.CharField(max_length=300)
+    section_title = models.CharField(max_length=300, choices=SECTION_TYPES)
     content = models.TextField()
-    references = models.TextField(blank=True, null=True, help_text="References used in this section")
-    section_order = models.IntegerField(default=0, help_text="Order in the article")
+    references = models.TextField(blank=True, null=True, help_text="Optional citations")
+    section_order = models.IntegerField(default=0, help_text="Display order assigned by proofreader")
     
+    # Approval workflow
     is_approved = models.BooleanField(default=False)
-    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_contributions')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
+                                    related_name='approved_contributions',
+                                    help_text="Proofreader who approved")
     approved_at = models.DateTimeField(null=True, blank=True)
     rejection_reason = models.TextField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-  
     class Meta:
         ordering = ['section_order', 'created_at']
         verbose_name_plural = "Research Contributions"
     
     def __str__(self):
         contributor_name = self.get_contributor_name()
-        return f"{contributor_name} - {self.section_title[:50]}"
+        return f"{contributor_name} - {self.section_title}"
     
     def get_contributor_name(self):
-        """Get the name of the contributor"""
         if self.student_contributor:
             return self.student_contributor.full_name
         elif self.guest_contributor:
@@ -723,7 +830,7 @@ class ResearchContribution(models.Model):
         return "Unknown"
     
     def get_contributor_info(self):
-        """Get detailed contributor information"""
+        """Detailed contributor info for display"""
         if self.student_contributor:
             return {
                 'name': self.student_contributor.full_name,
@@ -739,20 +846,22 @@ class ResearchContribution(models.Model):
                 'qualification': self.guest_contributor.qualification
             }
         return None
-
+    
 class ResearchQuiz(models.Model):
-    """Research quizzes posted by admin"""
-    title = models.CharField(max_length=300)
-    question = models.TextField()
-    difficulty_level = models.CharField(max_length=20, choices=[
+    """Quizzes posted by Director to test knowledge"""
+    DIFFICULTY_CHOICES = [
         ('Easy', 'Easy'),
         ('Medium', 'Medium'),
         ('Hard', 'Hard'),
         ('Expert', 'Expert'),
-    ], default='Medium')
+    ]
+    
+    title = models.CharField(max_length=300)
+    question = models.TextField()
+    difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='Medium')
     category = models.CharField(max_length=100, help_text="e.g., Biomechanics, Signal Processing")
-    hints = models.TextField(blank=True, null=True, help_text="Optional hints for participants")
-    points = models.IntegerField(default=10, help_text="Points awarded for correct answer")
+    hints = models.TextField(blank=True, null=True)
+    points = models.IntegerField(default=10)
     deadline = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -774,20 +883,24 @@ class ResearchQuiz(models.Model):
 
 
 class QuizSubmission(models.Model):
-    """Student submissions for research quizzes"""
+    """Student/Guest submissions for quizzes"""
     quiz = models.ForeignKey(ResearchQuiz, on_delete=models.CASCADE, related_name='submissions')
     
-    # Submitter can be student or guest
-    student_submitter = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='quiz_submissions')
-    guest_submitter = models.ForeignKey(GuestContributor, on_delete=models.SET_NULL, null=True, blank=True, related_name='quiz_submissions')
+    # Submitter
+    student_submitter = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, 
+                                         related_name='quiz_submissions')
+    guest_submitter = models.ForeignKey(GuestContributor, on_delete=models.SET_NULL, null=True, blank=True, 
+                                       related_name='quiz_submissions')
     
     answer = models.TextField()
-    explanation = models.TextField(help_text="Explain your solution process")
-    attachments = CloudinaryField('file', blank=True, null=True, help_text="Optional: diagrams, calculations, etc.")
+    explanation = models.TextField(help_text="Detailed step-by-step explanation")
+    attachments = CloudinaryField('file', blank=True, null=True)
     
+    # Award status
     is_awarded = models.BooleanField(default=False)
     award_comment = models.TextField(blank=True, null=True)
-    awarded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='awarded_quizzes')
+    awarded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, 
+                                   related_name='awarded_quizzes')
     awarded_at = models.DateTimeField(null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -796,13 +909,16 @@ class QuizSubmission(models.Model):
     class Meta:
         ordering = ['-created_at']
         verbose_name_plural = "Quiz Submissions"
+        unique_together = [
+            ['quiz', 'student_submitter'],
+            ['quiz', 'guest_submitter']
+        ]
     
     def __str__(self):
         submitter = self.get_submitter_name()
         return f"{submitter} - {self.quiz.title}"
     
     def get_submitter_name(self):
-        """Get the name of the submitter"""
         if self.student_submitter:
             return self.student_submitter.full_name
         elif self.guest_submitter:
@@ -810,7 +926,6 @@ class QuizSubmission(models.Model):
         return "Unknown"
     
     def get_submitter_info(self):
-        """Get detailed submitter information"""
         if self.student_submitter:
             return {
                 'name': self.student_submitter.full_name,
@@ -827,10 +942,17 @@ class QuizSubmission(models.Model):
 
 
 class TeamMembership(models.Model):
-    """Track team members"""
+    """Track team members with specific roles"""
+    ROLE_CHOICES = [
+        ('Researcher', 'Researcher'),
+        ('Writer', 'Writer'),
+        ('Proofreader', 'Proofreader'),
+        ('Graphic Designer', 'Graphic Designer'),
+    ]
+    
     team = models.ForeignKey(ResearchTeam, on_delete=models.CASCADE, related_name='members')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='research_teams')
-    role = models.CharField(max_length=100, default='Member', help_text="e.g., Member, Co-Lead")
+    role = models.CharField(max_length=100, choices=ROLE_CHOICES, default='Researcher')
     joined_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -839,11 +961,10 @@ class TeamMembership(models.Model):
         verbose_name_plural = "Team Memberships"
     
     def __str__(self):
-        return f"{self.student.full_name} - {self.team.name}"
-
+        return f"{self.student.full_name} - {self.team.name} ({self.role})"
 
 class ArticleLike(models.Model):
-    """Track article likes"""
+    """Track article likes from students only"""
     article = models.ForeignKey(ResearchArticle, on_delete=models.CASCADE, related_name='likes')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='liked_articles')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -854,3 +975,20 @@ class ArticleLike(models.Model):
     
     def __str__(self):
         return f"{self.student.full_name} liked {self.article.title}"
+    
+
+
+class ArticleComment(models.Model):
+    """Comments on published articles"""
+    article = models.ForeignKey(ResearchArticle, on_delete=models.CASCADE, related_name='comments')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='article_comments')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Article Comments"
+    
+    def __str__(self):
+        return f"{self.student.full_name} on {self.article.title}"

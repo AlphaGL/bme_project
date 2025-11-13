@@ -71,8 +71,8 @@
                             <a href="{% url 'exco_list' %}" class="btn btn-light btn-lg me-2 mb-2">
                                 <i class="fas fa-user-tie me-2"></i>Student Leaders
                             </a>
-                            <a href="{% url 'submit_testimonial' %}" class="btn btn-warning btn-lg mb-2">
-                                <i class="fas fa-comment-dots me-2"></i>Testimonials
+                            <a href="{% url 'research_hub' %}" class="btn btn-warning btn-lg mb-2">
+                                <i class="fas fa-flask me-2"></i>Research Hub
                             </a>
                         </div>
                         <div class="col-lg-7">
@@ -172,20 +172,6 @@
         <div class="row text-center g-4">
             <div class="col-6 col-md-3">
                 <div class="stat-card">
-                    <i class="fas fa-users fa-3x mb-2" style="color: var(--primary-color);"></i>
-                    <h3 class="fw-bold mb-0">{{ stats.total_staff }}+</h3>
-                    <p class="text-muted small mb-0">Expert Staff</p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-card">
-                    <i class="fas fa-user-graduate fa-3x mb-2" style="color: var(--accent-purple);"></i>
-                    <h3 class="fw-bold mb-0">{{ stats.total_students }}+</h3>
-                    <p class="text-muted small mb-0">Active Students</p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="stat-card">
                     <i class="fas fa-book fa-3x mb-2" style="color: var(--secondary-color);"></i>
                     <h3 class="fw-bold mb-0">{{ stats.total_resources }}+</h3>
                     <p class="text-muted small mb-0">Resources</p>
@@ -283,49 +269,109 @@
 </section>
 {% endif %}
 
-<!-- Quick Links Section -->
+<!-- Academic Resources & Quick Links Section -->
 <section class="py-5">
     <div class="container">
         <div class="row text-center mb-4">
             <div class="col">
-                <h2 class="fw-bold">What We Offer</h2>
+                <h2 class="fw-bold">Academic Resources</h2>
                 <p class="text-muted">Everything you need for academic success</p>
             </div>
         </div>
         <div class="row g-4">
-            <div class="col-md-4">
+            <div class="col-md-3 col-6">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
                         <i class="fas fa-video fa-3x mb-3" style="color: var(--primary-color);"></i>
-                        <h5 class="card-title">Virtual Tour</h5>
-                        <p class="card-text">
-                            Take a 360° virtual tour of our department facilities, labs, and lecture halls.
+                        <h6 class="card-title">Virtual Tour</h6>
+                        <p class="card-text small">
+                            360° tour of our facilities
                         </p>
-                        <a href="{% url 'virtual_tour' %}" class="btn btn-outline-primary">Take Tour</a>
+                        <a href="{% url 'virtual_tour' %}" class="btn btn-sm btn-outline-primary">Explore</a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3 col-6">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
                         <i class="fas fa-file-alt fa-3x mb-3" style="color: var(--accent-purple);"></i>
-                        <h5 class="card-title">Past Questions</h5>
-                        <p class="card-text">
-                            Access comprehensive collection of past examination questions for your preparation.
+                        <h6 class="card-title">Past Questions</h6>
+                        <p class="card-text small">
+                            Exam preparation resources
                         </p>
-                        <a href="{% url 'past_questions' %}" class="btn btn-outline-primary">Browse Questions</a>
+                        <a href="{% url 'past_questions' %}" class="btn btn-sm btn-outline-primary">Browse</a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3 col-6">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
                         <i class="fas fa-book fa-3x mb-3 text-gold"></i>
-                        <h5 class="card-title">Digital Library</h5>
-                        <p class="card-text">
-                            Explore our extensive digital library with vast array of academic resources.
+                        <h6 class="card-title">Digital Library</h6>
+                        <p class="card-text small">
+                            Extensive academic materials
                         </p>
-                        <a href="{% url 'library' %}" class="btn btn-outline-primary">Visit Library</a>
+                        <a href="{% url 'library' %}" class="btn btn-sm btn-outline-primary">Visit</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-book-open fa-3x mb-3" style="color: var(--info-color);"></i>
+                        <h6 class="card-title">Course Handbook</h6>
+                        <p class="card-text small">
+                            Complete course catalog
+                        </p>
+                        <a href="{% url 'view_course_handbook' %}" class="btn btn-sm btn-outline-primary">View</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-calendar-alt fa-3x mb-3" style="color: var(--warning-color);"></i>
+                        <h6 class="card-title">Timetables</h6>
+                        <p class="card-text small">
+                            Class & Exam schedules
+                        </p>
+                        <a href="{% url 'view_timetables' %}" class="btn btn-sm btn-outline-primary">Check</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-calendar fa-3x mb-3" style="color: var(--danger-color);"></i>
+                        <h6 class="card-title">Academic Calendar</h6>
+                        <p class="card-text small">
+                            University calendar
+                        </p>
+                        <a href="{% url 'view_calendar' %}" class="btn btn-sm btn-outline-primary">View</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-flask fa-3x mb-3" style="color: var(--success-color);"></i>
+                        <h6 class="card-title">Research Hub</h6>
+                        <p class="card-text small">
+                            Research teams & articles
+                        </p>
+                        <a href="{% url 'research_hub' %}" class="btn btn-sm btn-outline-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-comment-dots fa-3x mb-3" style="color: var(--accent-purple);"></i>
+                        <h6 class="card-title">Testimonials</h6>
+                        <p class="card-text small">
+                            Share your experience
+                        </p>
+                        <a href="{% url 'submit_testimonial' %}" class="btn btn-sm btn-outline-primary">Submit</a>
                     </div>
                 </div>
             </div>
@@ -497,6 +543,43 @@
 </section>
 {% endif %}
 
+<!-- Student Portal CTA -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-3">Access Student Portal</h2>
+                <p class="lead mb-md-0">Calculate CGPA, view receipts, join research teams and more!</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                {% if not request.session.student_reg_number %}
+                    <a href="{% url 'student_login' %}" class="btn btn-primary btn-lg me-2 mb-2">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                    <a href="{% url 'student_register' %}" class="btn btn-warning btn-lg mb-2">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </a>
+                {% else %}
+                    <a href="{% url 'student_dashboard' %}" class="btn btn-primary btn-lg mb-2">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% if not request.session.student_reg_number %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Not in the system?</strong> 
+                    <a href="{% url 'registration_request' %}" class="alert-link">Request to be added</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
 <!-- Call to Action -->
 <section class="py-5 text-white" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-purple) 100%);">
     <div class="container">
@@ -506,45 +589,81 @@
                 <p class="lead mb-md-0">Access all the resources you need for academic success at FUTO BME</p>
             </div>
             <div class="col-md-4 text-md-end">
-                <a href="{% url 'past_questions' %}" class="btn btn-light btn-lg me-2 mb-2">
-                    <i class="fas fa-rocket me-2"></i>Get Started
+                <a href="{% url 'library' %}" class="btn btn-light btn-lg mb-2 me-2">
+                    <i class="fas fa-book me-2"></i>Browse Library
                 </a>
-                <a href="{% url 'virtual_tour' %}" class="btn btn-warning btn-lg mb-2">
-                    <i class="fas fa-video me-2"></i>Take Tour
+                <a href="{% url 'past_questions' %}" class="btn btn-warning btn-lg mb-2">
+                    <i class="fas fa-download me-2"></i>Get Resources
                 </a>
             </div>
         </div>
     </div>
 </section>
 
-<style>
-.hover-lift {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+<!-- Additional Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-4">
+            <div class="col">
+                <h2 class="fw-bold">More Features</h2>
+                <p class="text-muted">Additional tools and resources for your success</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-user-graduate fa-3x mb-3" style="color: var(--primary-color);"></i>
+                        <h6 class="card-title">Student Portal</h6>
+                        <p class="card-text small">
+                            CGPA Calculator & More
+                        </p>
+                        {% if request.session.student_reg_number %}
+                            <a href="{% url 'student_dashboard' %}" class="btn btn-sm btn-outline-primary">Access</a>
+                        {% else %}
+                            <a href="{% url 'student_login' %}" class="btn btn-sm btn-outline-primary">Login</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-users fa-3x mb-3" style="color: var(--secondary-color);"></i>
+                        <h6 class="card-title">Research Teams</h6>
+                        <p class="card-text small">
+                            Join collaborative research
+                        </p>
+                        <a href="{% url 'research_hub' %}" class="btn btn-sm btn-outline-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-trophy fa-3x mb-3" style="color: var(--warning-color);"></i>
+                        <h6 class="card-title">Research Quizzes</h6>
+                        <p class="card-text small">
+                            Test your knowledge
+                        </p>
+                        <a href="{% url 'research_quizzes' %}" class="btn btn-sm btn-outline-primary">Participate</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-user-tie fa-3x mb-3" style="color: var(--accent-purple);"></i>
+                        <h6 class="card-title">Guest Contributors</h6>
+                        <p class="card-text small">
+                            Join as external researcher
+                        </p>
+                        <a href="{% url 'guest_contributor_choice' %}" class="btn btn-sm btn-outline-primary">Register</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-.hover-lift:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(139, 21, 56, 0.2) !important;
-}
-
-.stat-card {
-    transition: transform 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: scale(1.1);
-}
-
-.carousel-item img {
-    object-fit: cover;
-    border-radius: 15px;
-}
-
-@media (max-width: 768px) {
-    .carousel-item img {
-        margin-top: 20px;
-        max-height: 300px;
-    }
-}
-</style>
 {% endblock %}

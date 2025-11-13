@@ -11,9 +11,9 @@
                 <h2 class="fw-bold mb-2">
                     <i class="fas fa-tachometer-alt me-2"></i>Student Dashboard
                 </h2>
-                <p class="mb-0">Welcome back, {{ student.full_name }}!</p>
+                <p class="mb-0">Welcome back, {{ student.full_name }}! ({{ student.reg_number }})</p>
             </div>
-            <div class="col-md-4 text-md-end">
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
                 <a href="{% url 'student_logout' %}" class="btn btn-light">
                     <i class="fas fa-sign-out-alt me-2"></i>Logout
                 </a>
@@ -26,39 +26,57 @@
 <section class="py-4 bg-light">
     <div class="container">
         <div class="row g-3">
-            <div class="col-md-3 col-6">
+            <div class="col-lg-2 col-md-3 col-6">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
+                    <div class="card-body text-center p-3">
                         <i class="fas fa-calculator fa-3x text-primary mb-2"></i>
-                        <h3 class="fw-bold mb-0">{{ cgpa }}</h3>
-                        <small class="text-muted">Current CGPA</small>
+                        <h3 class="fw-bold mb-0">{{ quick_stats.cgpa }}</h3>
+                        <small class="text-muted">CGPA</small>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-6">
+            <div class="col-lg-2 col-md-3 col-6">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-book fa-3x text-success mb-2"></i>
-                        <h3 class="fw-bold mb-0">{{ semesters|length }}</h3>
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-graduation-cap fa-3x text-success mb-2"></i>
+                        <small class="text-muted d-block mb-1">Class</small>
+                        <h6 class="fw-bold mb-0">{{ quick_stats.classification }}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-book fa-3x text-info mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ quick_stats.semesters }}</h3>
                         <small class="text-muted">Semesters</small>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-6">
+            <div class="col-lg-2 col-md-3 col-6">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-list-alt fa-3x text-info mb-2"></i>
-                        <h3 class="fw-bold mb-0">{{ total_credits }}</h3>
-                        <small class="text-muted">Total Credits</small>
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-list-alt fa-3x text-warning mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ quick_stats.total_credits }}</h3>
+                        <small class="text-muted">Credits</small>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-6">
+            <div class="col-lg-2 col-md-3 col-6">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-graduation-cap fa-3x text-warning mb-2"></i>
-                        <h3 class="fw-bold mb-0">{{ student.level }}L</h3>
-                        <small class="text-muted">Current Level</small>
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-users fa-3x text-danger mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ quick_stats.research_teams }}</h3>
+                        <small class="text-muted">Teams</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-trophy fa-3x text-secondary mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ quick_stats.quiz_points }}</h3>
+                        <small class="text-muted">Points</small>
                     </div>
                 </div>
             </div>
@@ -69,102 +87,243 @@
 <!-- Main Content -->
 <section class="py-5">
     <div class="container">
+        <!-- Recommendations -->
+        {% if recommendations %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="fw-bold mb-3">
+                    <i class="fas fa-lightbulb me-2 text-warning"></i>Recommendations for You
+                </h4>
+                <div class="row g-3">
+                    {% for rec in recommendations %}
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100 alert-{{ rec.type }}">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-{{ rec.icon }} fa-2x me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1">{{ rec.title }}</h6>
+                                        <p class="small mb-2">{{ rec.message }}</p>
+                                        <a href="{% url rec.url %}" class="btn btn-sm btn-{{ rec.type }}">
+                                            {{ rec.action }} <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="row g-4">
             <!-- Quick Actions -->
             <div class="col-lg-8">
+                <!-- Status Cards -->
+                <div class="row g-3 mb-4">
+                    <!-- Departmental Dues Status -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="fas fa-receipt me-2"></i>Departmental Dues
+                                </h6>
+                                {% if dues_status.exists %}
+                                    {% if dues_status.is_approved %}
+                                    <div class="alert alert-success mb-2">
+                                        <i class="fas fa-check-circle me-2"></i>Approved
+                                    </div>
+                                    <p class="small mb-2">
+                                        <strong>Receipt:</strong> {{ dues_status.receipt_number }}<br>
+                                        <strong>Session:</strong> {{ dues_status.academic_session }}<br>
+                                        <strong>Amount:</strong> ₦{{ dues_status.amount_paid }}
+                                    </p>
+                                    <a href="{% url 'my_receipt' %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-print me-1"></i>View/Print Receipt
+                                    </a>
+                                    {% else %}
+                                    <div class="alert alert-warning mb-2">
+                                        <i class="fas fa-clock me-2"></i>Pending Approval
+                                    </div>
+                                    <p class="small">Your payment is under review.</p>
+                                    {% endif %}
+                                {% else %}
+                                <div class="alert alert-info mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>Not Paid
+                                </div>
+                                <p class="small">Contact admin to pay departmental dues.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Research Club Status -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="fas fa-flask me-2"></i>Research Club
+                                </h6>
+                                {% if research_status.registered %}
+                                    {% if research_status.is_approved %}
+                                    <div class="alert alert-success mb-2">
+                                        <i class="fas fa-check-circle me-2"></i>Active Member
+                                    </div>
+                                    <p class="small mb-2">
+                                        <strong>Status:</strong> {{ research_status.payment_status|title }}<br>
+                                        <strong>Teams:</strong> {{ quick_stats.research_teams }}<br>
+                                        <strong>Contributions:</strong> {{ quick_stats.contributions }}
+                                    </p>
+                                    <a href="{% url 'research_hub' %}" class="btn btn-sm btn-success">
+                                        <i class="fas fa-users me-1"></i>View Teams
+                                    </a>
+                                    {% else %}
+                                    <div class="alert alert-warning mb-2">
+                                        <i class="fas fa-clock me-2"></i>Pending Verification
+                                    </div>
+                                    <a href="{% url 'research_club_status' %}" class="btn btn-sm btn-warning">
+                                        Check Status
+                                    </a>
+                                    {% endif %}
+                                {% else %}
+                                <div class="alert alert-info mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>Not Registered
+                                </div>
+                                <p class="small mb-2">Join research club (₦1,000) to access teams and contribute.</p>
+                                <a href="{% url 'research_club_register' %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-user-plus me-1"></i>Register Now
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Grid -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body p-4">
                         <h4 class="fw-bold mb-4">
                             <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
                         </h4>
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-6">
                                 <a href="{% url 'cgpa_calculator' %}" class="text-decoration-none">
                                     <div class="card border-primary h-100 hover-lift">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-calculator fa-3x text-primary mb-3"></i>
-                                            <h5 class="fw-bold">CGPA Calculator</h5>
-                                            <p class="text-muted small mb-0">Calculate and manage your CGPA</p>
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-calculator fa-2x text-primary mb-2"></i>
+                                            <h6 class="fw-bold small">CGPA Calculator</h6>
                                         </div>
                                     </div>
                                 </a>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-6">
                                 <a href="{% url 'student_profile' %}" class="text-decoration-none">
                                     <div class="card border-success h-100 hover-lift">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-user-edit fa-3x text-success mb-3"></i>
-                                            <h5 class="fw-bold">Edit Profile</h5>
-                                            <p class="text-muted small mb-0">Update your information</p>
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-user-edit fa-2x text-success mb-2"></i>
+                                            <h6 class="fw-bold small">Edit Profile</h6>
                                         </div>
                                     </div>
                                 </a>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-6">
                                 <a href="{% url 'cgpa_history' %}" class="text-decoration-none">
                                     <div class="card border-info h-100 hover-lift">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-history fa-3x text-info mb-3"></i>
-                                            <h5 class="fw-bold">CGPA History</h5>
-                                            <p class="text-muted small mb-0">View past calculations</p>
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-history fa-2x text-info mb-2"></i>
+                                            <h6 class="fw-bold small">CGPA History</h6>
                                         </div>
                                     </div>
                                 </a>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-6">
                                 <a href="{% url 'past_questions' %}" class="text-decoration-none">
                                     <div class="card border-warning h-100 hover-lift">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-file-alt fa-3x text-warning mb-3"></i>
-                                            <h5 class="fw-bold">Past Questions</h5>
-                                            <p class="text-muted small mb-0">Access exam materials</p>
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-file-alt fa-2x text-warning mb-2"></i>
+                                            <h6 class="fw-bold small">Past Questions</h6>
                                         </div>
                                     </div>
                                 </a>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-6">
+                                <a href="{% url 'library' %}" class="text-decoration-none">
+                                    <div class="card border-danger h-100 hover-lift">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-book fa-2x text-danger mb-2"></i>
+                                            <h6 class="fw-bold small">Library</h6>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-6">
                                 <a href="{% url 'my_receipt' %}" class="text-decoration-none">
                                     <div class="card border-success h-100 hover-lift">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-receipt fa-3x text-success mb-3"></i>
-                                            <h5 class="fw-bold">My Receipt</h5>
-                                            <p class="text-muted small mb-0">View/Print departmental receipt</p>
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-receipt fa-2x text-success mb-2"></i>
+                                            <h6 class="fw-bold small">My Receipt</h6>
                                         </div>
                                     </div>
                                 </a>
                             </div>
-
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-6">
                                 <a href="{% url 'view_course_handbook' %}" class="text-decoration-none">
                                     <div class="card border-primary h-100 hover-lift">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
-                                            <h5 class="fw-bold">Course Handbook</h5>
-                                            <p class="text-muted small mb-0">View course listings</p>
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-book-open fa-2x text-primary mb-2"></i>
+                                            <h6 class="fw-bold small">Handbook</h6>
                                         </div>
                                     </div>
                                 </a>
                             </div>
-
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-6">
                                 <a href="{% url 'view_timetables' %}" class="text-decoration-none">
                                     <div class="card border-info h-100 hover-lift">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-calendar-alt fa-3x text-info mb-3"></i>
-                                            <h5 class="fw-bold">Timetables</h5>
-                                            <p class="text-muted small mb-0">View exam & class schedules</p>
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-calendar-alt fa-2x text-info mb-2"></i>
+                                            <h6 class="fw-bold small">Timetables</h6>
                                         </div>
                                     </div>
                                 </a>
                             </div>
-
-                            <div class="col-md-6">
+                            <div class="col-md-4 col-6">
                                 <a href="{% url 'view_calendar' %}" class="text-decoration-none">
                                     <div class="card border-warning h-100 hover-lift">
-                                        <div class="card-body text-center p-4">
-                                            <i class="fas fa-calendar fa-3x text-warning mb-3"></i>
-                                            <h5 class="fw-bold">Academic Calendar</h5>
-                                            <p class="text-muted small mb-0">View academic calendar</p>
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-calendar fa-2x text-warning mb-2"></i>
+                                            <h6 class="fw-bold small">Calendar</h6>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-6">
+                                <a href="{% url 'research_hub' %}" class="text-decoration-none">
+                                    <div class="card border-secondary h-100 hover-lift">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-flask fa-2x text-secondary mb-2"></i>
+                                            <h6 class="fw-bold small">Research</h6>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-6">
+                                <a href="{% url 'research_quizzes' %}" class="text-decoration-none">
+                                    <div class="card border-danger h-100 hover-lift">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-trophy fa-2x text-danger mb-2"></i>
+                                            <h6 class="fw-bold small">Quizzes</h6>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-6">
+                                <a href="{% url 'change_password' %}" class="text-decoration-none">
+                                    <div class="card border-dark h-100 hover-lift">
+                                        <div class="card-body text-center p-3">
+                                            <i class="fas fa-key fa-2x text-dark mb-2"></i>
+                                            <h6 class="fw-bold small">Password</h6>
                                         </div>
                                     </div>
                                 </a>
@@ -177,7 +336,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
                         <h4 class="fw-bold mb-4">
-                            <i class="fas fa-chart-line me-2 text-info"></i>Semester Overview
+                            <i class="fas fa-chart-line me-2 text-info"></i>Academic Overview
                         </h4>
                         {% if semesters %}
                         <div class="table-responsive">
@@ -203,6 +362,16 @@
                                         </td>
                                     </tr>
                                     {% endfor %}
+                                    <tr class="table-primary fw-bold">
+                                        <td>CGPA</td>
+                                        <td>{{ academic_stats.total_courses }}</td>
+                                        <td>{{ academic_stats.total_credits }}</td>
+                                        <td>
+                                            <span class="badge {% if academic_stats.cgpa >= 4.5 %}bg-success{% elif academic_stats.cgpa >= 3.5 %}bg-primary{% elif academic_stats.cgpa >= 2.5 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ academic_stats.cgpa }}
+                                            </span>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -236,7 +405,7 @@
                         <h5 class="fw-bold mb-1">{{ student.full_name }}</h5>
                         <p class="text-muted small mb-2">{{ student.reg_number }}</p>
                         <span class="badge bg-primary mb-3">{{ student.level }} Level</span>
-                        <div class="d-grid">
+                        <div class="d-grid gap-2">
                             <a href="{% url 'student_profile' %}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-edit me-2"></i>Edit Profile
                             </a>
@@ -244,16 +413,46 @@
                     </div>
                 </div>
 
+                <!-- Research Activities -->
+                {% if research_status.is_approved %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-flask me-2 text-warning"></i>Research Stats
+                        </h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small">Teams:</span>
+                            <strong>{{ quick_stats.research_teams }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small">Contributions:</span>
+                            <strong>{{ contributions_stats.total }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small">Quiz Points:</span>
+                            <strong>{{ quick_stats.quiz_points }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="small">Liked Articles:</span>
+                            <strong>{{ quick_stats.liked_articles }}</strong>
+                        </div>
+                        <a href="{% url 'research_hub' %}" class="btn btn-sm btn-warning w-100">
+                            <i class="fas fa-users me-1"></i>View Research Hub
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Announcements -->
                 {% if announcements %}
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">
+                        <h6 class="fw-bold mb-3">
                             <i class="fas fa-bullhorn me-2 text-warning"></i>Announcements
-                        </h5>
+                        </h6>
                         {% for announcement in announcements %}
-                        <div class="alert alert-info mb-2">
-                            <h6 class="fw-bold mb-1">{{ announcement.title }}</h6>
+                        <div class="alert alert-info mb-2 p-2">
+                            <h6 class="fw-bold mb-1 small">{{ announcement.title }}</h6>
                             <p class="small mb-0">{{ announcement.content|truncatewords:15 }}</p>
                         </div>
                         {% endfor %}
@@ -266,7 +465,7 @@
                 <div class="card border-0 shadow-sm bg-success text-white">
                     <div class="card-body p-4 text-center">
                         <i class="fas fa-trophy fa-3x mb-3"></i>
-                        <h6 class="text-uppercase mb-2">Last Calculated CGPA</h6>
+                        <h6 class="text-uppercase mb-2">Latest CGPA</h6>
                         <h2 class="fw-bold mb-2">{{ latest_cgpa.cgpa }}</h2>
                         <small>{{ latest_cgpa.calculated_at|date:"M d, Y" }}</small>
                     </div>

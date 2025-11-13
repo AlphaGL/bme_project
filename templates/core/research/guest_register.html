@@ -1,3 +1,4 @@
+<!-- templates/core/research/guest_register.html -->
 {% extends 'base.html' %}
 {% load static %}
 
@@ -22,11 +23,61 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <!-- Info Card -->
+                <!-- Payment Instructions -->
+                <div class="card border-0 shadow-lg mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-university me-2"></i>
+                            Step 1: Make Payment
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>First, transfer ₦2,000 to the account below</strong>
+                        </div>
+                        
+                        <div class="bank-details p-4 bg-light rounded mb-3">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">ACCOUNT NUMBER</label>
+                                    <h3 class="text-primary mb-0">
+                                        9071720720
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="copyToClipboard('9071720720')"
+                                                type="button">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </h3>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-muted small">BANK</label>
+                                    <h4 class="mb-0">Moniepoint</h4>
+                                </div>
+                                <div class="col-12">
+                                    <label class="text-muted small">ACCOUNT NAME</label>
+                                    <h4 class="mb-0">Julius Omolara</h4>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <strong><i class="fas fa-exclamation-triangle me-2"></i>Important:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Use your <strong>EMAIL ADDRESS</strong> or <strong>NAME</strong> as transaction description</li>
+                                <li>Take a screenshot of the payment confirmation</li>
+                                <li>Amount: <strong>₦2,000</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Benefits Card -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body p-4">
                         <h5 class="fw-bold mb-3">
-                            <i class="fas fa-info-circle me-2 text-primary"></i>What You Get
+                            <i class="fas fa-star text-warning me-2"></i>
+                            What You Get
                         </h5>
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -71,18 +122,23 @@
 
                 <!-- Registration Form -->
                 <div class="card border-0 shadow-lg">
-                    <div class="card-body p-5">
-                        <h3 class="fw-bold mb-4 text-center">Registration Form</h3>
-                        
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>
+                            Step 2: Complete Registration Form
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
                         <div class="alert alert-warning mb-4">
                             <i class="fas fa-clock me-2"></i>
                             <strong>Approval Required:</strong> Your application will be reviewed by the Director of Research. You'll receive an email once approved.
                         </div>
 
-                        <form method="post">
+                        <form method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             
-                            <div class="row g-3">
+                            <h5 class="mb-3">Personal Information</h5>
+                            <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Full Name *</label>
                                     {{ form.full_name }}
@@ -139,11 +195,48 @@
                                     <div class="text-danger small">{{ form.reason_for_contribution.errors }}</div>
                                     {% endif %}
                                 </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <h5 class="mb-3">Payment Proof</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Payment Screenshot *</label>
+                                    {{ form.payment_proof }}
+                                    <small class="form-text text-muted d-block">
+                                        Upload a clear screenshot of your ₦2,000 bank transfer
+                                    </small>
+                                    {% if form.payment_proof.errors %}
+                                    <div class="text-danger small">{{ form.payment_proof.errors }}</div>
+                                    {% endif %}
+                                </div>
                                 
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">Create Password *</label>
+                                    <label class="form-label fw-bold">Transaction Description *</label>
+                                    {{ form.transaction_description }}
+                                    {% if form.transaction_description.errors %}
+                                    <div class="text-danger small">{{ form.transaction_description.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Payment Date *</label>
+                                    {{ form.payment_date }}
+                                    {% if form.payment_date.errors %}
+                                    <div class="text-danger small">{{ form.payment_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <h5 class="mb-3">Create Password</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Password *</label>
                                     {{ form.password }}
-                                    <small class="form-text text-muted d-block">For future login</small>
+                                    <small class="form-text text-muted d-block">Minimum 6 characters</small>
                                     {% if form.password.errors %}
                                     <div class="text-danger small">{{ form.password.errors }}</div>
                                     {% endif %}
@@ -159,13 +252,28 @@
                             </div>
 
                             {% if form.non_field_errors %}
-                            <div class="alert alert-danger mt-3">
+                            <div class="alert alert-danger">
                                 {{ form.non_field_errors }}
                             </div>
                             {% endif %}
+                            
+                            <div class="mb-3">
+                                <div class="form-check mb-2">
+                                    {{ form.confirm_payment }}
+                                    <label class="form-check-label">
+                                        I confirm that I have transferred ₦2,000 to the account above
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    {{ form.accept_terms }}
+                                    <label class="form-check-label">
+                                        I agree to the terms and conditions
+                                    </label>
+                                </div>
+                            </div>
 
-                            <div class="d-grid gap-2 mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg">
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">
                                     <i class="fas fa-paper-plane me-2"></i>Submit Application
                                 </button>
                                 <a href="{% url 'guest_contributor_choice' %}" class="btn btn-outline-secondary">
@@ -188,9 +296,11 @@
     </div>
 </section>
 
-<style>
-.card {
-    transition: transform 0.3s ease;
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Account number copied to clipboard!');
+    });
 }
-</style>
+</script>
 {% endblock %}

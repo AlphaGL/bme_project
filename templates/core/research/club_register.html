@@ -1,0 +1,131 @@
+<!-- templates/core/research/club_register.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Payment Instructions Card -->
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-university me-2"></i>
+                        Payment Instructions
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Step 1:</strong> Transfer ₦1,000 to the account below
+                    </div>
+                    
+                    <div class="bank-details p-4 bg-light rounded mb-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">ACCOUNT NUMBER</label>
+                                <h3 class="text-primary mb-0">
+                                    {{ account_number }}
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="copyToClipboard('{{ account_number }}')">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </h3>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">BANK</label>
+                                <h4 class="mb-0">{{ bank_name }}</h4>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small">ACCOUNT NAME</label>
+                                <h4 class="mb-0">{{ account_name }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Important:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Use <strong>{{ student.reg_number }}</strong> as transaction description/narration</li>
+                            <li>Take a screenshot of the payment confirmation</li>
+                            <li>Amount: <strong>₦{{ amount }}</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upload Proof Form -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>
+                        Upload Payment Proof
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Step 2:</strong> Upload your payment screenshot below
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                Payment Screenshot *
+                            </label>
+                            {{ form.payment_proof }}
+                            <small class="form-text text-muted">
+                                Upload a clear screenshot showing the payment details
+                            </small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                Transaction Description *
+                            </label>
+                            {{ form.transaction_description }}
+                            <small class="form-text text-muted">
+                                What description/narration did you use in the transfer?
+                            </small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                Payment Date *
+                            </label>
+                            {{ form.payment_date }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.confirm_payment }}
+                                <label class="form-check-label">
+                                    I confirm that I have transferred ₦1,000 to the account above
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check me-2"></i>
+                                Submit Registration
+                            </button>
+                            <a href="{% url 'research_hub' %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text);
+    alert('Account number copied!');
+}
+</script>
+{% endblock %}
