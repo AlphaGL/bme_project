@@ -1,10 +1,10 @@
-/* Enhanced PWA Install Notification Styles */
-/* Add to your static/css/pwa-styles.css or create new file */
+/* Enhanced PWA Progress Modal Styles */
+/* Add to static/css/pwa-styles.css */
 
-/* Main install notification - appears at top */
+/* ==================== INSTALL NOTIFICATION ==================== */
 .pwa-install-notification {
   position: fixed;
-  top: 60px; /* Below navbar */
+  top: 60px;
   left: 0;
   right: 0;
   z-index: 9999;
@@ -13,21 +13,11 @@
   border-bottom: 3px solid #D4AF37;
   box-shadow: 0 4px 20px rgba(139, 21, 56, 0.5);
   transform: translateY(-100%);
-  transition: transform 0.4s ease;
-  animation: slide-down 0.5s ease forwards;
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .pwa-install-notification.show {
   transform: translateY(0);
-}
-
-@keyframes slide-down {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
 }
 
 .pwa-notification-content {
@@ -46,12 +36,8 @@
 }
 
 @keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 .pwa-notification-text {
@@ -70,7 +56,6 @@
   font-size: 0.85rem;
   opacity: 0.9;
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
 }
 
 .pwa-notification-actions {
@@ -79,18 +64,15 @@
   flex-shrink: 0;
 }
 
-.pwa-notification-actions .btn {
-  white-space: nowrap;
-  font-weight: 600;
-  min-height: 36px;
-  border-radius: 20px;
-}
-
 .pwa-notification-actions .btn-light {
   background: #D4AF37;
   border: none;
   color: #000;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 20px;
   box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+  transition: all 0.3s ease;
 }
 
 .pwa-notification-actions .btn-light:hover {
@@ -100,29 +82,505 @@
 }
 
 .pwa-notification-actions .btn-link {
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  opacity: 0.8;
+  padding: 8px 16px;
 }
 
 .pwa-notification-actions .btn-link:hover {
-  opacity: 1;
+  color: white;
   text-decoration: underline;
 }
 
-/* Toast notifications */
+/* ==================== PROGRESS MODAL ==================== */
+.pwa-progress-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.pwa-progress-modal.show {
+  opacity: 1;
+}
+
+.pwa-progress-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+.pwa-progress-container {
+  position: relative;
+  z-index: 1;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.pwa-progress-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Header */
+.pwa-progress-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.pwa-progress-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 12px rgba(139, 21, 56, 0.2);
+}
+
+.pwa-progress-header h4 {
+  color: #8B1538;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+#progress-status {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* ==================== ANIMATIONS ==================== */
+.pwa-progress-animation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  margin: 20px 0;
+}
+
+/* Download Animation */
+.download-animation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.phone-outline {
+  font-size: 4rem;
+  color: #8B1538;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.download-arrow {
+  font-size: 2rem;
+  color: #D4AF37;
+  animation: slideDown 1s infinite;
+}
+
+@keyframes slideDown {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(10px);
+    opacity: 0.5;
+  }
+}
+
+/* Installing Animation */
+.installing-animation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.installing-animation .spinner-border {
+  width: 4rem;
+  height: 4rem;
+  border-width: 0.3rem;
+}
+
+.installing-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.installing-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #8B1538;
+  animation: dotPulse 1.5s infinite;
+}
+
+.installing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.installing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+}
+
+/* Success Animation */
+.success-animation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-checkmark {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 3;
+  stroke: #28a745;
+  stroke-miterlimit: 10;
+  box-shadow: inset 0px 0px 0px #28a745;
+  animation: fillGreen 0.4s ease-in-out 0.4s forwards, 
+             scaleCheckmark 0.3s ease-in-out 0.9s both;
+  position: relative;
+}
+
+@keyframes scaleCheckmark {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fillGreen {
+  100% {
+    box-shadow: inset 0px 0px 0px 30px #28a745;
+  }
+}
+
+.check-icon {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  border-radius: 50%;
+  box-sizing: content-box;
+  border: 3px solid #28a745;
+}
+
+.check-icon::before {
+  top: 3px;
+  left: -2px;
+  width: 30px;
+  transform-origin: 100% 50%;
+  border-radius: 100px 0 0 100px;
+}
+
+.check-icon::after {
+  top: 0;
+  left: 30px;
+  width: 60px;
+  transform-origin: 0 50%;
+  border-radius: 0 100px 100px 0;
+  animation: rotateCircle 4.25s ease-in;
+}
+
+.icon-line {
+  height: 3px;
+  background-color: #28a745;
+  display: block;
+  border-radius: 2px;
+  position: absolute;
+  z-index: 10;
+}
+
+.icon-line.line-tip {
+  top: 46px;
+  left: 14px;
+  width: 25px;
+  transform: rotate(45deg);
+  animation: iconLineTip 0.75s;
+}
+
+.icon-line.line-long {
+  top: 38px;
+  right: 8px;
+  width: 47px;
+  transform: rotate(-45deg);
+  animation: iconLineLong 0.75s;
+}
+
+@keyframes iconLineTip {
+  0% {
+    width: 0;
+    left: 1px;
+    top: 19px;
+  }
+  54% {
+    width: 0;
+    left: 1px;
+    top: 19px;
+  }
+  70% {
+    width: 50px;
+    left: -8px;
+    top: 37px;
+  }
+  84% {
+    width: 17px;
+    left: 21px;
+    top: 48px;
+  }
+  100% {
+    width: 25px;
+    left: 14px;
+    top: 45px;
+  }
+}
+
+@keyframes iconLineLong {
+  0% {
+    width: 0;
+    right: 46px;
+    top: 54px;
+  }
+  65% {
+    width: 0;
+    right: 46px;
+    top: 54px;
+  }
+  84% {
+    width: 55px;
+    right: 0px;
+    top: 35px;
+  }
+  100% {
+    width: 47px;
+    right: 8px;
+    top: 38px;
+  }
+}
+
+.icon-circle {
+  top: -3px;
+  left: -3px;
+  z-index: 10;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  position: absolute;
+  box-sizing: content-box;
+  border: 3px solid rgba(40, 167, 69, 0.5);
+}
+
+.icon-fix {
+  top: 8px;
+  width: 5px;
+  left: 26px;
+  z-index: 1;
+  height: 85px;
+  position: absolute;
+  transform: rotate(-45deg);
+  background-color: white;
+}
+
+.success-checkmark.animate .check-icon {
+  animation: scaleCircle 0.3s ease-in-out;
+}
+
+@keyframes scaleCircle {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ==================== PROGRESS BAR ==================== */
+.pwa-progress-bar-container {
+  margin: 20px 0;
+}
+
+.pwa-progress-bar {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.pwa-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8B1538 0%, #D4AF37 100%);
+  border-radius: 10px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.pwa-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.pwa-progress-text {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* ==================== DETAILS ==================== */
+.pwa-progress-details {
+  margin: 25px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  transition: all 0.3s ease;
+}
+
+.detail-item i {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.detail-item span {
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+/* ==================== ACTIONS ==================== */
+.pwa-progress-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.pwa-progress-actions .btn {
+  min-width: 100px;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.pwa-progress-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ==================== CONFETTI ==================== */
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #f00;
+  opacity: 0;
+  animation: confettiFall linear forwards;
+  z-index: 1000;
+}
+
+@keyframes confettiFall {
+  0% {
+    top: -10%;
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+  100% {
+    top: 110%;
+    opacity: 0;
+    transform: rotate(720deg);
+  }
+}
+
+/* ==================== TOAST NOTIFICATIONS ==================== */
 .pwa-toast {
   position: fixed;
   bottom: 20px;
   right: 20px;
   z-index: 9998;
   max-width: 350px;
-  animation: slide-in 0.3s ease;
+  animation: slideIn 0.3s ease;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   border-left: 4px solid currentColor;
 }
 
-@keyframes slide-in {
+@keyframes slideIn {
   from {
     transform: translateX(400px);
     opacity: 0;
@@ -134,23 +592,20 @@
 }
 
 .pwa-toast.fade-out {
-  animation: fade-out 0.3s ease forwards;
+  animation: fadeOut 0.3s ease forwards;
 }
 
-@keyframes fade-out {
-  from {
-    opacity: 1;
-  }
+@keyframes fadeOut {
   to {
     opacity: 0;
     transform: translateX(400px);
   }
 }
 
-/* Mobile responsive adjustments */
+/* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {
   .pwa-install-notification {
-    top: 56px; /* Adjust for mobile navbar */
+    top: 56px;
   }
   
   .pwa-notification-content {
@@ -170,25 +625,57 @@
     font-size: 0.75rem;
   }
   
-  .pwa-notification-actions {
-    gap: 8px;
+  .pwa-progress-container {
+    width: 95%;
   }
   
-  .pwa-notification-actions .btn {
-    font-size: 0.85rem;
-    padding: 6px 12px;
-    min-height: 32px;
+  .pwa-progress-content {
+    padding: 20px;
+  }
+  
+  .pwa-progress-logo {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .pwa-progress-header h4 {
+    font-size: 1.2rem;
+  }
+  
+  .pwa-progress-animation {
+    height: 120px;
+  }
+  
+  .phone-outline {
+    font-size: 3rem;
+  }
+  
+  .download-arrow {
+    font-size: 1.5rem;
+  }
+  
+  .success-checkmark,
+  .check-icon {
+    width: 80px;
+    height: 80px;
   }
   
   .pwa-toast {
-    bottom: 70px; /* Above mobile navigation if any */
+    bottom: 70px;
     right: 10px;
     left: 10px;
     max-width: none;
   }
+  
+  .pwa-progress-actions {
+    flex-direction: column;
+  }
+  
+  .pwa-progress-actions .btn {
+    width: 100%;
+  }
 }
 
-/* Extra small screens */
 @media (max-width: 400px) {
   .pwa-notification-content {
     flex-wrap: wrap;
@@ -207,7 +694,6 @@
   .pwa-notification-actions {
     order: 2;
     flex-basis: 100%;
-    justify-content: stretch;
   }
   
   .pwa-notification-actions .btn {
@@ -215,56 +701,9 @@
   }
 }
 
-/* Loading animation for install button */
-.pwa-installing {
-  position: relative;
-  pointer-events: none;
-}
-
-.pwa-installing::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Pulse effect for notification */
-.pwa-install-notification::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
-  animation: shine 3s infinite;
-  pointer-events: none;
-}
-
-@keyframes shine {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-/* Accessibility */
-.pwa-install-notification:focus-within {
+/* ==================== ACCESSIBILITY ==================== */
+.pwa-install-notification:focus-within,
+.pwa-progress-modal:focus-within {
   outline: 3px solid #D4AF37;
   outline-offset: -3px;
 }
@@ -272,31 +711,25 @@
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   .pwa-install-notification,
+  .pwa-progress-modal,
+  .pwa-progress-container,
   .pwa-toast,
-  .pwa-notification-icon {
+  .confetti {
     animation: none !important;
     transition: none !important;
   }
   
-  .pwa-install-notification {
-    transform: translateY(0);
+  .pwa-notification-icon,
+  .phone-outline,
+  .download-arrow,
+  .installing-dots span {
+    animation: none !important;
   }
 }
 
-/* Standalone mode adjustments */
+/* Standalone mode */
 @media all and (display-mode: standalone) {
   .pwa-install-notification {
     display: none !important;
-  }
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .pwa-install-notification {
-    border: 3px solid currentColor;
-  }
-  
-  .pwa-notification-actions .btn-light {
-    border: 2px solid #000;
   }
 }
