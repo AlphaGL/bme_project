@@ -126,12 +126,14 @@ LOGIN_REDIRECT_URL = 'admin_dashboard'
 
 
 # Paystack Configuration
+PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY_TEST', default='')
+PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY_TEST', default='')
+
+
 # PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='')
 # PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='')
 
 
-PAYSTACK_PUBLIC_KEY = "pk_test_82cbf50854af160f931f8b9e6f9c84af8489536e"
-PAYSTACK_SECRET_KEY = "sk_test_3e89989f81e42e78b1bce3d756f9da62ff9c8612"
 
 
 # hosting mail: briurex@gmail.com
