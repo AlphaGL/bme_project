@@ -92,9 +92,6 @@ STATICFILES_DIRS = [
 # For production
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Add security headers for PWA
-SECURE_CROSS_ORIGIN_OPENER_POLICY = None  # Allow PWA features
-
 
 # Cache control for static files (optional but recommended)
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
