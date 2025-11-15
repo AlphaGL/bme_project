@@ -104,9 +104,15 @@
                                     <div class="flex-grow-1">
                                         <h6 class="fw-bold mb-1">{{ rec.title }}</h6>
                                         <p class="small mb-2">{{ rec.message }}</p>
-                                        <a href="{% url rec.url %}" class="btn btn-sm btn-{{ rec.type }}">
-                                            {{ rec.action }} <i class="fas fa-arrow-right ms-1"></i>
-                                        </a>
+                                        {% if rec.url == "#" %}
+                                            <a href="#" class="btn btn-sm btn-{{ rec.type }}">
+                                                {{ rec.action }} <i class="fas fa-arrow-right ms-1"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url rec.url %}" class="btn btn-sm btn-{{ rec.type }}">
+                                                {{ rec.action }} <i class="fas fa-arrow-right ms-1"></i>
+                                            </a>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
