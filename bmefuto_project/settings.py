@@ -30,6 +30,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise here
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -88,21 +89,18 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-
 # For production
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-
-# Cache control for static files (optional but recommended)
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+# FIXED: Use WhiteNoise instead of ManifestStaticFilesStorage for Vercel
+# This prevents the "Missing staticfiles manifest entry" error
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
 
 # ### eamil for the account: briurex@gmail.com
 # Cloudinary configuration
@@ -130,17 +128,12 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 LOGIN_URL = 'admin_login'
 LOGIN_REDIRECT_URL = 'admin_dashboard'
 
-
 # Paystack Configuration
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY_TEST', default='')
 PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY_TEST', default='')
 
-
 # PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='')
 # PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY', default='')
-
-
-
 
 # hosting mail: briurex@gmail.com
 # superbase mail: briurex@gmail.com

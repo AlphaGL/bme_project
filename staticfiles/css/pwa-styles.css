@@ -1,62 +1,51 @@
-/* Enhanced PWA Install Button - More Prominent & Clear */
+/* Enhanced PWA Install Notification Styles */
+/* Add to your static/css/pwa-styles.css or create new file */
 
-.pwa-install-btn {
+/* Main install notification - appears at top */
+.pwa-install-notification {
   position: fixed;
-  bottom: 80px;
-  right: 20px;
-  z-index: 999;
+  top: 60px; /* Below navbar */
+  left: 0;
+  right: 0;
+  z-index: 9999;
   display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 16px 24px;
   background: linear-gradient(135deg, #8B1538 0%, #6B0F28 100%);
-  border: 2px solid #D4AF37;
-  border-radius: 16px;
-  box-shadow: 0 6px 25px rgba(139, 21, 56, 0.5), 0 0 20px rgba(212, 175, 55, 0.3);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 0;
-  transform: translateY(20px);
-  min-width: 180px;
-  animation: pulse-glow 2s infinite;
+  border-bottom: 3px solid #D4AF37;
+  box-shadow: 0 4px 20px rgba(139, 21, 56, 0.5);
+  transform: translateY(-100%);
+  transition: transform 0.4s ease;
+  animation: slide-down 0.5s ease forwards;
 }
 
-.pwa-install-btn.show {
-  opacity: 1;
+.pwa-install-notification.show {
   transform: translateY(0);
 }
 
-/* Pulse glow animation to attract attention */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 6px 25px rgba(139, 21, 56, 0.5), 0 0 20px rgba(212, 175, 55, 0.3);
+@keyframes slide-down {
+  from {
+    transform: translateY(-100%);
   }
-  50% {
-    box-shadow: 0 6px 30px rgba(139, 21, 56, 0.7), 0 0 30px rgba(212, 175, 55, 0.5);
+  to {
+    transform: translateY(0);
   }
 }
 
-.pwa-install-btn:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(139, 21, 56, 0.6), 0 0 35px rgba(212, 175, 55, 0.6);
-  background: linear-gradient(135deg, #6B0F28 0%, #8B1538 100%);
+.pwa-notification-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  gap: 15px;
 }
 
-.pwa-install-btn:active {
-  transform: translateY(-2px);
-}
-
-/* Icon container with animation */
-.pwa-install-btn .install-icon {
+.pwa-notification-icon {
+  flex-shrink: 0;
   font-size: 2rem;
-  margin-bottom: 8px;
-  animation: bounce-icon 2s infinite;
+  color: #D4AF37;
+  animation: bounce 2s infinite;
 }
 
-@keyframes bounce-icon {
+@keyframes bounce {
   0%, 100% {
     transform: translateY(0);
   }
@@ -65,256 +54,249 @@
   }
 }
 
-/* Main text */
-.pwa-install-btn .install-text {
-  font-size: 1rem;
+.pwa-notification-text {
+  flex-grow: 1;
+  color: white;
+}
+
+.pwa-notification-text h6 {
   font-weight: 700;
-  text-align: center;
-  line-height: 1.2;
+  font-size: 1rem;
+  margin: 0;
+  color: white;
 }
 
-/* Subtitle text */
-.pwa-install-btn .install-subtitle {
-  font-size: 0.75rem;
-  font-weight: 400;
+.pwa-notification-text p {
+  font-size: 0.85rem;
   opacity: 0.9;
-  margin-top: 4px;
-  text-align: center;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* Badge indicator */
-.pwa-install-btn::before {
-  content: 'FREE';
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background: #D4AF37;
-  color: #000;
-  font-size: 0.65rem;
-  font-weight: 800;
-  padding: 4px 8px;
+.pwa-notification-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pwa-notification-actions .btn {
+  white-space: nowrap;
+  font-weight: 600;
+  min-height: 36px;
   border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
 }
 
-/* Mobile adjustments - Keep prominent on all screens */
+.pwa-notification-actions .btn-light {
+  background: #D4AF37;
+  border: none;
+  color: #000;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.pwa-notification-actions .btn-light:hover {
+  background: #B8941F;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+.pwa-notification-actions .btn-link {
+  text-decoration: none;
+  opacity: 0.8;
+}
+
+.pwa-notification-actions .btn-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* Toast notifications */
+.pwa-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9998;
+  max-width: 350px;
+  animation: slide-in 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border-left: 4px solid currentColor;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.pwa-toast.fade-out {
+  animation: fade-out 0.3s ease forwards;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(400px);
+  }
+}
+
+/* Mobile responsive adjustments */
 @media (max-width: 768px) {
-  .pwa-install-btn {
-    bottom: 70px;
-    right: 15px;
-    padding: 14px 20px;
-    min-width: 160px;
+  .pwa-install-notification {
+    top: 56px; /* Adjust for mobile navbar */
   }
   
-  .pwa-install-btn .install-icon {
-    font-size: 1.75rem;
-    margin-bottom: 6px;
+  .pwa-notification-content {
+    padding: 12px 15px;
+    gap: 10px;
   }
   
-  .pwa-install-btn .install-text {
+  .pwa-notification-icon {
+    font-size: 1.5rem;
+  }
+  
+  .pwa-notification-text h6 {
     font-size: 0.9rem;
   }
   
-  .pwa-install-btn .install-subtitle {
-    font-size: 0.7rem;
+  .pwa-notification-text p {
+    font-size: 0.75rem;
+  }
+  
+  .pwa-notification-actions {
+    gap: 8px;
+  }
+  
+  .pwa-notification-actions .btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    min-height: 32px;
+  }
+  
+  .pwa-toast {
+    bottom: 70px; /* Above mobile navigation if any */
+    right: 10px;
+    left: 10px;
+    max-width: none;
   }
 }
 
 /* Extra small screens */
 @media (max-width: 400px) {
-  .pwa-install-btn {
-    bottom: 65px;
-    right: 10px;
-    padding: 12px 16px;
-    min-width: 140px;
+  .pwa-notification-content {
+    flex-wrap: wrap;
   }
   
-  .pwa-install-btn .install-icon {
-    font-size: 1.5rem;
-  }
-  
-  .pwa-install-btn .install-text {
-    font-size: 0.85rem;
-  }
-}
-
-/* Alternative compact design (if you prefer smaller button) */
-.pwa-install-btn.compact {
-  flex-direction: row;
-  padding: 12px 20px;
-  min-width: auto;
-}
-
-.pwa-install-btn.compact .install-icon {
-  font-size: 1.25rem;
-  margin-bottom: 0;
-  margin-right: 10px;
-  animation: none;
-}
-
-.pwa-install-btn.compact .install-text {
-  font-size: 0.9rem;
-}
-
-.pwa-install-btn.compact .install-subtitle {
-  display: none;
-}
-
-/* Toast notification style (alternative position) */
-.pwa-install-toast {
-  position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-20px);
-  z-index: 999;
-  display: none;
-  align-items: center;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #8B1538 0%, #6B0F28 100%);
-  border: 2px solid #D4AF37;
-  border-radius: 50px;
-  box-shadow: 0 4px 20px rgba(139, 21, 56, 0.5);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 0;
-}
-
-.pwa-install-toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-.pwa-install-toast:hover {
-  transform: translateX(-50%) translateY(-3px);
-  box-shadow: 0 6px 25px rgba(139, 21, 56, 0.6);
-}
-
-.pwa-install-toast i {
-  margin-right: 8px;
-  font-size: 1.2rem;
-}
-
-/* Banner style (alternative full-width) */
-.pwa-install-banner {
-  position: fixed;
-  top: 60px;
-  left: 0;
-  right: 0;
-  z-index: 999;
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: linear-gradient(135deg, #8B1538 0%, #6B0F28 100%);
-  border-bottom: 2px solid #D4AF37;
-  box-shadow: 0 4px 15px rgba(139, 21, 56, 0.4);
-  color: white;
-  transform: translateY(-100%);
-  transition: transform 0.3s ease;
-}
-
-.pwa-install-banner.show {
-  transform: translateY(0);
-}
-
-.pwa-install-banner-content {
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.pwa-install-banner-icon {
-  font-size: 2rem;
-  margin-right: 16px;
-}
-
-.pwa-install-banner-text h5 {
-  margin: 0 0 4px 0;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.pwa-install-banner-text p {
-  margin: 0;
-  font-size: 0.85rem;
-  opacity: 0.9;
-}
-
-.pwa-install-banner-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.pwa-install-banner-btn {
-  padding: 8px 20px;
-  border: 2px solid white;
-  border-radius: 25px;
-  background: transparent;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.pwa-install-banner-btn:hover {
-  background: white;
-  color: #8B1538;
-}
-
-.pwa-install-banner-btn.dismiss {
-  border-color: rgba(255, 255, 255, 0.5);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* Mobile banner adjustments */
-@media (max-width: 768px) {
-  .pwa-install-banner {
-    flex-direction: column;
-    text-align: center;
-    padding: 12px 15px;
-  }
-  
-  .pwa-install-banner-content {
-    flex-direction: column;
-    margin-bottom: 12px;
-  }
-  
-  .pwa-install-banner-icon {
-    margin-right: 0;
+  .pwa-notification-text {
+    flex-basis: 100%;
+    order: 1;
     margin-bottom: 8px;
   }
   
-  .pwa-install-banner-actions {
-    width: 100%;
-    justify-content: center;
+  .pwa-notification-icon {
+    order: 0;
   }
   
-  .pwa-install-banner-btn {
+  .pwa-notification-actions {
+    order: 2;
+    flex-basis: 100%;
+    justify-content: stretch;
+  }
+  
+  .pwa-notification-actions .btn {
     flex: 1;
-    max-width: 150px;
   }
 }
 
-/* Accessibility improvements */
-.pwa-install-btn:focus,
-.pwa-install-toast:focus,
-.pwa-install-banner-btn:focus {
-  outline: 3px solid #D4AF37;
-  outline-offset: 2px;
+/* Loading animation for install button */
+.pwa-installing {
+  position: relative;
+  pointer-events: none;
 }
 
-/* Reduce motion for users who prefer it */
+.pwa-installing::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pulse effect for notification */
+.pwa-install-notification::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+  animation: shine 3s infinite;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Accessibility */
+.pwa-install-notification:focus-within {
+  outline: 3px solid #D4AF37;
+  outline-offset: -3px;
+}
+
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
-  .pwa-install-btn,
-  .pwa-install-toast,
-  .pwa-install-banner {
-    animation: none;
-    transition: none;
+  .pwa-install-notification,
+  .pwa-toast,
+  .pwa-notification-icon {
+    animation: none !important;
+    transition: none !important;
   }
   
-  .pwa-install-btn .install-icon {
-    animation: none;
+  .pwa-install-notification {
+    transform: translateY(0);
+  }
+}
+
+/* Standalone mode adjustments */
+@media all and (display-mode: standalone) {
+  .pwa-install-notification {
+    display: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .pwa-install-notification {
+    border: 3px solid currentColor;
+  }
+  
+  .pwa-notification-actions .btn-light {
+    border: 2px solid #000;
   }
 }
