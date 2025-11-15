@@ -536,11 +536,11 @@ class DepartmentalDuesForm(forms.ModelForm):
             'amount_paid': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
-                'placeholder': '5000.00'
+                'placeholder': '10000.00'
             }),
             'academic_session': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'e.g., 2023/2024'
+                'placeholder': 'e.g., 2025/2026'
             }),
             'is_approved': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
