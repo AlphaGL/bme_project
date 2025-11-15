@@ -86,6 +86,7 @@ class LibraryResource(models.Model):
         ('Lecture', 'Lecture Notes'),
         ('Project', 'Project Report'),
         ('Thesis', 'Thesis'),
+        ('Constitution', 'Nabes Constitution'),
         ('Other', 'Other'),
     ]
 
