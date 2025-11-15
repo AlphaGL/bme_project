@@ -44,7 +44,7 @@ urlpatterns = [
     # Admin - Registered Numbers Management
     path('encrypted/admin/futobme/registered-numbers/', views.manage_registered_numbers, name='manage_registered_numbers'),
     path('encrypted/admin/futobme/registered-numbers/add/', views.add_registered_number, name='add_registered_number'),
-    path('encrypted/admin/futobme/registered-numbers/delete/<str:pk>/', views.delete_registered_number, name='delete_registered_number'),
+    path('encrypted/admin/futobme/registered-numbers/delete/<path:pk>/', views.delete_registered_number, name='delete_registered_number'),
     path('encrypted/admin/futobme/registered-numbers/bulk-import/', views.bulk_import_numbers, name='bulk_import_numbers'),
     
     # Admin - Payments Management
