@@ -83,12 +83,21 @@ TIME_ZONE = 'Africa/Lagos'
 USE_I18N = True
 USE_TZ = True
 
-# Static files configuration
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+
+# For production
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Add security headers for PWA
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None  # Allow PWA features
+
+
+# Cache control for static files (optional but recommended)
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'

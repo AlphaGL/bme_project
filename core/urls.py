@@ -187,6 +187,11 @@ urlpatterns = [
 
 
     path('offline/', TemplateView.as_view(template_name='core/offline.html'), name='offline'),
+    
+    # PWA files - MUST be at root level
+    path('service-worker.js', views.service_worker, name='service_worker'),
+    path('sw.js', views.service_worker, name='service_worker_alt'),  # Alternative path
+    path('manifest.json', views.manifest_json, name='manifest'),
 
 
     # ==================== RESEARCH CLUB REGISTRATION URLs ====================

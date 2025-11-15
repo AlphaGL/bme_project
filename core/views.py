@@ -17,9 +17,117 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 import hashlib
 import hmac
-
+from django.http import HttpResponse
+from django.views.decorators.http import require_GET
+from django.views.decorators.cache import cache_control
+import os
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+
+@require_GET
+@cache_control(max_age=0, no_cache=True, must_revalidate=True, no_store=True)
+def service_worker(request):
+    """Serve the service worker file from root"""
+    try:
+        # Try to read from static files
+        sw_path = os.path.join(settings.BASE_DIR, 'static', 'js', 'service-worker.js')
+        
+        # If not in static, try root
+        if not os.path.exists(sw_path):
+            sw_path = os.path.join(settings.BASE_DIR, 'service-worker.js')
+        
+        with open(sw_path, 'r', encoding='utf-8') as f:
+            sw_content = f.read()
+        
+        return HttpResponse(
+            sw_content,
+            content_type='application/javascript; charset=utf-8',
+            headers={
+                'Service-Worker-Allowed': '/',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+            }
+        )
+    except FileNotFoundError:
+        # Return a basic service worker if file not found
+        basic_sw = '''
+        const CACHE_NAME = 'futo-bme-basic';
+        
+        self.addEventListener('install', (event) => {
+            console.log('[SW] Installing...');
+            self.skipWaiting();
+        });
+        
+        self.addEventListener('activate', (event) => {
+            console.log('[SW] Activating...');
+            event.waitUntil(self.clients.claim());
+        });
+        
+        self.addEventListener('fetch', (event) => {
+            // Let network handle all requests
+        });
+        '''
+        return HttpResponse(
+            basic_sw,
+            content_type='application/javascript; charset=utf-8'
+        )
+
+@require_GET
+@cache_control(max_age=0, no_cache=True, must_revalidate=True, no_store=True)
+def manifest_json(request):
+    """Serve the manifest.json file"""
+    import json
+    
+    manifest = {
+        "name": "FUTO BME Portal",
+        "short_name": "FUTO BME",
+        "description": "Federal University of Technology Owerri - Biomedical Engineering Department Portal",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#8B1538",
+        "theme_color": "#8B1538",
+        "orientation": "portrait-primary",
+        "icons": [
+            {
+                "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+                "sizes": "192x192",
+                "type": "image/jpeg",
+                "purpose": "any maskable"
+            },
+            {
+                "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+                "sizes": "512x512",
+                "type": "image/jpeg",
+                "purpose": "any maskable"
+            }
+        ],
+        "shortcuts": [
+            {
+                "name": "Student Portal",
+                "url": "/student/login/",
+                "icons": [{
+                    "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+                    "sizes": "96x96"
+                }]
+            },
+            {
+                "name": "Past Questions",
+                "url": "/past-questions/",
+                "icons": [{
+                    "src": "https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg",
+                    "sizes": "96x96"
+                }]
+            }
+        ]
+    }
+    
+    return HttpResponse(
+        json.dumps(manifest, indent=2),
+        content_type='application/manifest+json'
+    )
+
+
 
 @csrf_exempt
 def paystack_webhook(request):
