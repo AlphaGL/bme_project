@@ -1,7 +1,7 @@
-/* Enhanced PWA Progress Modal Styles */
-/* Add to static/css/pwa-styles.css */
+/* Enhanced PWA Install Notification Styles with Progress Indicators */
+/* Add to your static/css/pwa-styles.css */
 
-/* ==================== INSTALL NOTIFICATION ==================== */
+/* Main install notification - appears at top */
 .pwa-install-notification {
   position: fixed;
   top: 60px;
@@ -13,7 +13,7 @@
   border-bottom: 3px solid #D4AF37;
   box-shadow: 0 4px 20px rgba(139, 21, 56, 0.5);
   transform: translateY(-100%);
-  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pwa-install-notification.show {
@@ -36,8 +36,12 @@
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 .pwa-notification-text {
@@ -56,6 +60,7 @@
   font-size: 0.85rem;
   opacity: 0.9;
   margin: 0;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .pwa-notification-actions {
@@ -64,421 +69,206 @@
   flex-shrink: 0;
 }
 
+.pwa-notification-actions .btn {
+  white-space: nowrap;
+  font-weight: 600;
+  min-height: 36px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
 .pwa-notification-actions .btn-light {
   background: #D4AF37;
   border: none;
   color: #000;
-  font-weight: 600;
-  padding: 8px 20px;
-  border-radius: 20px;
   box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
-  transition: all 0.3s ease;
 }
 
-.pwa-notification-actions .btn-light:hover {
+.pwa-notification-actions .btn-light:hover:not(:disabled) {
   background: #B8941F;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
 }
 
+.pwa-notification-actions .btn-light:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
 .pwa-notification-actions .btn-link {
-  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  padding: 8px 16px;
+  opacity: 0.8;
+  color: white !important;
 }
 
 .pwa-notification-actions .btn-link:hover {
-  color: white;
+  opacity: 1;
   text-decoration: underline;
 }
 
-/* ==================== PROGRESS MODAL ==================== */
-.pwa-progress-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+/* Installing state with spinner */
+.pwa-notification-actions .btn.installing {
+  pointer-events: none;
 }
 
-.pwa-progress-modal.show {
-  opacity: 1;
+.pwa-notification-actions .btn.installing .fa-spin {
+  animation: spin 0.8s linear infinite;
 }
 
-.pwa-progress-overlay {
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Progress bar for installation */
+.pwa-install-progress {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.pwa-install-progress-bar {
+  height: 100%;
+  background: #D4AF37;
+  width: 0;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+.pwa-install-progress-bar.indeterminate {
+  width: 30%;
+  animation: indeterminate 1.5s infinite;
+}
+
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/* Toast notifications with better styling */
+.pwa-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9998;
+  max-width: 350px;
+  min-width: 300px;
+  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border-left: 4px solid currentColor;
   backdrop-filter: blur(10px);
 }
 
-.pwa-progress-container {
-  position: relative;
-  z-index: 1;
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+.pwa-toast.alert-success {
+  background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+  border-left-color: #00ff88;
+  color: white;
 }
 
-@keyframes slideUp {
+.pwa-toast.alert-error,
+.pwa-toast.alert-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%);
+  border-left-color: #ff6b6b;
+  color: white;
+}
+
+.pwa-toast.alert-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+  border-left-color: #ffd700;
+  color: #000;
+}
+
+.pwa-toast.alert-info {
+  background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+  border-left-color: #61dafb;
+  color: white;
+}
+
+.pwa-toast .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+.pwa-toast.alert-warning .btn-close {
+  filter: brightness(0);
+}
+
+@keyframes slideIn {
   from {
+    transform: translateX(400px) scale(0.8);
     opacity: 0;
-    transform: translateY(50px) scale(0.9);
   }
   to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.pwa-progress-content {
-  background: white;
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-/* Header */
-.pwa-progress-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.pwa-progress-logo {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 12px rgba(139, 21, 56, 0.2);
-}
-
-.pwa-progress-header h4 {
-  color: #8B1538;
-  font-weight: 700;
-  font-size: 1.5rem;
-}
-
-#progress-status {
-  color: #6c757d;
-  font-size: 0.9rem;
-}
-
-/* ==================== ANIMATIONS ==================== */
-.pwa-progress-animation {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 150px;
-  margin: 20px 0;
-}
-
-/* Download Animation */
-.download-animation {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.phone-outline {
-  font-size: 4rem;
-  color: #8B1538;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
+    transform: translateX(0) scale(1);
     opacity: 1;
   }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
 }
 
-.download-arrow {
-  font-size: 2rem;
-  color: #D4AF37;
-  animation: slideDown 1s infinite;
-}
-
-@keyframes slideDown {
-  0%, 100% {
-    transform: translateY(0);
+@keyframes slideOut {
+  from {
+    transform: translateX(0) scale(1);
     opacity: 1;
   }
-  50% {
-    transform: translateY(10px);
-    opacity: 0.5;
+  to {
+    transform: translateX(400px) scale(0.8);
+    opacity: 0;
   }
 }
 
-/* Installing Animation */
-.installing-animation {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-}
-
-.installing-animation .spinner-border {
-  width: 4rem;
-  height: 4rem;
-  border-width: 0.3rem;
-}
-
-.installing-dots {
-  display: flex;
-  gap: 8px;
-}
-
-.installing-dots span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #8B1538;
-  animation: dotPulse 1.5s infinite;
-}
-
-.installing-dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.installing-dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes dotPulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.5);
-    opacity: 0.5;
-  }
-}
-
-/* Success Animation */
-.success-animation {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.success-checkmark {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  display: block;
-  stroke-width: 3;
-  stroke: #28a745;
-  stroke-miterlimit: 10;
-  box-shadow: inset 0px 0px 0px #28a745;
-  animation: fillGreen 0.4s ease-in-out 0.4s forwards, 
-             scaleCheckmark 0.3s ease-in-out 0.9s both;
-  position: relative;
-}
-
-@keyframes scaleCheckmark {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-@keyframes fillGreen {
-  100% {
-    box-shadow: inset 0px 0px 0px 30px #28a745;
-  }
-}
-
-.check-icon {
-  width: 100px;
-  height: 100px;
-  position: relative;
-  border-radius: 50%;
-  box-sizing: content-box;
-  border: 3px solid #28a745;
-}
-
-.check-icon::before {
-  top: 3px;
-  left: -2px;
-  width: 30px;
-  transform-origin: 100% 50%;
-  border-radius: 100px 0 0 100px;
-}
-
-.check-icon::after {
-  top: 0;
-  left: 30px;
-  width: 60px;
-  transform-origin: 0 50%;
-  border-radius: 0 100px 100px 0;
-  animation: rotateCircle 4.25s ease-in;
-}
-
-.icon-line {
-  height: 3px;
-  background-color: #28a745;
-  display: block;
-  border-radius: 2px;
+/* Success checkmark animation */
+.pwa-toast.alert-success::before {
+  content: '✓';
   position: absolute;
-  z-index: 10;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3rem;
+  color: #00ff88;
+  animation: checkmark 0.6s ease;
 }
 
-.icon-line.line-tip {
-  top: 46px;
-  left: 14px;
-  width: 25px;
-  transform: rotate(45deg);
-  animation: iconLineTip 0.75s;
-}
-
-.icon-line.line-long {
-  top: 38px;
-  right: 8px;
-  width: 47px;
-  transform: rotate(-45deg);
-  animation: iconLineLong 0.75s;
-}
-
-@keyframes iconLineTip {
+@keyframes checkmark {
   0% {
-    width: 0;
-    left: 1px;
-    top: 19px;
+    transform: translateY(-50%) scale(0);
+    opacity: 0;
   }
-  54% {
-    width: 0;
-    left: 1px;
-    top: 19px;
-  }
-  70% {
-    width: 50px;
-    left: -8px;
-    top: 37px;
-  }
-  84% {
-    width: 17px;
-    left: 21px;
-    top: 48px;
+  50% {
+    transform: translateY(-50%) scale(1.2);
   }
   100% {
-    width: 25px;
-    left: 14px;
-    top: 45px;
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
   }
 }
 
-@keyframes iconLineLong {
-  0% {
-    width: 0;
-    right: 46px;
-    top: 54px;
-  }
-  65% {
-    width: 0;
-    right: 46px;
-    top: 54px;
-  }
-  84% {
-    width: 55px;
-    right: 0px;
-    top: 35px;
-  }
-  100% {
-    width: 47px;
-    right: 8px;
-    top: 38px;
-  }
-}
-
-.icon-circle {
-  top: -3px;
-  left: -3px;
-  z-index: 10;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  position: absolute;
-  box-sizing: content-box;
-  border: 3px solid rgba(40, 167, 69, 0.5);
-}
-
-.icon-fix {
-  top: 8px;
-  width: 5px;
-  left: 26px;
-  z-index: 1;
-  height: 85px;
-  position: absolute;
-  transform: rotate(-45deg);
-  background-color: white;
-}
-
-.success-checkmark.animate .check-icon {
-  animation: scaleCircle 0.3s ease-in-out;
-}
-
-@keyframes scaleCircle {
-  0% {
-    transform: scale(0);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* ==================== PROGRESS BAR ==================== */
-.pwa-progress-bar-container {
-  margin: 20px 0;
-}
-
-.pwa-progress-bar {
-  height: 8px;
-  background: #e9ecef;
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-}
-
-.pwa-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #8B1538 0%, #D4AF37 100%);
-  border-radius: 10px;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.pwa-progress-fill::after {
+/* Pulse effect for notification */
+.pwa-install-notification::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  animation: shimmer 2s infinite;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+  animation: shine 3s infinite;
+  pointer-events: none;
 }
 
-@keyframes shimmer {
+@keyframes shine {
   0% {
     transform: translateX(-100%);
   }
@@ -487,122 +277,264 @@
   }
 }
 
-.pwa-progress-text {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  font-size: 0.85rem;
-  color: #6c757d;
-}
-
-/* ==================== DETAILS ==================== */
-.pwa-progress-details {
-  margin: 25px 0;
+/* Download progress indicator - Enhanced Play Store style */
+.pwa-download-progress {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  background: white;
+  border-radius: 16px;
   padding: 20px;
-  background: #f8f9fa;
-  border-radius: 10px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+  min-width: 320px;
+  display: none;
+  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.detail-item {
+.pwa-download-progress.show {
+  display: block;
+}
+
+.pwa-download-progress-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  transition: all 0.3s ease;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
-.detail-item i {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.detail-item span {
-  font-size: 0.9rem;
-  color: #495057;
-}
-
-/* ==================== ACTIONS ==================== */
-.pwa-progress-actions {
+.pwa-download-progress-icon {
+  font-size: 2rem;
+  color: #8B1538;
+  animation: pulse 1.5s infinite;
+  width: 48px;
+  height: 48px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
-  gap: 10px;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(139, 21, 56, 0.1), rgba(212, 175, 55, 0.1));
+  border-radius: 12px;
 }
 
-.pwa-progress-actions .btn {
-  min-width: 100px;
-  border-radius: 20px;
-  padding: 10px 20px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.pwa-progress-actions .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* ==================== CONFETTI ==================== */
-.confetti {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: #f00;
-  opacity: 0;
-  animation: confettiFall linear forwards;
-  z-index: 1000;
-}
-
-@keyframes confettiFall {
-  0% {
-    top: -10%;
+@keyframes pulse {
+  0%, 100% {
     opacity: 1;
-    transform: rotate(0deg);
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.pwa-download-progress-text h6 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.2px;
+}
+
+.pwa-download-progress-text p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.pwa-download-progress-text p span {
+  font-weight: 600;
+}
+
+.pwa-download-progress-bar-container {
+  height: 8px;
+  background: #e8e8e8;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.pwa-download-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8B1538 0%, #D4AF37 100%);
+  border-radius: 4px;
+  width: 0;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 12px rgba(139, 21, 56, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer effect on progress bar */
+.pwa-download-progress-bar-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
   }
   100% {
-    top: 110%;
-    opacity: 0;
-    transform: rotate(720deg);
+    left: 200%;
   }
 }
 
-/* ==================== TOAST NOTIFICATIONS ==================== */
-.pwa-toast {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 9998;
-  max-width: 350px;
-  animation: slideIn 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border-left: 4px solid currentColor;
+.pwa-download-progress-bar-fill.indeterminate {
+  width: 40%;
+  animation: loading 1.5s infinite;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
   }
-  to {
-    transform: translateX(0);
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+.pwa-download-status {
+  margin-top: 12px;
+  font-size: 0.8125rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+}
+
+.pwa-download-status::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background: #8B1538;
+  border-radius: 50%;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
     opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.2);
   }
 }
 
-.pwa-toast.fade-out {
-  animation: fadeOut 0.3s ease forwards;
+/* Percentage badge */
+.pwa-download-percentage {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #8B1538, #D4AF37);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(139, 21, 56, 0.3);
+  animation: fadeIn 0.3s ease;
 }
 
-@keyframes fadeOut {
-  to {
+@keyframes fadeIn {
+  from {
     opacity: 0;
-    transform: translateX(400px);
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* ==================== RESPONSIVE ==================== */
+/* Success state */
+.pwa-download-progress.complete .pwa-download-progress-icon {
+  background: linear-gradient(135deg, rgba(25, 135, 84, 0.1), rgba(0, 255, 136, 0.1));
+  color: #198754;
+  animation: success-bounce 0.6s ease;
+}
+
+@keyframes success-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.pwa-download-progress.complete .pwa-download-progress-bar-fill {
+  background: linear-gradient(90deg, #198754, #00ff88);
+}
+
+.pwa-download-progress.complete .pwa-download-status::before {
+  background: #198754;
+}
+
+/* Speed indicator */
+.pwa-download-speed {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pwa-download-speed i {
+  font-size: 0.7rem;
+}
+
+/* File list (optional, can show what's being downloaded) */
+.pwa-download-files {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.pwa-download-files.show {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.pwa-download-file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.pwa-download-file-item i {
+  color: #8B1538;
+  width: 16px;
+}
+
+.pwa-download-file-item.complete {
+  color: #198754;
+}
+
+.pwa-download-file-item.complete i {
+  color: #198754;
+}
+
+/* Mobile responsive adjustments */
 @media (max-width: 768px) {
   .pwa-install-notification {
     top: 56px;
@@ -625,39 +557,14 @@
     font-size: 0.75rem;
   }
   
-  .pwa-progress-container {
-    width: 95%;
+  .pwa-notification-actions {
+    gap: 8px;
   }
   
-  .pwa-progress-content {
-    padding: 20px;
-  }
-  
-  .pwa-progress-logo {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .pwa-progress-header h4 {
-    font-size: 1.2rem;
-  }
-  
-  .pwa-progress-animation {
-    height: 120px;
-  }
-  
-  .phone-outline {
-    font-size: 3rem;
-  }
-  
-  .download-arrow {
-    font-size: 1.5rem;
-  }
-  
-  .success-checkmark,
-  .check-icon {
-    width: 80px;
-    height: 80px;
+  .pwa-notification-actions .btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    min-height: 32px;
   }
   
   .pwa-toast {
@@ -665,17 +572,18 @@
     right: 10px;
     left: 10px;
     max-width: none;
+    min-width: auto;
   }
   
-  .pwa-progress-actions {
-    flex-direction: column;
-  }
-  
-  .pwa-progress-actions .btn {
-    width: 100%;
+  .pwa-download-progress {
+    top: 60px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
   }
 }
 
+/* Extra small screens */
 @media (max-width: 400px) {
   .pwa-notification-content {
     flex-wrap: wrap;
@@ -694,6 +602,7 @@
   .pwa-notification-actions {
     order: 2;
     flex-basis: 100%;
+    justify-content: stretch;
   }
   
   .pwa-notification-actions .btn {
@@ -701,9 +610,8 @@
   }
 }
 
-/* ==================== ACCESSIBILITY ==================== */
-.pwa-install-notification:focus-within,
-.pwa-progress-modal:focus-within {
+/* Accessibility */
+.pwa-install-notification:focus-within {
   outline: 3px solid #D4AF37;
   outline-offset: -3px;
 }
@@ -711,25 +619,41 @@
 /* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   .pwa-install-notification,
-  .pwa-progress-modal,
-  .pwa-progress-container,
   .pwa-toast,
-  .confetti {
+  .pwa-notification-icon,
+  .pwa-download-progress-icon {
     animation: none !important;
     transition: none !important;
   }
   
-  .pwa-notification-icon,
-  .phone-outline,
-  .download-arrow,
-  .installing-dots span {
-    animation: none !important;
+  .pwa-install-notification {
+    transform: translateY(0);
+  }
+  
+  .pwa-install-progress-bar.indeterminate {
+    animation: none;
+    width: 100%;
   }
 }
 
-/* Standalone mode */
+/* Standalone mode adjustments */
 @media all and (display-mode: standalone) {
   .pwa-install-notification {
     display: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .pwa-install-notification {
+    border: 3px solid currentColor;
+  }
+  
+  .pwa-notification-actions .btn-light {
+    border: 2px solid #000;
+  }
+  
+  .pwa-toast {
+    border: 2px solid currentColor;
   }
 }
