@@ -679,9 +679,15 @@ select:focus {
                             </a>
                         </li>
                         <li class="mb-2">
+                            {% if request.session.student_reg_number %}
                             <a href="{% url 'past_questions' %}" class="text-white-50">
                                 <i class="fas fa-angle-right me-2"></i>Past Questions
                             </a>
+                            {% else %}
+                            <a href="{% url 'student_login' %}" class="text-white-50">
+                                <i class="fas fa-angle-right me-2"></i>Past Questions
+                            </a>
+                            {% endif %}
                         </li>
                         <li class="mb-2">
                             <a href="{% url 'library' %}" class="text-white-50">
