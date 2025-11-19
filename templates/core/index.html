@@ -23,9 +23,15 @@
                             <a href="{% url 'virtual_tour' %}" class="btn btn-light btn-lg me-2 mb-2">
                                 <i class="fas fa-video me-2"></i>Take Virtual Tour
                             </a>
+                            {% if request.session.student_reg_number %}
                             <a href="{% url 'past_questions' %}" class="btn btn-warning btn-lg mb-2">
                                 <i class="fas fa-file-alt me-2"></i>Resources
                             </a>
+                            {% else %}
+                            <a href="{% url 'student_login' %}" class="btn btn-warning btn-lg mb-2">
+                                <i class="fas fa-file-alt me-2"></i>Resources
+                            </a>
+                            {% endif %}
                         </div>
                         <div class="col-lg-7">
                             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjK2w9_34FhcuAL8wehof3upEAR9GYNYDqT3ga1YsIsTacDVMDc8bvNSS2JQUgu3D3tsHmcXazrFN7WWTE96YyUyVlDiMHxZIVvWjMUd1nhG-QSBUp19K2b9bjxbbNQUBpL8wC34K8FqNmKRl2_iiqJTqDfYXprg83P0Jr8EoeNLg-cDEGnQNNqiCHjLLw/s1600/futobg.jpg" 
