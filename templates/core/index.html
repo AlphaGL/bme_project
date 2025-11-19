@@ -493,11 +493,19 @@
                                 <td>{{ question.course_title }}</td>
                                 <td><span class="badge bg-primary">{{ question.level }}L</span></td>
                                 <!-- <td>{{ question.year }}</td> -->
+                                 {% if request.session.student_reg_number %}
                                 <td>
                                     <a href="{{ question.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-download"></i>
                                     </a>
                                 </td>
+                                {% else %}
+                                <td>
+                                    <a href="{% url 'student_login' %}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
