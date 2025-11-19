@@ -65,7 +65,7 @@ class PastQuestion(models.Model):
     course_title = models.CharField(max_length=200)
     level = models.CharField(max_length=10, choices=LEVEL_CHOICES)
     semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
-    year = models.IntegerField()
+    year = models.IntegerField(blank=True, null=True)
     link = models.URLField(help_text="Google Drive, Dropbox, or any other link to the file")
     description = models.TextField(blank=True, null=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
