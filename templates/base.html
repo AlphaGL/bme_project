@@ -563,6 +563,13 @@ select:focus {
                             <i class="fas fa-user-tie me-1"></i>Excos
                         </a>
                     </li>
+                    {% if request.session.student_reg_number %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'past_questions' %}">
+                            <i class="fas fa-file-alt me-1"></i>Past Questions
+                        </a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'view_timetables' %}">
                             <i class="fas fa-calendar-alt me-2"></i>Timetables
