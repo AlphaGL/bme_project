@@ -412,9 +412,15 @@
                         <span class="badge bg-primary mb-2">{{ resource.category }}</span>
                         <h6 class="card-title fw-bold">{{ resource.title|truncatewords:8 }}</h6>
                         <p class="card-text small text-muted">{{ resource.author }}</p>
+                        {% if request.session.student_reg_number %}
                         <a href="{{ resource.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-external-link-alt me-1"></i>Access
                         </a>
+                        {% else %}
+                        <a href="{% url 'student_login' %}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>Access
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
