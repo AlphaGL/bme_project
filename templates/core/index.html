@@ -299,7 +299,11 @@
                         <p class="card-text small">
                             Exam preparation resources
                         </p>
+                        {% if request.session.student_reg_number %}
                         <a href="{% url 'past_questions' %}" class="btn btn-sm btn-outline-primary">Browse</a>
+                        {% else %}
+                        <a href="{% url 'student_login' %}" class="btn btn-sm btn-outline-primary">Browse</a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
