@@ -8,7 +8,7 @@
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'research_hub' %}">Research Hub</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'research_hub' %}">Research Club</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'research_team_detail' article.team.id %}">{{ article.team.name }}</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'research_article_detail' article.id %}">{{ article.title|truncatewords:5 }}</a></li>
                 <li class="breadcrumb-item active">Contribute</li>
