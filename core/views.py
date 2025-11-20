@@ -27,6 +27,133 @@ from functools import wraps
 logger = logging.getLogger(__name__)
 
 
+# Add this to your views.py
+
+def verify_receipt(request):
+    """
+    Public receipt verification page
+    Verifies departmental dues receipts using watermark code
+    """
+    verification_result = None
+    error_message = None
+    
+    if request.method == 'POST':
+        verification_code = request.POST.get('verification_code', '').strip()
+        
+        print(f"\n{'='*60}")
+        print(f"VERIFICATION ATTEMPT")
+        print(f"{'='*60}")
+        print(f"Verification Code: '{verification_code}'")
+        print(f"Code Length: {len(verification_code)}")
+        print(f"POST Method: {request.method}")
+        print(f"User IP: {get_client_ip(request)}")
+        
+        # Validate input
+        if not verification_code:
+            error_message = 'Please enter a verification code.'
+            verification_result = {
+                'is_valid': False,
+                'message': error_message
+            }
+            print(f"❌ Empty verification code")
+        
+        elif len(verification_code) < 5:
+            error_message = 'Verification code is too short. Check you copied it correctly.'
+            verification_result = {
+                'is_valid': False,
+                'message': error_message
+            }
+            print(f"❌ Code too short: {len(verification_code)} chars")
+        
+        else:
+            try:
+                # Search for matching watermark code
+                print(f"\n🔍 Searching database for watermark_code='{verification_code}'")
+                
+                dues = DepartmentalDues.objects.get(
+                    watermark_code=verification_code,
+                    is_approved=True
+                )
+                
+                print(f"✓ FOUND!")
+                print(f"  Receipt Number: {dues.receipt_number}")
+                print(f"  Student: {dues.student.full_name}")
+                print(f"  Amount: ₦{dues.amount_paid}")
+                print(f"  Session: {dues.academic_session}")
+                
+                # Log successful verification
+                ReceiptVerification.objects.create(
+                    receipt=dues,
+                    verification_code=verification_code,
+                    is_valid=True,
+                    ip_address=get_client_ip(request)
+                )
+                
+                # Build result dictionary
+                verification_result = {
+                    'is_valid': True,
+                    'dues': dues,
+                    'student': dues.student,
+                    'verified_at': timezone.now(),
+                    'message': 'Receipt verified successfully!'
+                }
+                
+                logger.info(
+                    f"✓ Receipt {dues.receipt_number} verified by {get_client_ip(request)}"
+                )
+                
+                print(f"\n✓✓✓ VERIFICATION SUCCESSFUL ✓✓✓\n")
+            
+            except DepartmentalDues.DoesNotExist:
+                print(f"❌ NOT FOUND!")
+                print(f"  Checked for: watermark_code='{verification_code}' AND is_approved=True")
+                
+                # Debug: Check what codes exist
+                similar = DepartmentalDues.objects.filter(
+                    watermark_code__icontains=verification_code[:10]
+                ) if len(verification_code) >= 10 else None
+                
+                if similar and similar.exists():
+                    print(f"  Similar codes found: {similar.count()}")
+                    for item in similar[:3]:
+                        print(f"    - {item.watermark_code} (Approved: {item.is_approved})")
+                else:
+                    print(f"  No similar codes in database")
+                
+                # Log failed verification
+                ReceiptVerification.objects.create(
+                    verification_code=verification_code,
+                    is_valid=False,
+                    ip_address=get_client_ip(request)
+                )
+                
+                error_message = (
+                    'Invalid verification code. This receipt either does not exist, '
+                    'has not been approved yet, or the code is incorrect.'
+                )
+                
+                verification_result = {
+                    'is_valid': False,
+                    'message': error_message
+                }
+                
+                logger.warning(
+                    f"❌ Failed verification attempt for {verification_code} "
+                    f"from {get_client_ip(request)}"
+                )
+                
+                print(f"\n❌ VERIFICATION FAILED ❌\n")
+        
+        print(f"Result: {verification_result}")
+        print(f"{'='*60}\n")
+    
+    context = {
+        'verification_result': verification_result,
+        'error_message': error_message
+    }
+    
+    return render(request, 'core/verify_receipt.html', context)
+
 def financial_access_required(view_func):
     """Decorator to restrict access to financial features - based on username only"""
     @wraps(view_func)

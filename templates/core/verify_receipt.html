@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Receipt - FUTO BME{% endblock %}
+
+{% block extra_css %}
+<style>
+    .verify-page {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+
+    .verify-card {
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .verify-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .verify-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .result-card {
+        border-radius: 15px;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .info-item {
+        background: #f8f9fa;
+        border-left: 4px solid #8B1538;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+
+    .status-badge {
+        font-size: 1.1rem;
+        padding: 10px 20px;
+        border-radius: 10px;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="verify-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="text-center text-white mb-4">
+                    <h1 class="fw-bold mb-2">
+                        <i class="fas fa-shield-alt me-3"></i>Receipt Verification
+                    </h1>
+                    <p class="lead mb-0">Verify the authenticity of FUTO BME departmental dues receipts</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                
+                <!-- Show form only if NO valid result yet -->
+                {% if not verification_result or not verification_result.is_valid %}
+                    <!-- Verification Form -->
+                    <div class="verify-card form-section mb-4">
+                        <div class="text-center mb-4">
+                            <div class="verify-icon" style="background: rgba(102, 126, 234, 0.1);">
+                                <i class="fas fa-search fa-3x text-primary"></i>
+                            </div>
+                            <h4 class="fw-bold mb-1">Verify Receipt</h4>
+                            <p class="text-muted mb-0">Enter the verification code found on the receipt</p>
+                        </div>
+                        
+                        <form method="POST" action="{% url 'verify_receipt' %}">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="verification_code" class="form-label fw-bold">
+                                    <i class="fas fa-key me-2"></i>Verification Code
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control form-control-lg" 
+                                    id="verification_code" 
+                                    name="verification_code"
+                                    placeholder="e.g., BME-YYYYMMDDHHMMSS-XXXXXXXX"
+                                    style="font-family: monospace; letter-spacing: 1px;"
+                                    required
+                                    autofocus>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Found at the bottom of the receipt
+                                </small>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-check-circle me-2"></i>Verify Receipt
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+
+                <!-- Show result if verification was performed -->
+                {% if verification_result %}
+                    {% if verification_result.is_valid %}
+                        <!-- VALID RECEIPT RESULT -->
+                        <div class="result-card card border-0 shadow-lg">
+                            <div class="card-header text-white text-center py-4" 
+                                 style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                                <div class="verify-icon" style="background: rgba(255,255,255,0.2);">
+                                    <i class="fas fa-check-circle fa-3x text-white"></i>
+                                </div>
+                                <h3 class="fw-bold mb-1">Receipt Verified ✓</h3>
+                                <p class="mb-0">This is an authentic FUTO BME receipt</p>
+                            </div>
+                            
+                            <div class="card-body p-4 p-md-5">
+                                <!-- Status Badge -->
+                                <div class="text-center mb-4">
+                                    <span class="status-badge badge bg-success">
+                                        <i class="fas fa-check-double me-2"></i>APPROVED & VERIFIED
+                                    </span>
+                                </div>
+
+                                <!-- Receipt Details -->
+                                <h5 class="fw-bold mb-3">
+                                    <i class="fas fa-file-invoice me-2 text-primary"></i>Receipt Details
+                                </h5>
+                                
+                                <div class="info-item">
+                                    <div class="row">
+                                        <div class="col-md-4 text-muted">Receipt Number:</div>
+                                        <div class="col-md-8">
+                                            <strong style="font-family: monospace;">{{ verification_result.dues.receipt_number }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-item">
+                                    <div class="row">
+                                        <div class="col-md-4 text-muted">Verification Code:</div>
+                                        <div class="col-md-8">
+                                            <strong style="font-family: monospace; word-break: break-all;">{{ verification_result.dues.watermark_code }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-item">
+                                    <div class="row">
+                                        <div class="col-md-4 text-muted">Amount Paid:</div>
+                                        <div class="col-md-8">
+                                            <strong class="text-success">₦{{ verification_result.dues.amount_paid|floatformat:2 }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-item">
+                                    <div class="row">
+                                        <div class="col-md-4 text-muted">Academic Session:</div>
+                                        <div class="col-md-8">
+                                            <strong>{{ verification_result.dues.academic_session }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Student Information -->
+                                <h5 class="fw-bold mb-3 mt-4">
+                                    <i class="fas fa-user-graduate me-2 text-primary"></i>Student Information
+                                </h5>
+
+                                <div class="info-item">
+                                    <div class="row">
+                                        <div class="col-md-4 text-muted">Full Name:</div>
+                                        <div class="col-md-8">
+                                            <strong>{{ verification_result.student.full_name }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-item">
+                                    <div class="row">
+                                        <div class="col-md-4 text-muted">Reg. Number:</div>
+                                        <div class="col-md-8">
+                                            <strong style="font-family: monospace;">{{ verification_result.student.reg_number }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-item">
+                                    <div class="row">
+                                        <div class="col-md-4 text-muted">Level:</div>
+                                        <div class="col-md-8">
+                                            <strong>{{ verification_result.student.level }} Level</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Approval Information -->
+                                <h5 class="fw-bold mb-3 mt-4">
+                                    <i class="fas fa-stamp me-2 text-primary"></i>Approval Information
+                                </h5>
+
+                                <div class="info-item">
+                                    <div class="row">
+                                        <div class="col-md-4 text-muted">Approved By:</div>
+                                        <div class="col-md-8">
+                                            <strong>{{ verification_result.dues.approved_by.username|upper }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-item">
+                                    <div class="row">
+                                        <div class="col-md-4 text-muted">Approved On:</div>
+                                        <div class="col-md-8">
+                                            <strong>{{ verification_result.dues.approved_at|date:"F d, Y - h:i A" }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Verification Info -->
+                                <div class="alert alert-success mt-4">
+                                    <h6 class="fw-bold mb-2">
+                                        <i class="fas fa-shield-check me-2"></i>Verification Successful
+                                    </h6>
+                                    <p class="small mb-0">
+                                        This receipt has been verified at 
+                                        <strong>{{ verification_result.verified_at|date:"F d, Y - h:i A" }}</strong>
+                                        and matches our records.
+                                    </p>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-grid gap-2 mt-4">
+                                    <button onclick="window.print()" class="btn btn-outline-primary">
+                                        <i class="fas fa-print me-2"></i>Print Verification
+                                    </button>
+                                    <a href="{% url 'verify_receipt' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-search me-2"></i>Verify Another Receipt
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% else %}
+                        <!-- INVALID RECEIPT RESULT -->
+                        <div class="result-card card border-0 shadow-lg">
+                            <div class="card-header text-white text-center py-4" 
+                                 style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                                <div class="verify-icon" style="background: rgba(255,255,255,0.2);">
+                                    <i class="fas fa-times-circle fa-3x text-white"></i>
+                                </div>
+                                <h3 class="fw-bold mb-1">Verification Failed</h3>
+                                <p class="mb-0">Receipt not found in our system</p>
+                            </div>
+                            
+                            <div class="card-body p-4 p-md-5">
+                                <div class="alert alert-danger">
+                                    <h6 class="fw-bold mb-2">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Invalid Receipt
+                                    </h6>
+                                    <p class="mb-0">{{ verification_result.message }}</p>
+                                </div>
+
+                                <h6 class="fw-bold mb-3">Possible Reasons:</h6>
+                                <ul class="mb-4">
+                                    <li class="mb-2">The verification code may be incorrect</li>
+                                    <li class="mb-2">The receipt may be fraudulent or forged</li>
+                                    <li class="mb-2">The receipt has not been issued by FUTO BME</li>
+                                    <li class="mb-2">There may be a typo in the code you entered</li>
+                                    <li class="mb-2">The receipt has not been approved yet</li>
+                                </ul>
+
+                                <div class="alert alert-warning">
+                                    <h6 class="fw-bold mb-2">
+                                        <i class="fas fa-lightbulb me-2"></i>What to Do
+                                    </h6>
+                                    <ul class="small mb-0">
+                                        <li class="mb-2">Double-check the code and try again</li>
+                                        <li class="mb-2">Ensure the receipt is from FUTO BME Department</li>
+                                        <li class="mb-2">Make sure your receipt has been approved by the admin</li>
+                                        <li class="mb-2">Contact the department if you believe this is an error</li>
+                                    </ul>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'verify_receipt' %}" class="btn btn-danger">
+                                        <i class="fas fa-redo me-2"></i>Try Again
+                                    </a>
+                                    <a href="{% url 'index' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-home me-2"></i>Back to Home
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <!-- How to Verify Guide -->
+                {% if not verification_result or not verification_result.is_valid %}
+                    <div class="card border-0 shadow-sm mt-4">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3">
+                                <i class="fas fa-question-circle me-2 text-primary"></i>How to Verify a Receipt
+                            </h6>
+                            <ol class="small mb-0">
+                                <li class="mb-2">Look at the bottom of the receipt for the <strong>Verification Code</strong></li>
+                                <li class="mb-2">The code format is: <code>BME-YYYYMMDDHHMMSS-XXXXXXXX</code></li>
+                                <li class="mb-2">Copy the entire code exactly as shown (including hyphens)</li>
+                                <li class="mb-2">Enter it in the form above and click "Verify Receipt"</li>
+                                <li class="mb-0">Valid receipts will show complete student and payment details</li>
+                            </ol>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    @media print {
+        .navbar, footer, .btn, .no-print, .form-section, .card:not(.result-card) { 
+            display: none !important; 
+        }
+        body { background: white !important; }
+        .verify-page { padding: 20px 0 !important; }
+        .result-card { box-shadow: none !important; page-break-after: avoid; }
+    }
+</style>
+{% endblock %}

@@ -9,7 +9,7 @@
     <style>
         @page {
             size: A4;
-            margin: 0.3cm;
+            margin: 0.5cm;
         }
 
         @media print {
@@ -27,13 +27,9 @@
                 page-break-after: avoid;
                 max-width: 100%;
                 margin: 0;
+                height: 100vh;
             }
             .receipt-content { padding: 8px !important; }
-            .print-only { display: block !important; }
-        }
-
-        @media screen {
-            .print-only { display: none; }
         }
 
         * {
@@ -54,12 +50,11 @@
             background: white;
             box-shadow: 0 15px 50px rgba(0,0,0,0.25);
             position: relative;
-            border: 4px solid #8B1538;
+            border: 3px solid #8B1538;
             overflow: hidden;
-            border-radius: 8px;
         }
 
-        /* Enhanced Watermark Layers */
+        /* Watermarks */
         .watermark-layer {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -68,46 +63,18 @@
             overflow: hidden;
         }
 
-        /* FUTO BME Logo Watermark - Centered and Large */
         .logo-watermark {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             opacity: 0.04;
-            width: 450px;
-            height: 450px;
+            width: 400px;
+            height: 400px;
             background-image: url('https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-        }
-
-        /* Multiple Logo Watermarks */
-        .logo-watermark-tl {
-            position: absolute;
-            top: 8%;
-            left: 8%;
-            opacity: 0.03;
-            width: 160px;
-            height: 160px;
-            background-image: url('https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg');
-            background-size: contain;
-            background-repeat: no-repeat;
-            transform: rotate(-15deg);
-        }
-
-        .logo-watermark-br {
-            position: absolute;
-            bottom: 8%;
-            right: 8%;
-            opacity: 0.03;
-            width: 160px;
-            height: 160px;
-            background-image: url('https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg');
-            background-size: contain;
-            background-repeat: no-repeat;
-            transform: rotate(15deg);
         }
 
         .watermark-text {
@@ -116,13 +83,11 @@
             left: 50%;
             transform: translate(-50%, -50%) rotate(-45deg);
             opacity: 0.04;
-            font-size: 5.5rem;
+            font-size: 4.5rem;
             font-weight: 900;
             text-align: center;
             color: #8B1538;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            line-height: 1.2;
+            letter-spacing: 4px;
         }
 
         .watermark-code {
@@ -131,170 +96,125 @@
             left: 50%;
             transform: translateX(-50%) rotate(-45deg);
             opacity: 0.05;
-            font-size: 2.3rem;
+            font-size: 2rem;
             font-family: 'Courier New', monospace;
             font-weight: bold;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             color: #8B1538;
         }
 
         .receipt-content {
             position: relative;
             z-index: 2;
-            padding: 18px;
+            padding: 12px;
         }
 
-        /* Premium Header with Gradient */
+        /* Header - Compact */
         .receipt-header {
             background: linear-gradient(135deg, #8B1538 0%, #6B0F28 50%, #8B1538 100%);
             color: white;
-            padding: 16px;
-            margin: -18px -18px 12px -18px;
+            padding: 10px;
+            margin: -12px -12px 10px -12px;
             text-align: center;
-            border-bottom: 4px solid #D4AF37;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .receipt-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: shimmer 4s infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { transform: translate(-25%, -25%); }
-            50% { transform: translate(0%, 0%); }
+            border-bottom: 3px solid #D4AF37;
         }
 
         .logo-section {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 1;
+            gap: 10px;
+            margin-bottom: 5px;
         }
 
         .receipt-logo {
-            width: 55px;
-            height: 55px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
-            border: 3px solid #D4AF37;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            border: 2px solid #D4AF37;
         }
 
         .receipt-header h5 {
-            font-size: 1.1rem;
-            margin-bottom: 4px;
+            font-size: 0.95rem;
+            margin-bottom: 3px;
             font-weight: 700;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 1.5px;
         }
 
         .receipt-header p {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             margin-bottom: 2px;
             opacity: 0.95;
         }
 
-        /* Decorative Security Strips */
+        /* Compact Security Strip */
         .security-strip {
-            background: repeating-linear-gradient(
-                45deg, 
-                #D4AF37, 
-                #D4AF37 10px, 
-                #B8941F 10px, 
-                #B8941F 20px
-            );
-            height: 6px;
-            margin: 10px -18px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: repeating-linear-gradient(45deg, #D4AF37, #D4AF37 8px, #B8941F 8px, #B8941F 16px);
+            height: 4px;
+            margin: 8px -12px;
         }
 
         .security-strip-thin {
             background: linear-gradient(90deg, #8B1538, #D4AF37, #8B1538);
-            height: 2px;
-            margin: 8px 0;
+            height: 1px;
+            margin: 6px 0;
         }
 
-        /* Modern Info Boxes */
+        /* Compact Info Boxes */
         .info-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .info-box {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-left: 4px solid #8B1538;
-            padding: 8px 12px;
-            font-size: 0.75rem;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-        }
-
-        .info-box:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(139, 21, 56, 0.15);
+            border-left: 3px solid #8B1538;
+            padding: 6px 10px;
+            font-size: 0.65rem;
+            border-radius: 4px;
         }
 
         .info-box small {
             display: block;
             color: #6c757d;
-            font-size: 0.65rem;
-            margin-bottom: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.58rem;
+            margin-bottom: 2px;
         }
 
         .info-box strong {
             font-family: 'Courier New', monospace;
             color: #8B1538;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
         }
 
-        /* Section Titles */
+        /* Section Titles - Compact */
         .section-title {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             font-weight: bold;
             background: linear-gradient(90deg, #8B1538 0%, transparent 100%);
             color: white;
-            padding: 6px 12px;
-            margin: 12px -18px 10px -18px;
-            border-left: 5px solid #D4AF37;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            padding: 4px 10px;
+            margin: 8px -12px 6px -12px;
+            border-left: 4px solid #D4AF37;
         }
 
-        /* Student Info Table */
+        /* Compact Tables */
         .info-table {
             width: 100%;
-            font-size: 0.75rem;
-            margin-bottom: 12px;
-            border-collapse: separate;
-            border-spacing: 0;
+            font-size: 0.65rem;
+            margin-bottom: 8px;
+            border-collapse: collapse;
         }
 
         .info-table tr {
             border-bottom: 1px solid #e9ecef;
         }
 
-        .info-table tr:last-child {
-            border-bottom: none;
-        }
-
         .info-table td {
-            padding: 6px 8px;
-            line-height: 1.6;
+            padding: 4px 6px;
+            line-height: 1.4;
         }
 
         .info-table tr:nth-child(even) {
@@ -302,24 +222,18 @@
         }
 
         .info-table td:first-child {
-            width: 38%;
+            width: 35%;
             color: #6c757d;
             font-weight: 600;
         }
 
-        .info-table td:last-child {
-            font-weight: 500;
-        }
-
-        /* Premium Payment Table */
+        /* Payment Table - Compact */
         .payment-table {
             width: 100%;
             border: 2px solid #8B1538;
-            font-size: 0.75rem;
-            margin-bottom: 12px;
+            font-size: 0.65rem;
+            margin-bottom: 8px;
             border-collapse: collapse;
-            border-radius: 5px;
-            overflow: hidden;
         }
 
         .payment-table thead {
@@ -328,245 +242,195 @@
         }
 
         .payment-table th {
-            padding: 8px 12px;
+            padding: 5px 8px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.7rem;
+            font-size: 0.62rem;
         }
 
         .payment-table td {
-            padding: 8px 12px;
+            padding: 5px 8px;
             border: 1px solid #dee2e6;
-        }
-
-        .payment-table tbody tr:nth-child(even) {
-            background: #f8f9fa;
         }
 
         .payment-table .total-row {
             background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
             font-weight: bold;
-            font-size: 0.8rem;
         }
 
         .amount-highlight {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: #198754;
             font-weight: bold;
             font-family: 'Courier New', monospace;
         }
 
-        /* Verification Box */
+        /* Verification Box - Compact */
         .verification-box-new {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border: 2px solid #8B1538;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
         }
 
         .verify-item {
             background: white;
-            padding: 7px 10px;
-            border-radius: 5px;
-            border-left: 3px solid #D4AF37;
-            font-size: 0.72rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 5px 8px;
+            border-radius: 4px;
+            border-left: 2px solid #D4AF37;
+            font-size: 0.62rem;
+            margin-bottom: 5px;
+        }
+
+        .verify-item:last-child {
+            margin-bottom: 0;
         }
 
         .verify-item small {
             display: block;
-            font-size: 0.62rem;
-            margin-bottom: 3px;
+            font-size: 0.55rem;
+            margin-bottom: 2px;
             color: #6c757d;
-            font-weight: 600;
         }
 
         .code {
             font-family: 'Courier New', monospace;
             background: #fff3cd;
-            padding: 4px 8px;
+            padding: 2px 5px;
             border: 1px solid #ffc107;
             display: inline-block;
-            margin: 2px 0;
-            font-size: 0.68rem;
-            border-radius: 3px;
+            font-size: 0.6rem;
+            border-radius: 2px;
             font-weight: bold;
         }
 
-        /* Warning Box */
+        /* Warning Box - Compact */
         .warning-box {
             background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
             border: 2px solid #ffc107;
-            border-left-width: 5px;
-            padding: 10px 12px;
-            font-size: 0.7rem;
-            margin-bottom: 12px;
-            border-radius: 5px;
-            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+            border-left-width: 4px;
+            padding: 6px 8px;
+            font-size: 0.6rem;
+            margin-bottom: 8px;
+            border-radius: 4px;
         }
 
         .warning-box strong {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             color: #664d03;
         }
 
         .warning-box ul {
-            margin: 5px 0 0 0;
-            padding-left: 20px;
+            margin: 3px 0 0 0;
+            padding-left: 15px;
         }
 
         .warning-box li {
-            margin-bottom: 4px;
-            line-height: 1.4;
+            margin-bottom: 2px;
+            line-height: 1.3;
         }
 
-        /* Signatures - 4-1-1 Layout */
+        /* Signatures - Ultra Compact */
         .signature-section {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid #dee2e6;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #dee2e6;
         }
 
         .signature-row-top {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .signature-row-bottom {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            max-width: 500px;
-            margin: 0 auto;
+            gap: 8px;
         }
 
         .signature-box {
             text-align: center;
-            padding-top: 8px;
-            font-size: 0.68rem;
+            padding-top: 5px;
+            font-size: 0.6rem;
         }
 
         .signature-space {
-            height: 50px;
-            border-bottom: 2px solid #333;
-            margin-bottom: 6px;
+            height: 35px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 4px;
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            position: relative;
         }
 
         .signature-logo {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             opacity: 0.7;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .signature-box strong {
             display: block;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             color: #333;
-            font-size: 0.72rem;
+            font-size: 0.62rem;
         }
 
         .signature-box small {
             color: #6c757d;
-            font-size: 0.62rem;
+            font-size: 0.55rem;
         }
 
-        /* Security Badge */
+        /* Security Badge - Compact */
         .security-badge {
             position: absolute;
             top: 45%;
-            right: 20px;
-            width: 85px;
-            height: 85px;
-            border: 3px solid #198754;
+            right: 15px;
+            width: 70px;
+            height: 70px;
+            border: 2px solid #198754;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             transform: rotate(-12deg);
             background: radial-gradient(circle, rgba(25, 135, 84, 0.1), transparent);
-            box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
             z-index: 3;
         }
 
         .security-badge-content {
             text-align: center;
             color: #198754;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: bold;
         }
 
         .security-badge-content i {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             display: block;
-            margin-bottom: 3px;
-        }
-
-        /* Hologram Effect */
-        .hologram {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 90px;
-            height: 90px;
-            background: radial-gradient(circle, #D4AF37, #8B1538, #D4AF37);
-            border-radius: 50%;
-            opacity: 0.12;
-            animation: shimmer-hologram 3s infinite;
-            z-index: 1;
-        }
-
-        @keyframes shimmer-hologram {
-            0%, 100% { opacity: 0.12; transform: rotate(0deg); }
-            50% { opacity: 0.18; transform: rotate(180deg); }
+            margin-bottom: 2px;
         }
 
         /* Microprint */
         .microprint {
-            font-size: 6px;
+            font-size: 5px;
             color: #999;
             text-align: center;
-            margin: 5px 0;
-            line-height: 1.3;
+            margin: 3px 0;
+            line-height: 1.2;
             opacity: 0.7;
         }
 
-        /* Footer */
+        /* Footer - Compact */
         .footer {
             text-align: center;
-            font-size: 0.62rem;
+            font-size: 0.55rem;
             color: #6c757d;
-            padding-top: 8px;
+            padding-top: 5px;
             border-top: 1px solid #dee2e6;
-            margin-top: 10px;
+            margin-top: 6px;
         }
 
-        .serial-number {
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-        }
-
-        @media (max-width: 768px) {
-            .info-row { 
-                grid-template-columns: 1fr; 
-            }
-            .signature-row-top { 
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .signature-row-bottom {
-                grid-template-columns: 1fr;
-            }
+        .footer p {
+            margin-bottom: 2px;
         }
     </style>
 </head>
@@ -582,53 +446,34 @@
     </div>
 
     <div class="receipt-container">
-        <!-- Enhanced Watermarks -->
+        <!-- Watermarks -->
         <div class="watermark-layer">
-            <!-- Main Central Logo -->
             <div class="logo-watermark"></div>
-            
-            <!-- Corner Logos -->
-            <div class="logo-watermark-tl"></div>
-            <div class="logo-watermark-br"></div>
-            
-            <!-- Text Watermark -->
-            <div class="watermark-text">
-                FUTO BME<br>OFFICIAL
-            </div>
-            
-            <!-- Code Watermark -->
+            <div class="watermark-text">FUTO BME<br>OFFICIAL</div>
             <div class="watermark-code">{{ dues.watermark_code }}</div>
         </div>
-        
-        <!-- Hologram Effect -->
-        <div class="hologram"></div>
 
         <div class="receipt-content">
             <!-- Header -->
             <div class="receipt-header">
                 <div class="logo-section">
-                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/1/16/FUTO_logo.png/250px-FUTO_logo.png" 
-                         alt="Futo Logo" class="receipt-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/1/16/FUTO_logo.png/250px-FUTO_logo.png" alt="Futo Logo" class="receipt-logo">
                     <div>
-                        <h5 class="mb-1">BIOMEDICAL ENGINEERING</h5>
+                        <h5 class="mb-0">BIOMEDICAL ENGINEERING</h5>
                         <p class="mb-0">Federal University of Technology, Owerri</p>
                     </div>
-                    <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" 
-                         alt="BME Logo" class="receipt-logo">
+                    <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" alt="BME Logo" class="receipt-logo">
                 </div>
-                <p class="mb-0" style="font-size: 0.72rem; opacity: 0.95;">
-                    <i class="fas fa-map-marker-alt me-1"></i>PMB 1526, Owerri, Imo State, Nigeria
-                </p>
             </div>
 
             <!-- Microprint -->
             <div class="microprint">
-                OFFICIAL FUTO BME RECEIPT • {{ dues.receipt_number }} • {{ dues.watermark_code }} • DEPARTMENTAL DUES {{ dues.academic_session }} • THIS IS AN OFFICIAL DOCUMENT
+                OFFICIAL FUTO BME RECEIPT • {{ dues.receipt_number }} • {{ dues.watermark_code }} • DEPARTMENTAL DUES {{ dues.academic_session }}
             </div>
 
             <!-- Title -->
-            <h6 class="text-center fw-bold text-uppercase mb-2" style="color: #8B1538; letter-spacing: 1.5px; font-size: 0.8rem;">
-                <i class="fas fa-file-invoice-dollar me-2"></i>DEPARTMENTAL DUES RECEIPT - {{ dues.academic_session }}
+            <h6 class="text-center fw-bold text-uppercase mb-1" style="color: #8B1538; letter-spacing: 1px; font-size: 0.7rem;">
+                DEPARTMENTAL DUES RECEIPT - {{ dues.academic_session }}
             </h6>
 
             <div class="security-strip-thin"></div>
@@ -636,15 +481,15 @@
             <!-- Receipt Info Row -->
             <div class="info-row">
                 <div class="info-box">
-                    <small><i class="fas fa-hashtag me-1"></i>Receipt No.</small>
-                    <strong class="serial-number">{{ dues.receipt_number }}</strong>
+                    <small>Receipt No.</small>
+                    <strong>{{ dues.receipt_number }}</strong>
                 </div>
                 <div class="info-box">
-                    <small><i class="fas fa-calendar me-1"></i>Date Issued</small>
+                    <small>Date Issued</small>
                     <strong>{{ dues.approved_at|date:"M d, Y" }}</strong>
                 </div>
                 <div class="info-box">
-                    <small><i class="fas fa-clock me-1"></i>Time</small>
+                    <small>Time</small>
                     <strong>{{ dues.approved_at|date:"h:i A" }}</strong>
                 </div>
             </div>
@@ -652,37 +497,29 @@
             <div class="security-strip"></div>
 
             <!-- Student Information -->
-            <div class="section-title">
-                <i class="fas fa-user-graduate me-2"></i>STUDENT INFORMATION
-            </div>
+            <div class="section-title">STUDENT INFORMATION</div>
             <table class="info-table">
                 <tr>
-                    <td><i class="fas fa-user me-1"></i> Full Name:</td>
+                    <td>Full Name:</td>
                     <td><strong>{{ student.full_name|upper }}</strong></td>
                 </tr>
                 <tr>
-                    <td><i class="fas fa-id-card me-1"></i> Reg. Number:</td>
-                    <td><strong class="serial-number">{{ student.reg_number }}</strong></td>
+                    <td>Reg. Number:</td>
+                    <td><strong>{{ student.reg_number }}</strong></td>
                 </tr>
                 <tr>
-                    <td><i class="fas fa-graduation-cap me-1"></i> Level:</td>
+                    <td>Level:</td>
                     <td><strong>{{ student.level }} Level</strong></td>
-                </tr>
-                <tr>
-                    <td><i class="fas fa-envelope me-1"></i> Email:</td>
-                    <td>{{ student.email|default:"N/A" }}</td>
                 </tr>
             </table>
 
             <!-- Payment Details -->
-            <div class="section-title">
-                <i class="fas fa-money-bill-wave me-2"></i>PAYMENT DETAILS
-            </div>
+            <div class="section-title">PAYMENT DETAILS</div>
             <table class="payment-table">
                 <thead>
                     <tr>
-                        <th><i class="fas fa-list me-1"></i>Description</th>
-                        <th width="32%" class="text-end"><i class="fas fa-naira-sign me-1"></i>Amount (₦)</th>
+                        <th>Description</th>
+                        <th width="30%" class="text-end">Amount (₦)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -696,40 +533,35 @@
                     </tr>
                 </tbody>
             </table>
-            <div style="font-size: 0.74rem; margin-bottom: 10px; padding: 6px; background: #f8f9fa; border-radius: 4px;">
-                <strong>Payment Reference:</strong> <span class="serial-number">{{ dues.payment_reference }}</span>
-            </div>
 
             <div class="security-strip"></div>
 
             <!-- Verification Section -->
-            <div class="section-title">
-                <i class="fas fa-shield-alt me-2"></i>VERIFICATION & SECURITY
-            </div>
+            <div class="section-title">VERIFICATION & SECURITY</div>
             <div class="verification-box-new">
                 <div class="row g-2">
                     <div class="col-6">
                         <div class="verify-item">
-                            <small class="text-muted"><i class="fas fa-key me-1"></i>Verification Code</small>
+                            <small>Verification Code</small>
                             <div class="code">{{ dues.watermark_code }}</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="verify-item">
-                            <small class="text-muted"><i class="fas fa-user-shield me-1"></i>Approved By</small>
-                            <div><strong>{{ dues.approved_by.username|upper }}</strong></div>
+                            <small>Approved By</small>
+                            <strong>{{ dues.approved_by.username|upper }}</strong>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="verify-item">
-                            <small class="text-muted"><i class="fas fa-calendar-check me-1"></i>Approval Date</small>
-                            <div><strong>{{ dues.approved_at|date:"M d, Y" }}</strong></div>
+                            <small>Approval Date</small>
+                            <strong>{{ dues.approved_at|date:"M d, Y" }}</strong>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="verify-item">
-                            <small class="text-muted"><i class="fas fa-check-circle me-1"></i>Status</small>
-                            <div><span class="badge bg-success" style="font-size: 0.65rem;"><i class="fas fa-check-circle me-1"></i>VERIFIED</span></div>
+                            <small>Status</small>
+                            <span class="badge bg-success" style="font-size: 0.6rem;">VERIFIED</span>
                         </div>
                     </div>
                 </div>
@@ -737,65 +569,47 @@
 
             <!-- Warning -->
             <div class="warning-box">
-                <strong><i class="fas fa-exclamation-triangle me-2"></i>ANTI-FRAUD NOTICE</strong>
+                <strong>ANTI-FRAUD NOTICE</strong>
                 <ul class="mb-0">
-                    <li>This receipt is valid ONLY with visible watermarks and verification code: <code style="background: #fff; padding: 2px 4px; border-radius: 2px;">{{ dues.watermark_code }}</code></li>
-                    <li>Receipt number must match: <code style="background: #fff; padding: 2px 4px; border-radius: 2px;">{{ dues.receipt_number }}</code></li>
-                    <li>Verify authenticity online at <strong>www.futobme.vercel.app/verify</strong></li>
+                    <li>Valid ONLY with watermarks and code: <code>{{ dues.watermark_code }}</code></li>
+                    <li>Verify online at <strong>www.futobme.vercel.app/verify</strong></li>
                     <li>Any alteration renders this receipt invalid</li>
                 </ul>
             </div>
 
-            <!-- Signatures Section - 4-1-1 Layout -->
+            <!-- Signatures -->
             <div class="signature-section">
-                <h6 style="text-align: center; font-size: 0.78rem; color: #8B1538; margin-bottom: 12px; font-weight: bold;">
-                    <i class="fas fa-pen-fancy me-2"></i>AUTHORIZED SIGNATURES
-                </h6>
-                
-                <!-- Top Row - 4 Signatures -->
                 <div class="signature-row-top">
-                    <!-- Student Signature -->
                     <div class="signature-box">
-                        <div class="signature-space">
-                            <!-- Empty for actual student signature -->
-                        </div>
+                        <div class="signature-space"></div>
                         <strong>Student</strong>
                         <small>{{ student.full_name|truncatewords:2 }}</small>
                     </div>
-
-                    <!-- Financial Secretary -->
                     <div class="signature-box">
                         <div class="signature-space">
-                            <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" 
-                                 alt="Signature" class="signature-logo">
+                            <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" alt="Sig" class="signature-logo">
                         </div>
                         <strong>Financial Sec.</strong>
                         <small>NABES FUTO</small>
                     </div>
-                    
-                    <!-- Course Adviser -->
                     <div class="signature-box">
                         <div class="signature-space">
-                            <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" 
-                                 alt="Signature" class="signature-logo">
+                            <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" alt="Sig" class="signature-logo">
                         </div>
                         <strong>Course Adviser</strong>
                         <small>{{ student.level }}L Coordinator</small>
                     </div>
-                    
-                    <!-- HOD/Staff Adviser -->
                     <div class="signature-box">
                         <div class="signature-space">
-                            <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" 
-                                 alt="Signature" class="signature-logo">
+                            <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" alt="Sig" class="signature-logo">
                         </div>
-                        <strong>HOD/Staff Adviser</strong>
+                        <strong>HOD/Staff</strong>
                         <small>Dept. of BME</small>
                     </div>
                 </div>
             </div>
 
-            <!-- Official Stamp -->
+            <!-- Security Badge -->
             <div class="security-badge">
                 <div class="security-badge-content">
                     <i class="fas fa-stamp"></i>
@@ -804,41 +618,17 @@
                 </div>
             </div>
 
-            <!-- Microprint -->
-            <div class="microprint mt-3">
-                OFFICIAL DOCUMENT • {{ dues.receipt_number }} • {{ dues.watermark_code }} • {{ dues.payment_reference }} • ISSUED: {{ dues.approved_at|date:"Y-m-d H:i" }} • FUTO BME DEPARTMENTAL DUES • BIOMEDICAL ENGINEERING DEPARTMENT
-            </div>
-
             <!-- Footer -->
             <div class="footer">
-                <p class="mb-1"><i class="fas fa-print me-1"></i>Computer-generated receipt • Valid with security features and watermarks</p>
-                <p class="mb-1"><i class="fas fa-globe me-1"></i>For verification visit: <strong>futobme.vercel.app</strong></p>
-                <p class="mb-0" style="font-size: 0.55rem;">This is an official receipt from the Department of Biomedical Engineering, FUTO</p>
+                <p>Computer-generated receipt • Valid with security features</p>
+                <p>For verification: <strong>futobme.vercel.app/verify</strong></p>
             </div>
         </div>
     </div>
 
     <script>
-        // Prevent right-click
         document.addEventListener('contextmenu', e => e.preventDefault());
-        
-        // Log print events
-        window.onbeforeprint = () => {
-            console.log('Receipt printed:', '{{ dues.receipt_number }}', new Date().toISOString());
-        };
-
-        // Detect print screen attempts
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'PrintScreen') {
-                navigator.clipboard.writeText('');
-                console.log('PrintScreen detected for:', '{{ dues.receipt_number }}');
-            }
-        });
-
-        // Add timestamp on print
-        window.onafterprint = () => {
-            console.log('Print completed:', new Date().toISOString());
-        };
+        window.onbeforeprint = () => console.log('Receipt printed:', '{{ dues.receipt_number }}');
     </script>
 </body>
 </html>
