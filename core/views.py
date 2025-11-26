@@ -322,10 +322,10 @@ def index(request):
     # Get all data for busy homepage
     testimonials = Testimonial.objects.filter(is_approved=True)[:6]
     announcements = Announcement.objects.filter(is_active=True)[:5]
-    recent_staff = Staff.objects.all()[:3]
-    current_excos = Exco.objects.all()[:4]
-    recent_resources = LibraryResource.objects.all()[:6]
-    recent_questions = PastQuestion.objects.all()[:5]
+    recent_staff = Staff.objects.all()[:12]
+    current_excos = Exco.objects.all()[:12]
+    recent_resources = LibraryResource.objects.all()[:12]
+    recent_questions = PastQuestion.objects.all()[:12]
     
     # Statistics for homepage
     stats = {
