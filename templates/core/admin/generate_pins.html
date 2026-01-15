@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Generate Access PINs - FUTO BME Admin{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-key fa-3x text-warning"></i>
+                            </div>
+                            <h3 class="fw-bold">Generate New Access PINs</h3>
+                            <p class="text-muted">Create one-time use PINs for student registration</p>
+                        </div>
+
+                        <div class="alert alert-info mb-4">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-info-circle me-2"></i>About PIN Generation
+                            </h6>
+                            <ul class="small mb-0">
+                                <li>Each PIN can only be used <strong>once</strong></li>
+                                <li>PINs are automatically formatted as <strong>BME-XXXX-XXXX</strong></li>
+                                <li>You can generate up to 100 PINs at once</li>
+                                <li>PINs can be organized into batches for tracking</li>
+                                <li>Optional expiry dates can be set</li>
+                            </ul>
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="id_quantity" class="form-label fw-bold">
+                                    <i class="fas fa-hashtag me-2"></i>Number of PINs to Generate
+                                </label>
+                                {{ form.quantity }}
+                                {% if form.quantity.errors %}
+                                    <div class="text-danger small">{{ form.quantity.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted d-block mt-2">
+                                    {{ form.quantity.help_text }}
+                                </small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="id_batch_name" class="form-label fw-bold">
+                                    <i class="fas fa-tag me-2"></i>Batch Name (Optional)
+                                </label>
+                                {{ form.batch_name }}
+                                {% if form.batch_name.errors %}
+                                    <div class="text-danger small">{{ form.batch_name.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted d-block mt-2">
+                                    {{ form.batch_name.help_text }}
+                                </small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="id_expires_in_days" class="form-label fw-bold">
+                                    <i class="fas fa-calendar-times me-2"></i>Expires In (Days)
+                                </label>
+                                {{ form.expires_in_days }}
+                                {% if form.expires_in_days.errors %}
+                                    <div class="text-danger small">{{ form.expires_in_days.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted d-block mt-2">
+                                    {{ form.expires_in_days.help_text }}
+                                </small>
+                            </div>
+
+                            <div class="card bg-light mb-4">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">Preview</h6>
+                                    <p class="mb-2"><strong>PIN Format:</strong> <code>BME-AB12-CD34</code></p>
+                                    <p class="mb-2"><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+                                    <p class="mb-0"><strong>Usage:</strong> One-time use only</p>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Important
+                                </h6>
+                                <p class="small mb-0">
+                                    After generation, you'll be able to download the PINs as a CSV file. 
+                                    Make sure to save or print them before distributing to students.
+                                </p>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-warning btn-lg">
+                                    <i class="fas fa-magic me-2"></i>Generate PINs
+                                </button>
+                                <a href="{% url 'manage_access_pins' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to PIN Management
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Usage Guide -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-book me-2 text-primary"></i>Distribution Guide
+                        </h6>
+                        <ol class="small">
+                            <li class="mb-2">Generate PINs in batches (recommended: 10-50 at a time)</li>
+                            <li class="mb-2">Download the CSV file for record keeping</li>
+                            <li class="mb-2">Print PINs or distribute digitally to students</li>
+                            <li class="mb-2">Students use their PIN during registration</li>
+                            <li class="mb-2">Monitor PIN usage through the management dashboard</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

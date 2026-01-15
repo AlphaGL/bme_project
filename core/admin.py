@@ -3,7 +3,7 @@ from .models import (
     Staff, Exco, PastQuestion, LibraryResource, 
     Testimonial, Announcement, Student, Semester, 
     Course, CGPACalculation, DepartmentalDues, CourseHandbook, Timetable, AcademicCalendar,    ResearchTeam, ResearchArticle, GuestContributor, ResearchContribution,
-    ResearchQuiz, QuizSubmission, TeamMembership, ArticleLike
+    ResearchQuiz, QuizSubmission, TeamMembership, ArticleLike, AccessPin, PinUsageLog
 )
 
 @admin.register(Staff)
@@ -299,3 +299,46 @@ class ArticleLikeAdmin(admin.ModelAdmin):
     list_filter = ['created_at']
     search_fields = ['student__full_name', 'article__title']
     ordering = ['-created_at']
+
+
+# Add to existing admin.py
+
+@admin.register(AccessPin)
+class AccessPinAdmin(admin.ModelAdmin):
+    list_display = ['pin', 'status', 'batch_number', 'used_by', 'generated_at', 'expires_at']
+    list_filter = ['status', 'generated_at', 'batch_number']
+    search_fields = ['pin', 'used_by__full_name', 'used_by__reg_number', 'batch_number']
+    readonly_fields = ['pin', 'generated_by', 'generated_at', 'used_by', 'used_at']
+    ordering = ['-generated_at']
+    
+    fieldsets = (
+        ('PIN Information', {
+            'fields': ('pin', 'status', 'batch_number')
+        }),
+        ('Generation Details', {
+            'fields': ('generated_by', 'generated_at', 'expires_at')
+        }),
+        ('Usage Details', {
+            'fields': ('used_by', 'used_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        # Prevent manual addition - use generation view instead
+        return False
+
+
+@admin.register(PinUsageLog)
+class PinUsageLogAdmin(admin.ModelAdmin):
+    list_display = ['pin', 'student_reg_number', 'attempt_successful', 'attempted_at', 'ip_address']
+    list_filter = ['attempt_successful', 'attempted_at']
+    search_fields = ['pin__pin', 'student_reg_number', 'ip_address']
+    readonly_fields = ['pin', 'student_reg_number', 'attempt_successful', 'attempted_at', 'ip_address', 'user_agent', 'error_message']
+    ordering = ['-attempted_at']
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False

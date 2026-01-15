@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}Generated PINs - FUTO BME Admin{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-check-circle fa-3x text-success"></i>
+                            </div>
+                            <h3 class="fw-bold text-success">PINs Generated Successfully!</h3>
+                            <p class="text-muted">{{ pins.count }} access PIN(s) have been created</p>
+                        </div>
+
+                        <div class="alert alert-warning mb-4">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Important: Save These PINs
+                            </h6>
+                            <p class="small mb-0">
+                                These PINs will only be displayed once. Download the CSV file or copy them 
+                                before leaving this page. You can view them later in the PIN management section.
+                            </p>
+                        </div>
+
+                        <!-- Download Options -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <a href="{% url 'download_pins_csv' %}" class="btn btn-success w-100 btn-lg">
+                                    <i class="fas fa-download me-2"></i>Download as CSV
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <button onclick="printPins()" class="btn btn-primary w-100 btn-lg">
+                                    <i class="fas fa-print me-2"></i>Print PINs
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PINs Display -->
+                        <div class="card bg-light mb-4" id="pinsList">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold mb-0">Generated PINs</h6>
+                                    <button onclick="copyAllPins()" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-copy me-2"></i>Copy All
+                                    </button>
+                                </div>
+                                
+                                {% if pins %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>PIN</th>
+                                                <th>Status</th>
+                                                <th>Batch</th>
+                                                <th>Expires</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for pin in pins %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>
+                                                    <code class="fs-6">{{ pin.pin }}</code>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-success">Active</span>
+                                                </td>
+                                                <td>
+                                                    <small>{{ pin.batch_number }}</small>
+                                                </td>
+                                                <td>
+                                                    <small>
+                                                        {% if pin.expires_at %}
+                                                            {{ pin.expires_at|date:"M d, Y" }}
+                                                        {% else %}
+                                                            Never
+                                                        {% endif %}
+                                                    </small>
+                                                </td>
+                                                <td>
+                                                    <button onclick="copyPin('{{ pin.pin }}')" 
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            title="Copy PIN">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <h4 class="fw-bold mb-0">{{ pins.count }}</h4>
+                                    <small class="text-muted">Total Generated</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <h4 class="fw-bold mb-0">{{ pins.count }}</h4>
+                                    <small class="text-muted">Active</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <h4 class="fw-bold mb-0">0</h4>
+                                    <small class="text-muted">Used</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <h4 class="fw-bold mb-0">0</h4>
+                                    <small class="text-muted">Expired</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'generate_pins' %}" class="btn btn-warning btn-lg">
+                                <i class="fas fa-plus me-2"></i>Generate More PINs
+                            </a>
+                            <a href="{% url 'manage_access_pins' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-2"></i>View All PINs
+                            </a>
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distribution Instructions -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-info-circle me-2 text-info"></i>Next Steps
+                        </h6>
+                        <ol class="small mb-0">
+                            <li class="mb-2">Download the CSV file for your records</li>
+                            <li class="mb-2">Print PINs or distribute them digitally to students</li>
+                            <li class="mb-2">Students will use these PINs during registration at: 
+                                <a href="{% url 'student_register_pin' %}" target="_blank">
+                                    {{ request.build_absolute_uri }}{% url 'student_register_pin' %}
+                                </a>
+                            </li>
+                            <li class="mb-2">Monitor PIN usage in the PIN management dashboard</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function copyPin(pin) {
+    navigator.clipboard.writeText(pin).then(() => {
+        alert('PIN copied: ' + pin);
+    });
+}
+
+function copyAllPins() {
+    const pins = [
+        {% for pin in pins %}'{{ pin.pin }}',{% endfor %}
+    ];
+    const pinsText = pins.join('\n');
+    
+    navigator.clipboard.writeText(pinsText).then(() => {
+        alert(`Copied ${pins.length} PINs to clipboard!`);
+    });
+}
+
+function printPins() {
+    window.print();
+}
+</script>
+
+<style>
+@media print {
+    /* Hide everything except the PINs list */
+    body * {
+        visibility: hidden;
+    }
+    
+    #pinsList, #pinsList * {
+        visibility: visible;
+    }
+    
+    #pinsList {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    
+    /* Make table full width when printing */
+    .table {
+        font-size: 12px;
+    }
+}
+</style>
+{% endblock %}

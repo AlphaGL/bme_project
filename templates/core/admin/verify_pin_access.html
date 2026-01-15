@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify PIN Access - FUTO BME Admin{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light min-vh-100 d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-shield-alt fa-3x text-warning"></i>
+                            </div>
+                            <h3 class="fw-bold">Restricted Access</h3>
+                            <p class="text-muted">PIN Management requires special authorization</p>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Security Notice
+                            </h6>
+                            <p class="small mb-0">
+                                This area is protected. Only authorized personnel with the 
+                                special PIN management password can access this section.
+                            </p>
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="id_access_password" class="form-label fw-bold">
+                                    <i class="fas fa-key me-2"></i>PIN Management Password
+                                </label>
+                                {{ form.access_password }}
+                                {% if form.access_password.errors %}
+                                    <div class="alert alert-danger mt-2">
+                                        <i class="fas fa-times-circle me-2"></i>
+                                        {{ form.access_password.errors }}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted d-block mt-2">
+                                    Enter the special password provided by the system administrator
+                                </small>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-warning btn-lg">
+                                    <i class="fas fa-unlock me-2"></i>Verify Access
+                                </button>
+                                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                                </a>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <div class="alert alert-light mb-0">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-info-circle me-2"></i>Access Levels
+                            </h6>
+                            <ul class="small mb-0">
+                                <li><strong>Regular Admin:</strong> Cannot generate or manage PINs</li>
+                                <li><strong>PIN Manager:</strong> Can generate, view, and manage all PINs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

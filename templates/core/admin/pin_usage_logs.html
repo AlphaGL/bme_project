@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}PIN Usage Logs - FUTO BME Admin{% endblock %}
+
+{% block content %}
+<section class="py-4">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">
+                    <i class="fas fa-list me-2 text-info"></i>PIN Usage Logs
+                </h2>
+                <p class="text-muted">Track all PIN usage attempts for security</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'manage_access_pins' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to PINs
+                </a>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="fw-bold mb-4">All Usage Attempts</h5>
+                
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>PIN</th>
+                                <th>Student Reg No.</th>
+                                <th>Status</th>
+                                <th>IP Address</th>
+                                <th>Error Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>
+                                    <small>{{ log.attempted_at|date:"M d, Y H:i:s" }}</small>
+                                </td>
+                                <td>
+                                    <code>{{ log.pin.pin }}</code>
+                                </td>
+                                <td>
+                                    {% if log.student_reg_number %}
+                                        <strong>{{ log.student_reg_number }}</strong>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.attempt_successful %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Success
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i>Failed
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ log.ip_address }}</small>
+                                </td>
+                                <td>
+                                    {% if log.error_message %}
+                                        <small class="text-danger">{{ log.error_message|truncatewords:10 }}</small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-list fa-4x text-muted mb-3"></i>
+                    <p class="text-muted">No usage logs yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

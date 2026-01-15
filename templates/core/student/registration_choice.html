@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}Choose Registration Method - FUTO BME{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light min-vh-100 d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="text-center mb-5">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 100px; height: 100px;">
+                        <i class="fas fa-user-plus fa-4x text-primary"></i>
+                    </div>
+                    <h2 class="fw-bold mb-3">Welcome to FUTO BME Portal Registration</h2>
+                    <p class="text-muted lead">Choose your preferred registration method</p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- PIN Registration -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-lg h-100 hover-lift">
+                            <div class="card-body p-5 text-center">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                                     style="width: 80px; height: 80px;">
+                                    <i class="fas fa-key fa-3x text-success"></i>
+                                </div>
+                                
+                                <h4 class="fw-bold mb-3">Use Access PIN</h4>
+                                
+                                <div class="alert alert-success mb-4">
+                                    <h5 class="fw-bold mb-2">Instant Access</h5>
+                                    <p class="mb-0 small">Register immediately with your PIN</p>
+                                </div>
+                                
+                                <div class="text-start mb-4">
+                                    <h6 class="fw-bold mb-3">How it works:</h6>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Purchase PIN from department office
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Fill registration form with PIN
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Get instant portal access
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            No online payment needed
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="bg-light p-3 rounded mb-4">
+                                    <p class="small mb-2">
+                                        <strong>PIN Format:</strong> BME-XXXX-XXXX
+                                    </p>
+                                    <p class="small mb-0 text-muted">
+                                        Each PIN is one-time use only
+                                    </p>
+                                </div>
+                                
+                                <a href="{% url 'student_register_pin' %}" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-key me-2"></i>Register with PIN
+                                </a>
+                                
+                                <p class="small text-muted mt-3 mb-0">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Don't have a PIN? Visit the department office
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paystack Payment -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-lg h-100 hover-lift">
+                            <div class="card-body p-5 text-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                                     style="width: 80px; height: 80px;">
+                                    <i class="fas fa-credit-card fa-3x text-primary"></i>
+                                </div>
+                                
+                                <h4 class="fw-bold mb-3">Pay with Paystack</h4>
+                                
+                                <div class="alert alert-primary mb-4">
+                                    <h5 class="fw-bold mb-2">Pay Online</h5>
+                                    <p class="mb-0 small">Secure online payment gateway</p>
+                                </div>
+                                
+                                <div class="text-start mb-4">
+                                    <h6 class="fw-bold mb-3">Payment breakdown:</h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Portal Access Fee</span>
+                                        <strong>₦1,000</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Transaction Charges</span>
+                                        <strong>₦250</strong>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Total</strong>
+                                        <strong class="text-primary">₦1,250</strong>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-start mb-4">
+                                    <h6 class="fw-bold mb-3">How it works:</h6>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-primary me-2"></i>
+                                            Create your account
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-primary me-2"></i>
+                                            Pay securely with Paystack
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-primary me-2"></i>
+                                            Automatic verification
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-primary me-2"></i>
+                                            Instant portal access
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="bg-light p-3 rounded mb-4">
+                                    <p class="small mb-0">
+                                        <i class="fas fa-shield-alt text-primary me-2"></i>
+                                        <strong>Secured by Paystack</strong><br>
+                                        <span class="text-muted">Pay with card, bank transfer, or USSD</span>
+                                    </p>
+                                </div>
+                                
+                                <a href="{% url 'student_register_paystack' %}" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-credit-card me-2"></i>Pay Online - ₦1,250
+                                </a>
+                                
+                                <p class="small text-muted mt-3 mb-0">
+                                    <i class="fas fa-lock me-1"></i>
+                                    Your payment information is safe
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison Table -->
+                <div class="card border-0 shadow-sm mt-5">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4 text-center">Compare Methods</h5>
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th class="text-center">Access PIN</th>
+                                        <th class="text-center">Online Payment</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Cost</strong></td>
+                                        <td class="text-center">₦1,000</td>
+                                        <td class="text-center">₦1,250</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Payment Method</strong></td>
+                                        <td class="text-center">Cash at office</td>
+                                        <td class="text-center">Card/Transfer/USSD</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Access Speed</strong></td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">Instant</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">Instant</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Best For</strong></td>
+                                        <td class="text-center">Students without cards</td>
+                                        <td class="text-center">Remote payment</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="alert alert-light mt-4">
+                    <h6 class="fw-bold mb-2">
+                        <i class="fas fa-question-circle me-2"></i>Need Help?
+                    </h6>
+                    <p class="small mb-0">
+                        Contact: <strong>support@futobme.edu.ng</strong> | 
+                        Visit: <strong>BME Department Office</strong>
+                    </p>
+                </div>
+
+                <!-- Back to Login -->
+                <div class="text-center mt-4">
+                    <p class="mb-0">
+                        Already have an account?
+                        <a href="{% url 'student_login' %}" class="fw-bold">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.hover-lift {
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+}
+</style>
+{% endblock %}

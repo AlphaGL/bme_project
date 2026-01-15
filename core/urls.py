@@ -202,4 +202,18 @@ urlpatterns = [
     # ==================== ADMIN - RESEARCH CLUB MANAGEMENT ====================
     path('encrypted/admin/futobme/research/club-registrations/', views.manage_research_registrations, name='manage_research_registrations'),
     path('encrypted/admin/futobme/research/club-registrations/verify/<int:pk>/', views.verify_research_payment, name='verify_research_payment'),
+
+    # ==================== REGISTRATION CHOICE ====================
+    path('student/register/choice/', views.registration_choice, name='registration_choice'),
+    path('student/register/pin/', views.student_register_pin, name='student_register_pin'),
+    path('student/register/paystack/', views.student_register, name='student_register_paystack'),
+    
+    # ==================== PIN MANAGEMENT (Admin Only - Special Password Required) ====================
+    path('encrypted/admin/futobme/pins/verify-access/', views.verify_pin_access, name='verify_pin_access'),
+    path('encrypted/admin/futobme/pins/', views.manage_access_pins, name='manage_access_pins'),
+    path('encrypted/admin/futobme/pins/generate/', views.generate_pins, name='generate_pins'),
+    path('encrypted/admin/futobme/pins/generated/', views.view_generated_pins, name='view_generated_pins'),
+    path('encrypted/admin/futobme/pins/download/', views.download_pins_csv, name='download_pins_csv'),
+    path('encrypted/admin/futobme/pins/logs/', views.pin_usage_logs, name='pin_usage_logs'),
+    path('encrypted/admin/futobme/pins/<str:pin>/deactivate/', views.deactivate_pin, name='deactivate_pin'),
 ]

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Access PINs - FUTO BME Admin{% endblock %}
+
+{% block content %}
+<section class="py-4">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">
+                    <i class="fas fa-key me-2 text-warning"></i>Access PIN Management
+                </h2>
+                <p class="text-muted">Generate and manage student access PINs</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'generate_pins' %}" class="btn btn-warning">
+                    <i class="fas fa-plus me-2"></i>Generate New PINs
+                </a>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-key fa-3x text-primary mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ stats.total }}</h3>
+                        <small class="text-muted">Total PINs</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ stats.active }}</h3>
+                        <small class="text-muted">Active PINs</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-check fa-3x text-info mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ stats.used }}</h3>
+                        <small class="text-muted">Used PINs</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-3x text-danger mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ stats.expired }}</h3>
+                        <small class="text-muted">Expired PINs</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Filter by Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                            <option value="used" {% if selected_status == 'used' %}selected{% endif %}>Used</option>
+                            <option value="expired" {% if selected_status == 'expired' %}selected{% endif %}>Expired</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Filter by Batch</label>
+                        <select name="batch" class="form-select">
+                            <option value="">All Batches</option>
+                            {% for batch in batches %}
+                            <option value="{{ batch }}" {% if selected_batch == batch %}selected{% endif %}>
+                                {{ batch }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-filter me-2"></i>Apply Filters
+                        </button>
+                        <a href="{% url 'manage_access_pins' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">Quick Actions</h6>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'pin_usage_logs' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>View Usage Logs
+                    </a>
+                    <a href="{% url 'view_generated_pins' %}" class="btn btn-outline-info">
+                        <i class="fas fa-eye me-2"></i>Recent Generated
+                    </a>
+                    <a href="{% url 'download_pins_csv' %}" class="btn btn-outline-success">
+                        <i class="fas fa-download me-2"></i>Download CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PINs Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="fw-bold mb-4">All Access PINs ({{ pins.count }})</h5>
+                
+                {% if pins %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>PIN</th>
+                                <th>Status</th>
+                                <th>Batch</th>
+                                <th>Generated</th>
+                                <th>Expires</th>
+                                <th>Used By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pin in pins %}
+                            <tr>
+                                <td>
+                                    <code class="text-dark">{{ pin.pin }}</code>
+                                </td>
+                                <td>
+                                    {% if pin.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% elif pin.status == 'used' %}
+                                        <span class="badge bg-info">Used</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Expired</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ pin.batch_number|default:"-" }}</small>
+                                </td>
+                                <td>
+                                    <small>
+                                        {{ pin.generated_at|date:"M d, Y" }}<br>
+                                        <span class="text-muted">by {{ pin.generated_by.username }}</span>
+                                    </small>
+                                </td>
+                                <td>
+                                    <small>
+                                        {% if pin.expires_at %}
+                                            {{ pin.expires_at|date:"M d, Y" }}
+                                        {% else %}
+                                            <span class="text-muted">Never</span>
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if pin.used_by %}
+                                        <small>
+                                            <strong>{{ pin.used_by.full_name }}</strong><br>
+                                            <span class="text-muted">{{ pin.used_by.reg_number }}</span><br>
+                                            <span class="text-muted">{{ pin.used_at|date:"M d, Y" }}</span>
+                                        </small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if pin.status == 'active' %}
+                                        <a href="{% url 'deactivate_pin' pin.pin %}" 
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('Deactivate this PIN?')">
+                                            <i class="fas fa-ban"></i> Deactivate
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-key fa-4x text-muted mb-3"></i>
+                    <p class="text-muted">No PINs found.</p>
+                    <a href="{% url 'generate_pins' %}" class="btn btn-warning">
+                        <i class="fas fa-plus me-2"></i>Generate Your First Batch
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

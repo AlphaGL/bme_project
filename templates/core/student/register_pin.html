@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block title %}Register with PIN - FUTO BME{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-key fa-3x text-success"></i>
+                            </div>
+                            <h3 class="fw-bold">Register with Access PIN</h3>
+                            <p class="text-muted">Enter your purchased PIN to create your account</p>
+                        </div>
+
+                        <!-- PIN Info Alert -->
+                        <div class="alert alert-info mb-4">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-info-circle me-2"></i>About Your PIN
+                            </h6>
+                            <ul class="small mb-0">
+                                <li>PIN format: <strong>BME-XXXX-XXXX</strong></li>
+                                <li>Each PIN can only be used <strong>once</strong></li>
+                                <li>PIN is case-insensitive</li>
+                                <li>Keep your PIN secure and don't share it</li>
+                            </ul>
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                            {% endif %}
+
+                            <!-- Access PIN -->
+                            <div class="mb-4">
+                                <label for="id_access_pin" class="form-label fw-bold">
+                                    <i class="fas fa-key me-2"></i>Access PIN <span class="text-danger">*</span>
+                                </label>
+                                {{ form.access_pin }}
+                                <small class="form-text text-muted d-block">
+                                    Enter the 12-character PIN you purchased from the department
+                                </small>
+                                {% if form.access_pin.errors %}
+                                    <div class="alert alert-danger mt-2">
+                                        {{ form.access_pin.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <hr class="my-4">
+
+                            <!-- Registration Details -->
+                            <h6 class="fw-bold mb-3">Your Information</h6>
+
+                            <div class="mb-3">
+                                <label for="id_reg_number" class="form-label fw-bold">
+                                    <i class="fas fa-id-card me-2"></i>Registration Number <span class="text-danger">*</span>
+                                </label>
+                                {{ form.reg_number }}
+                                {% if form.reg_number.errors %}
+                                    <div class="alert alert-danger mt-2">
+                                        {{ form.reg_number.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_confirm_reg_number" class="form-label fw-bold">
+                                    <i class="fas fa-redo me-2"></i>Confirm Registration Number <span class="text-danger">*</span>
+                                </label>
+                                {{ form.confirm_reg_number }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_full_name" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2"></i>Full Name <span class="text-danger">*</span>
+                                </label>
+                                {{ form.full_name }}
+                                {% if form.full_name.errors %}
+                                    <div class="text-danger small">{{ form.full_name.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-2"></i>Email Address <span class="text-danger">*</span>
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_phone" class="form-label fw-bold">
+                                    <i class="fas fa-phone me-2"></i>Phone Number
+                                </label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger small">{{ form.phone.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="id_password" class="form-label fw-bold">
+                                    <i class="fas fa-lock me-2"></i>Password <span class="text-danger">*</span>
+                                </label>
+                                <div class="position-relative">
+                                    {{ form.password }}
+                                    <button type="button" class="btn btn-link position-absolute end-0 top-0 text-muted" 
+                                            onclick="togglePassword('id_password', this)"
+                                            style="text-decoration: none; padding: 0.375rem 0.75rem;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted d-block">Minimum 6 characters</small>
+                                {% if form.password.errors %}
+                                    <div class="text-danger small">{{ form.password.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="id_confirm_password" class="form-label fw-bold">
+                                    <i class="fas fa-lock me-2"></i>Confirm Password <span class="text-danger">*</span>
+                                </label>
+                                <div class="position-relative">
+                                    {{ form.confirm_password }}
+                                    <button type="button" class="btn btn-link position-absolute end-0 top-0 text-muted" 
+                                            onclick="togglePassword('id_confirm_password', this)"
+                                            style="text-decoration: none; padding: 0.375rem 0.75rem;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- What You Get -->
+                            <div class="card bg-light mb-4">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">
+                                        <i class="fas fa-gift me-2 text-success"></i>What You Get with Registration:
+                                    </h6>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <small><i class="fas fa-check text-success me-2"></i>CGPA Calculator</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <small><i class="fas fa-check text-success me-2"></i>Past Questions</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <small><i class="fas fa-check text-success me-2"></i>Course Handbook</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <small><i class="fas fa-check text-success me-2"></i>Timetables</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <small><i class="fas fa-check text-success me-2"></i>Research Club</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <small><i class="fas fa-check text-success me-2"></i>Dues Receipt</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-user-check me-2"></i>Complete Registration
+                                </button>
+                                <a href="{% url 'registration_choice' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Choose Different Method
+                                </a>
+                            </div>
+                        </form>
+
+                        <!-- Help Section -->
+                        <hr class="my-4">
+                        <div class="alert alert-warning">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>PIN Issues?
+                            </h6>
+                            <p class="small mb-2">
+                                If your PIN is not working or you're having problems:
+                            </p>
+                            <ul class="small mb-0">
+                                <li>Double-check the PIN format (BME-XXXX-XXXX)</li>
+                                <li>Ensure the PIN hasn't been used before</li>
+                                <li>Contact the department office if purchased recently</li>
+                                <li>Email: <strong>support@futobme.edu.ng</strong></li>
+                            </ul>
+                        </div>
+
+                        <!-- Already Have Account -->
+                        <div class="text-center mt-4">
+                            <p class="mb-0">
+                                Already have an account?
+                                <a href="{% url 'student_login' %}" class="fw-bold">Login here</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function togglePassword(fieldId, button) {
+    const passwordField = document.getElementById(fieldId);
+    const icon = button.querySelector('i');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordField.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Auto-uppercase PIN input
+document.addEventListener('DOMContentLoaded', function() {
+    const pinInput = document.getElementById('id_access_pin');
+    if (pinInput) {
+        pinInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    }
+});
+</script>
+{% endblock %}

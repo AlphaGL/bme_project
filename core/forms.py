@@ -863,3 +863,207 @@ class ArticleCommentForm(forms.ModelForm):
                 'placeholder': 'Add your comment...'
             })
         }
+
+
+class PinRegistrationForm(forms.ModelForm):
+    """Registration form using PIN"""
+    access_pin = forms.CharField(
+        max_length=12,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'BME-XXXX-XXXX',
+            'style': 'text-transform: uppercase;'
+        }),
+        help_text='Enter the 12-character access PIN you purchased from the department'
+    )
+    
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Create a password'
+        }),
+        help_text='Create a secure password (minimum 6 characters)'
+    )
+    
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm your password'
+        })
+    )
+    
+    confirm_reg_number = forms.CharField(
+        max_length=50,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm Registration Number'
+        })
+    )
+    
+    class Meta:
+        model = Student
+        fields = ['reg_number', 'full_name', 'email', 'phone']
+        widgets = {
+            'reg_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., 2020/1/12345'
+            }),
+            'full_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter your full name'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'your.email@example.com'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '+234XXXXXXXXXX'
+            }),
+        }
+    
+    def clean_access_pin(self):
+        pin = self.cleaned_data.get('access_pin', '').strip().upper()
+        
+        try:
+            access_pin = AccessPin.objects.get(pin=pin)
+            
+            if not access_pin.is_valid():
+                if access_pin.status == 'used':
+                    raise forms.ValidationError(
+                        f"This PIN has already been used by another student on "
+                        f"{access_pin.used_at.strftime('%B %d, %Y')}."
+                    )
+                elif access_pin.status == 'expired':
+                    raise forms.ValidationError("This PIN has expired. Please contact the department.")
+                else:
+                    raise forms.ValidationError("This PIN is not valid.")
+            
+            self.access_pin_obj = access_pin
+            
+        except AccessPin.DoesNotExist:
+            raise forms.ValidationError(
+                "Invalid PIN. Please check and try again. "
+                "Format should be BME-XXXX-XXXX"
+            )
+        
+        return pin
+    
+    def clean_reg_number(self):
+        reg_number = self.cleaned_data.get('reg_number')
+        
+        # Check if already registered
+        if Student.objects.filter(reg_number=reg_number).exists():
+            raise forms.ValidationError(
+                "This registration number is already registered. Please login instead."
+            )
+        
+        # Check if in registered numbers
+        from core.models import RegisteredRegNumber
+        if not RegisteredRegNumber.objects.filter(reg_number=reg_number, is_active=True).exists():
+            raise forms.ValidationError(
+                "This registration number is not in our system. "
+                "Please contact the department or submit a registration request."
+            )
+        
+        return reg_number
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        reg_number = cleaned_data.get('reg_number')
+        confirm_reg_number = cleaned_data.get('confirm_reg_number')
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        
+        if reg_number and confirm_reg_number:
+            if reg_number != confirm_reg_number:
+                raise forms.ValidationError("Registration numbers do not match!")
+        
+        if password and confirm_password:
+            if password != confirm_password:
+                raise forms.ValidationError("Passwords do not match!")
+            if len(password) < 6:
+                raise forms.ValidationError("Password must be at least 6 characters long!")
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        student = super().save(commit=False)
+        student.set_password(self.cleaned_data['password'])
+        student.payment_method = 'pin'
+        student.has_paid = True
+        student.payment_verified_at = timezone.now()
+        student.access_pin_used = self.access_pin_obj
+        
+        # Get level from RegisteredRegNumber
+        from core.models import RegisteredRegNumber
+        try:
+            reg_entry = RegisteredRegNumber.objects.get(reg_number=student.reg_number)
+            student.level = reg_entry.level
+        except RegisteredRegNumber.DoesNotExist:
+            pass
+        
+        if commit:
+            student.save()
+            # Mark PIN as used
+            self.access_pin_obj.mark_as_used(student)
+        
+        return student
+
+
+class GeneratePinForm(forms.Form):
+    """Form for admin to generate PINs"""
+    quantity = forms.IntegerField(
+        min_value=1,
+        max_value=100,
+        initial=10,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Number of PINs to generate'
+        }),
+        help_text='Generate between 1 and 100 PINs at once'
+    )
+    
+    batch_name = forms.CharField(
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g., Batch 2025-01 (optional)'
+        }),
+        help_text='Optional: Name this batch for tracking'
+    )
+    
+    expires_in_days = forms.IntegerField(
+        min_value=0,
+        max_value=365,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Days until expiry (leave blank for no expiry)'
+        }),
+        help_text='Optional: Number of days until PINs expire (0 or blank = never)'
+    )
+
+
+class PinAccessVerifyForm(forms.Form):
+    """Form to verify PIN access password"""
+    access_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter PIN management password',
+            'autofocus': True
+        }),
+        help_text='Enter the special password to access PIN management'
+    )
+    
+    def clean_access_password(self):
+        password = self.cleaned_data.get('access_password')
+        
+        # The special password
+        SPECIAL_PASSWORD = 'Ibeawuchicn@242'
+        
+        if password != SPECIAL_PASSWORD:
+            raise forms.ValidationError('Incorrect password. Access denied.')
+        
+        return password

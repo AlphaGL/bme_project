@@ -399,8 +399,35 @@ def staff_list(request):
     return render(request, 'core/staff.html', {'staff': staff})
 
 def exco_list(request):
-    excos = Exco.objects.all()
-    return render(request, 'core/excos.html', {'excos': excos})
+    """Display excos with session filtering"""
+    
+    # Get all excos
+    excos = Exco.objects.all().order_by('-session', 'order', 'name')
+    
+    # Get all unique sessions and sort them (most recent first)
+    available_sessions = Exco.objects.values_list('session', flat=True).distinct().order_by('-session')
+    
+    # Get the current/most recent session
+    current_session = available_sessions.first() if available_sessions else None
+    
+    # Get selected session from query parameter
+    selected_session = request.GET.get('session', '')
+    
+    # Filter excos based on selected session
+    if selected_session and selected_session != 'all':
+        if selected_session == 'current':
+            excos = excos.filter(session=current_session)
+        else:
+            excos = excos.filter(session=selected_session)
+    
+    context = {
+        'excos': excos,
+        'available_sessions': available_sessions,
+        'current_session': current_session,
+        'selected_session': selected_session,
+    }
+    
+    return render(request, 'core/excos.html', context)
 
 def past_questions(request):
     level = request.GET.get('level', '')
@@ -3786,3 +3813,290 @@ def verify_guest_payment(request, pk):
         'guest': guest,
     }
     return render(request, 'core/admin/verify_guest_payment.html', context)
+
+
+# Add to existing views.py
+
+def pin_access_verify(view_func):
+    """Decorator to verify PIN management access"""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        # Check if user is logged in as admin
+        if not request.user.is_authenticated:
+            messages.error(request, 'Please login as admin first.')
+            return redirect('admin_login')
+        
+        # Check if PIN access is verified in session
+        if not request.session.get('pin_access_verified'):
+            return redirect('verify_pin_access')
+        
+        return view_func(request, *args, **kwargs)
+    
+    return wrapper
+
+
+@login_required
+def verify_pin_access(request):
+    """Verify special password for PIN management"""
+    if request.method == 'POST':
+        form = PinAccessVerifyForm(request.POST)
+        if form.is_valid():
+            # Set session flag
+            request.session['pin_access_verified'] = True
+            messages.success(request, 'Access granted! You can now manage PINs.')
+            return redirect('manage_access_pins')
+    else:
+        form = PinAccessVerifyForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'core/admin/verify_pin_access.html', context)
+
+
+@login_required
+@pin_access_verify
+def manage_access_pins(request):
+    """Admin view to manage all access PINs"""
+    pins = AccessPin.objects.all().select_related('generated_by', 'used_by')
+    
+    # Filters
+    status = request.GET.get('status', '')
+    batch = request.GET.get('batch', '')
+    
+    if status:
+        pins = pins.filter(status=status)
+    
+    if batch:
+        pins = pins.filter(batch_number=batch)
+    
+    # Statistics
+    stats = {
+        'total': AccessPin.objects.count(),
+        'active': AccessPin.objects.filter(status='active').count(),
+        'used': AccessPin.objects.filter(status='used').count(),
+        'expired': AccessPin.objects.filter(status='expired').count(),
+    }
+    
+    # Get all batches
+    batches = AccessPin.objects.values_list('batch_number', flat=True).distinct()
+    
+    context = {
+        'pins': pins,
+        'stats': stats,
+        'batches': batches,
+        'selected_status': status,
+        'selected_batch': batch,
+    }
+    return render(request, 'core/admin/manage_access_pins.html', context)
+
+
+@login_required
+@pin_access_verify
+def generate_pins(request):
+    """Generate new access PINs"""
+    if request.method == 'POST':
+        form = GeneratePinForm(request.POST)
+        if form.is_valid():
+            quantity = form.cleaned_data['quantity']
+            batch_name = form.cleaned_data.get('batch_name', '')
+            expires_in_days = form.cleaned_data.get('expires_in_days')
+            
+            # Generate batch number if not provided
+            if not batch_name:
+                import datetime
+                batch_name = f"Batch-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+            
+            # Calculate expiry date if specified
+            expires_at = None
+            if expires_in_days and expires_in_days > 0:
+                from datetime import timedelta
+                expires_at = timezone.now() + timedelta(days=expires_in_days)
+            
+            # Generate PINs
+            generated_pins = []
+            for _ in range(quantity):
+                pin = AccessPin.objects.create(
+                    pin=AccessPin.generate_pin(),
+                    generated_by=request.user,
+                    batch_number=batch_name,
+                    expires_at=expires_at
+                )
+                generated_pins.append(pin)
+            
+            messages.success(
+                request,
+                f'Successfully generated {quantity} PIN(s) in batch "{batch_name}"!'
+            )
+            
+            # Store in session for download
+            request.session['generated_pins'] = [p.pin for p in generated_pins]
+            
+            return redirect('view_generated_pins')
+    else:
+        form = GeneratePinForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'core/admin/generate_pins.html', context)
+
+
+@login_required
+@pin_access_verify
+def view_generated_pins(request):
+    """View recently generated PINs"""
+    pins = request.session.get('generated_pins', [])
+    
+    if not pins:
+        messages.warning(request, 'No recently generated PINs found.')
+        return redirect('manage_access_pins')
+    
+    # Get full PIN objects
+    pin_objects = AccessPin.objects.filter(pin__in=pins)
+    
+    context = {
+        'pins': pin_objects,
+    }
+    return render(request, 'core/admin/view_generated_pins.html', context)
+
+
+@login_required
+@pin_access_verify
+def download_pins_csv(request):
+    """Download generated PINs as CSV"""
+    import csv
+    from django.http import HttpResponse
+    
+    pins = request.session.get('generated_pins', [])
+    
+    if not pins:
+        messages.error(request, 'No PINs to download.')
+        return redirect('manage_access_pins')
+    
+    # Create CSV response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="access_pins_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['PIN', 'Status', 'Batch', 'Generated At', 'Expires At'])
+    
+    pin_objects = AccessPin.objects.filter(pin__in=pins)
+    for pin in pin_objects:
+        writer.writerow([
+            pin.pin,
+            pin.status,
+            pin.batch_number,
+            pin.generated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            pin.expires_at.strftime('%Y-%m-%d %H:%M:%S') if pin.expires_at else 'Never'
+        ])
+    
+    return response
+
+
+@login_required
+@pin_access_verify
+def pin_usage_logs(request):
+    """View PIN usage logs"""
+    logs = PinUsageLog.objects.all().select_related('pin')
+    
+    context = {
+        'logs': logs,
+    }
+    return render(request, 'core/admin/pin_usage_logs.html', context)
+
+
+@login_required
+@pin_access_verify
+def deactivate_pin(request, pin):
+    """Deactivate an active PIN"""
+    pin_obj = get_object_or_404(AccessPin, pin=pin)
+    
+    if request.method == 'POST':
+        if pin_obj.status == 'used':
+            messages.error(request, f'Cannot deactivate PIN {pin} - it has already been used.')
+        else:
+            pin_obj.status = 'expired'
+            pin_obj.save()
+            messages.success(request, f'PIN {pin} has been deactivated.')
+        
+        return redirect('manage_access_pins')
+    
+    context = {
+        'pin': pin_obj,
+    }
+    return render(request, 'core/admin/confirm_deactivate_pin.html', context)
+
+
+def registration_choice(request):
+    """Let students choose between PIN or Paystack payment"""
+    return render(request, 'core/student/registration_choice.html')
+
+
+def student_register_pin(request):
+    """Student registration using PIN"""
+    if request.session.get('student_reg_number'):
+        return redirect('student_dashboard')
+    
+    if request.method == 'POST':
+        form = PinRegistrationForm(request.POST)
+        if form.is_valid():
+            # Log the PIN usage attempt
+            pin_obj = form.access_pin_obj
+            
+            try:
+                student = form.save()
+                
+                # Log successful usage
+                PinUsageLog.objects.create(
+                    pin=pin_obj,
+                    student_reg_number=student.reg_number,
+                    attempt_successful=True,
+                    ip_address=get_client_ip(request),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+                
+                # Auto-login
+                request.session['student_reg_number'] = student.reg_number
+                
+                messages.success(
+                    request,
+                    f'Registration successful! Welcome to FUTO BME Portal, {student.full_name}!'
+                )
+                return redirect('student_dashboard')
+            
+            except Exception as e:
+                # Log failed usage
+                PinUsageLog.objects.create(
+                    pin=pin_obj,
+                    student_reg_number=form.cleaned_data.get('reg_number', ''),
+                    attempt_successful=False,
+                    ip_address=get_client_ip(request),
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                    error_message=str(e)
+                )
+                
+                messages.error(request, f'Registration failed: {str(e)}')
+        else:
+            # Log failed PIN attempt if PIN was provided
+            access_pin = request.POST.get('access_pin', '').strip().upper()
+            if access_pin:
+                try:
+                    pin_obj = AccessPin.objects.get(pin=access_pin)
+                    PinUsageLog.objects.create(
+                        pin=pin_obj,
+                        student_reg_number=request.POST.get('reg_number', ''),
+                        attempt_successful=False,
+                        ip_address=get_client_ip(request),
+                        user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                        error_message='Form validation failed'
+                    )
+                except AccessPin.DoesNotExist:
+                    pass
+    else:
+        form = PinRegistrationForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'core/student/register_pin.html', context)

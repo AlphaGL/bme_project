@@ -165,6 +165,28 @@ class Student(models.Model):
     class Meta:
         ordering = ['reg_number']
 
+
+    PAYMENT_METHOD_CHOICES = [
+        ('paystack', 'Paystack Payment'),
+        ('pin', 'Access PIN'),
+    ]
+    
+    payment_method = models.CharField(
+        max_length=20, 
+        choices=PAYMENT_METHOD_CHOICES, 
+        null=True, 
+        blank=True,
+        help_text="How the student paid for portal access"
+    )
+    
+    access_pin_used = models.ForeignKey(
+        'AccessPin', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='registered_student'
+    )
+
     def __str__(self):
         return f"{self.reg_number} - {self.full_name}"
     
@@ -993,3 +1015,92 @@ class ArticleComment(models.Model):
     
     def __str__(self):
         return f"{self.student.full_name} on {self.article.title}"
+
+
+
+# Add to existing models.py
+
+class AccessPin(models.Model):
+    """One-time use access pins for portal registration"""
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('used', 'Used'),
+        ('expired', 'Expired'),
+    ]
+    
+    pin = models.CharField(max_length=12, unique=True, primary_key=True)
+    generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='generated_pins')
+    generated_at = models.DateTimeField(auto_now_add=True)
+    
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    
+    # Usage tracking
+    used_by = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='used_pin')
+    used_at = models.DateTimeField(null=True, blank=True)
+    
+    # Expiry
+    expires_at = models.DateTimeField(null=True, blank=True, help_text="Optional expiry date")
+    
+    # Batch tracking
+    batch_number = models.CharField(max_length=50, blank=True, help_text="For bulk generation tracking")
+    
+    class Meta:
+        ordering = ['-generated_at']
+        verbose_name_plural = "Access Pins"
+    
+    def __str__(self):
+        return f"{self.pin} - {self.status}"
+    
+    def is_valid(self):
+        """Check if pin is valid for use"""
+        if self.status != 'active':
+            return False
+        
+        if self.expires_at and timezone.now() > self.expires_at:
+            self.status = 'expired'
+            self.save()
+            return False
+        
+        return True
+    
+    def mark_as_used(self, student):
+        """Mark pin as used by a student"""
+        self.status = 'used'
+        self.used_by = student
+        self.used_at = timezone.now()
+        self.save()
+    
+    @staticmethod
+    def generate_pin():
+        """Generate a unique 12-character PIN"""
+        import random
+        import string
+        
+        while True:
+            # Format: BME-XXXX-XXXX where X is alphanumeric
+            part1 = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+            part2 = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+            pin = f"BME-{part1}-{part2}"
+            
+            # Check if pin already exists
+            if not AccessPin.objects.filter(pin=pin).exists():
+                return pin
+
+
+class PinUsageLog(models.Model):
+    """Track all PIN usage attempts for security"""
+    pin = models.ForeignKey(AccessPin, on_delete=models.CASCADE, related_name='usage_logs')
+    student_reg_number = models.CharField(max_length=50, blank=True)
+    attempt_successful = models.BooleanField(default=False)
+    attempted_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    error_message = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-attempted_at']
+        verbose_name_plural = "PIN Usage Logs"
+    
+    def __str__(self):
+        status = "Success" if self.attempt_successful else "Failed"
+        return f"{self.pin.pin} - {status} - {self.attempted_at}"
