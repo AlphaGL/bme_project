@@ -36,6 +36,13 @@ class Exco(models.Model):
     image = CloudinaryField('image', blank=True, null=True)
     session = models.CharField(max_length=50, help_text="e.g., 2023/2024")
     order = models.IntegerField(default=0, help_text="Display order (lower numbers appear first)")
+    
+    # NEW: MSRC field
+    is_msrc = models.BooleanField(
+        default=False, 
+        help_text="Check if this person is a Member of Student Representative Council (MSRC)"
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -44,7 +51,8 @@ class Exco(models.Model):
         verbose_name_plural = "Excos"
 
     def __str__(self):
-        return f"{self.name} - {self.position} ({self.session})"
+        msrc_tag = " (MSRC)" if self.is_msrc else ""
+        return f"{self.name} - {self.position} ({self.session}){msrc_tag}"
 
 
 class PastQuestion(models.Model):

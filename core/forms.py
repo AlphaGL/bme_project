@@ -18,7 +18,7 @@ class StaffForm(forms.ModelForm):
 class ExcoForm(forms.ModelForm):
     class Meta:
         model = Exco
-        fields = ['name', 'position', 'bio', 'email', 'phone', 'image', 'session', 'order']
+        fields = ['name', 'position', 'bio', 'email', 'phone', 'image', 'session', 'order', 'is_msrc']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'position': forms.TextInput(attrs={'class': 'form-control'}),
@@ -27,6 +27,10 @@ class ExcoForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
             'session': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 2023/2024'}),
             'order': forms.NumberInput(attrs={'class': 'form-control'}),
+            'is_msrc': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        help_texts = {
+            'is_msrc': 'Check this box if this person is a Member of Student Representative Council'
         }
 
 class PastQuestionForm(forms.ModelForm):
@@ -114,7 +118,7 @@ class StudentRegistrationForm(forms.ModelForm):
         widgets = {
             'reg_number': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'e.g., 2020/1/12345'
+                'placeholder': 'e.g., 202XXXXXXXX'
             }),
             'full_name': forms.TextInput(attrs={
                 'class': 'form-control',

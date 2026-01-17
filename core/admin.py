@@ -15,10 +15,26 @@ class StaffAdmin(admin.ModelAdmin):
 
 @admin.register(Exco)
 class ExcoAdmin(admin.ModelAdmin):
-    list_display = ['name', 'position', 'session', 'email', 'order', 'created_at']
-    list_filter = ['session', 'created_at']
+    list_display = ['name', 'position', 'session', 'is_msrc', 'email', 'order', 'created_at']
+    list_filter = ['session', 'is_msrc', 'created_at']
     search_fields = ['name', 'position', 'email']
     ordering = ['order', 'name']
+    
+    # Group fields logically
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'position', 'bio')
+        }),
+        ('Contact Details', {
+            'fields': ('email', 'phone')
+        }),
+        ('Session & Role', {
+            'fields': ('session', 'is_msrc')
+        }),
+        ('Display Settings', {
+            'fields': ('image', 'order')
+        }),
+    )
 
 @admin.register(PastQuestion)
 class PastQuestionAdmin(admin.ModelAdmin):

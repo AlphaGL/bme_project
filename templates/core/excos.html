@@ -48,7 +48,12 @@
                         <div class="mt-3 text-center">
                             <span id="resultsCounter" class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6">
                                 <i class="fas fa-user-tie me-1" style="color: #fbbc00;"></i>
-                                <span id="countText" style="color: #fff;">Showing {{ excos.count }} exco{{ excos.count|pluralize }}</span>
+                                <span id="countText" style="color: #fff;">
+                                    Showing {{ excos.count }} exco{{ excos.count|pluralize }}
+                                    {% if msrc_members.count > 0 %}
+                                    + {{ msrc_members.count }} MSRC member{{ msrc_members.count|pluralize }}
+                                    {% endif %}
+                                </span>
                             </span>
                         </div>
                     </div>
@@ -58,10 +63,10 @@
     </div>
 </section>
 
-<!-- Excos Grid Section -->
+<!-- Executive Council Section -->
 <section class="py-4 py-md-5">
     <div class="container">
-        <!-- Session Title (Dynamic) -->
+        <!-- Section Title -->
         <div class="row mb-3 mb-md-4">
             <div class="col-12 px-3">
                 <div class="text-center mb-4">
@@ -187,6 +192,132 @@
     </div>
 </section>
 
+<!-- MSRC Section -->
+{% if msrc_members %}
+<section class="py-4 py-md-5 bg-light">
+    <div class="container">
+        <!-- MSRC Section Title -->
+        <div class="row mb-3 mb-md-4">
+            <div class="col-12 px-3">
+                <div class="text-center mb-4">
+                    <div class="d-inline-block position-relative mb-3">
+                        <i class="fas fa-landmark fa-3x" style="color: var(--secondary-color);"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                            MSRC
+                        </span>
+                    </div>
+                    <h2 class="fw-bold fs-4 fs-md-3 fs-lg-2" id="msrcTitle">
+                        Student Representative Council
+                    </h2>
+                    <p class="text-muted">Member{{ msrc_members.count|pluralize }} of Student Representative Council</p>
+                    <div class="mx-auto" style="width: 80px; height: 3px; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MSRC Grid -->
+        <div class="row g-3 g-md-4 px-2 px-md-0 justify-content-center" id="msrcContainer">
+            {% for msrc in msrc_members %}
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-3 msrc-card" data-session="{{ msrc.session }}" data-msrc-id="{{ forloop.counter }}">
+                <div class="card h-100 border-0 shadow-hover position-relative" style="border-top: 4px solid var(--secondary-color) !important;">
+                    <!-- MSRC Badge (Floating) -->
+                    <div class="position-absolute top-0 start-0 m-2 m-md-3" style="z-index: 10;">
+                        <span class="badge bg-warning text-dark shadow-sm fs-7">
+                            <i class="fas fa-landmark me-1"></i>MSRC
+                        </span>
+                    </div>
+                    
+                    <!-- Session Badge (Floating Right) -->
+                    <div class="position-absolute top-0 end-0 m-2 m-md-3" style="z-index: 10;">
+                        {% if msrc.session == current_session %}
+                        <span class="badge bg-success shadow-sm fs-7">
+                            <i class="fas fa-star me-1"></i>Current
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary bg-opacity-75 shadow-sm fs-7">
+                            {{ msrc.session }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Image Section -->
+                    <div class="position-relative overflow-hidden exco-image-container">
+                        {% if msrc.image %}
+                        <img src="{{ msrc.image.url }}" 
+                             class="card-img-top w-100 h-100 object-fit-cover exco-image" 
+                             alt="{{ msrc.name }}"
+                             loading="lazy">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient" 
+                             style="background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);">
+                            <i class="fas fa-landmark fa-4x text-white opacity-75"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Gradient Overlay -->
+                        <div class="position-absolute bottom-0 start-0 end-0 p-2 p-md-3" 
+                             style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                            <h5 class="text-white mb-0 fw-bold fs-6 fs-md-5">{{ msrc.name }}</h5>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="card-body p-3 p-md-4">
+                        <!-- Position -->
+                        <div class="mb-3">
+                            <span class="badge bg-warning bg-opacity-20 text-warning px-2 px-md-3 py-1 py-md-2 rounded-pill fs-7">
+                                <i class="fas fa-certificate me-1" style="color: var(--secondary-color);"></i>
+                                <span class="position-text" style="color: #000;">{{ msrc.position }}</span>
+                            </span>
+                        </div>
+                        
+                        <!-- Bio -->
+                        <div class="bio-container mb-3">
+                            <p class="card-text text-muted bio-text bio-short small" id="msrcBioShort{{ forloop.counter }}">
+                                {{ msrc.bio|truncatewords:12 }}
+                            </p>
+                            <p class="card-text text-muted bio-text bio-full small" id="msrcBioFull{{ forloop.counter }}" style="display: none;">
+                                {{ msrc.bio }}
+                            </p>
+                            {% if msrc.bio|wordcount > 12 %}
+                            <button class="btn btn-link btn-sm p-0 text-warning text-decoration-none read-more-btn" 
+                                    data-target="msrc{{ forloop.counter }}"
+                                    onclick="toggleMsrcBio({{ forloop.counter }})">
+                                <i class="fas fa-chevron-down me-1" style="font-size: 0.7rem;"></i>
+                                <span class="read-more-text" style="font-size: 0.8rem;">Read More</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Contact Info -->
+                        <div class="border-top pt-2 pt-md-3">
+                            {% if msrc.email %}
+                            <div class="mb-2">
+                                <a href="mailto:{{ msrc.email }}" class="text-decoration-none d-flex align-items-start text-muted hover-warning">
+                                    <i class="fas fa-envelope text-warning me-2 mt-1 flex-shrink-0" style="font-size: 0.85rem;"></i>
+                                    <small class="text-break" style="font-size: 0.8rem;">{{ msrc.email }}</small>
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            {% if msrc.phone %}
+                            <div>
+                                <a href="tel:{{ msrc.phone }}" class="text-decoration-none d-flex align-items-center text-muted hover-warning">
+                                    <i class="fas fa-phone text-warning me-2 flex-shrink-0" style="font-size: 0.85rem;"></i>
+                                    <small style="font-size: 0.8rem;">{{ msrc.phone }}</small>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <style>
 /* ==================== MOBILE-FIRST RESPONSIVE STYLES ==================== */
 
@@ -251,12 +382,25 @@
     animation: pulse-glow 2s infinite;
 }
 
+.badge.bg-warning {
+    animation: pulse-glow-warning 2s infinite;
+}
+
 @keyframes pulse-glow {
     0%, 100% {
         box-shadow: 0 0 8px rgba(25, 135, 84, 0.4);
     }
     50% {
         box-shadow: 0 0 16px rgba(25, 135, 84, 0.7);
+    }
+}
+
+@keyframes pulse-glow-warning {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 16px rgba(212, 175, 55, 0.7);
     }
 }
 
@@ -297,7 +441,12 @@
     color: var(--primary-color) !important;
 }
 
-.hover-primary:hover i {
+.hover-warning:hover {
+    color: var(--secondary-color) !important;
+}
+
+.hover-primary:hover i,
+.hover-warning:hover i {
     transform: scale(1.1);
     transition: transform 0.2s ease;
 }
@@ -315,7 +464,8 @@
 }
 
 /* Card Animations */
-.exco-card {
+.exco-card,
+.msrc-card {
     transition: all 0.3s ease-in-out;
     animation: fadeInUp 0.4s ease-out backwards;
 }
@@ -332,7 +482,8 @@
 }
 
 /* Loading State */
-.exco-card.hiding {
+.exco-card.hiding,
+.msrc-card.hiding {
     opacity: 0;
     transform: scale(0.95);
 }
@@ -376,10 +527,14 @@
         box-shadow: 0 12px 24px rgba(139, 21, 56, 0.15);
     }
     
-    .exco-card:nth-child(1) { animation-delay: 0.1s; }
-    .exco-card:nth-child(2) { animation-delay: 0.2s; }
-    .exco-card:nth-child(3) { animation-delay: 0.3s; }
-    .exco-card:nth-child(4) { animation-delay: 0.4s; }
+    .exco-card:nth-child(1),
+    .msrc-card:nth-child(1) { animation-delay: 0.1s; }
+    .exco-card:nth-child(2),
+    .msrc-card:nth-child(2) { animation-delay: 0.2s; }
+    .exco-card:nth-child(3),
+    .msrc-card:nth-child(3) { animation-delay: 0.3s; }
+    .exco-card:nth-child(4),
+    .msrc-card:nth-child(4) { animation-delay: 0.4s; }
 }
 
 /* Large devices (desktops, 992px and up) */
@@ -444,7 +599,7 @@
 </style>
 
 <script>
-// Toggle Read More/Less for Bio
+// Toggle Read More/Less for Bio (Regular Excos)
 function toggleBio(id) {
     const bioShort = document.getElementById('bioShort' + id);
     const bioFull = document.getElementById('bioFull' + id);
@@ -453,7 +608,6 @@ function toggleBio(id) {
     const btnIcon = btn.querySelector('i');
     
     if (bioFull.style.display === 'none') {
-        // Show full bio
         bioShort.style.display = 'none';
         bioFull.style.display = 'block';
         btnText.textContent = 'Read Less';
@@ -461,7 +615,31 @@ function toggleBio(id) {
         btnIcon.classList.add('fa-chevron-up');
         btn.classList.add('expanded');
     } else {
-        // Show short bio
+        bioShort.style.display = 'block';
+        bioFull.style.display = 'none';
+        btnText.textContent = 'Read More';
+        btnIcon.classList.remove('fa-chevron-up');
+        btnIcon.classList.add('fa-chevron-down');
+        btn.classList.remove('expanded');
+    }
+}
+
+// Toggle Read More/Less for Bio (MSRC Members)
+function toggleMsrcBio(id) {
+    const bioShort = document.getElementById('msrcBioShort' + id);
+    const bioFull = document.getElementById('msrcBioFull' + id);
+    const btn = document.querySelector(`[data-target="msrc${id}"]`);
+    const btnText = btn.querySelector('.read-more-text');
+    const btnIcon = btn.querySelector('i');
+    
+    if (bioFull.style.display === 'none') {
+        bioShort.style.display = 'none';
+        bioFull.style.display = 'block';
+        btnText.textContent = 'Read Less';
+        btnIcon.classList.remove('fa-chevron-down');
+        btnIcon.classList.add('fa-chevron-up');
+        btn.classList.add('expanded');
+    } else {
         bioShort.style.display = 'block';
         bioFull.style.display = 'none';
         btnText.textContent = 'Read More';
@@ -474,8 +652,10 @@ function toggleBio(id) {
 document.addEventListener('DOMContentLoaded', function() {
     const sessionFilter = document.getElementById('sessionFilter');
     const excoCards = document.querySelectorAll('.exco-card');
+    const msrcCards = document.querySelectorAll('.msrc-card');
     const noExcosMessage = document.getElementById('noExcosMessage');
     const sessionTitle = document.getElementById('sessionTitle');
+    const msrcTitle = document.getElementById('msrcTitle');
     const countText = document.getElementById('countText');
     
     // Session titles mapping
@@ -486,32 +666,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     sessionFilter.addEventListener('change', function() {
         const selectedSession = this.value;
-        let visibleCount = 0;
+        let visibleExcoCount = 0;
+        let visibleMsrcCount = 0;
         
         // Add hiding animation
-        excoCards.forEach(card => {
-            card.classList.add('hiding');
-        });
+        excoCards.forEach(card => card.classList.add('hiding'));
+        msrcCards.forEach(card => card.classList.add('hiding'));
         
         // Wait for hiding animation
         setTimeout(() => {
-            excoCards.forEach((card, index) => {
+            // Filter Excos
+            excoCards.forEach((card) => {
                 const cardSession = card.getAttribute('data-session');
                 
                 if (selectedSession === 'all') {
                     card.style.display = 'block';
-                    setTimeout(() => {
-                        card.classList.remove('hiding');
-                    }, 50);
-                    visibleCount++;
+                    setTimeout(() => card.classList.remove('hiding'), 50);
+                    visibleExcoCount++;
                 } else if (selectedSession === 'current') {
                     const currentSession = '{{ current_session }}';
                     if (cardSession === currentSession) {
                         card.style.display = 'block';
-                        setTimeout(() => {
-                            card.classList.remove('hiding');
-                        }, 50);
-                        visibleCount++;
+                        setTimeout(() => card.classList.remove('hiding'), 50);
+                        visibleExcoCount++;
                     } else {
                         card.style.display = 'none';
                         card.classList.remove('hiding');
@@ -519,10 +696,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     if (cardSession === selectedSession) {
                         card.style.display = 'block';
-                        setTimeout(() => {
-                            card.classList.remove('hiding');
-                        }, 50);
-                        visibleCount++;
+                        setTimeout(() => card.classList.remove('hiding'), 50);
+                        visibleExcoCount++;
                     } else {
                         card.style.display = 'none';
                         card.classList.remove('hiding');
@@ -530,60 +705,81 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Update results counter
-            countText.textContent = `Showing ${visibleCount} exco${visibleCount !== 1 ? 's' : ''}`;
+            // Filter MSRC Members
+            msrcCards.forEach((card) => {
+                const cardSession = card.getAttribute('data-session');
+                
+                if (selectedSession === 'all') {
+                    card.style.display = 'block';
+                    setTimeout(() => card.classList.remove('hiding'), 50);
+                    visibleMsrcCount++;
+                } else if (selectedSession === 'current') {
+                    const currentSession = '{{ current_session }}';
+                    if (cardSession === currentSession) {
+                        card.style.display = 'block';
+                        setTimeout(() => card.classList.remove('hiding'), 50);
+                        visibleMsrcCount++;
+                    } else {
+                        card.style.display = 'none';
+                        card.classList.remove('hiding');
+                    }
+                } else {
+                    if (cardSession === selectedSession) {
+                        card.style.display = 'block';
+                        setTimeout(() => card.classList.remove('hiding'), 50);
+                        visibleMsrcCount++;
+                    } else {
+                        card.style.display = 'none';
+                        card.classList.remove('hiding');
+                    }
+                }
+            });
             
-            // Update session title
+            // Update title
             if (sessionTitles[selectedSession]) {
                 sessionTitle.textContent = sessionTitles[selectedSession];
             } else {
-                sessionTitle.textContent = `${selectedSession} Executive Council`;
+                sessionTitle.textContent = selectedSession + ' Executive Council';
             }
             
+            // Update counter
+            let counterHTML = `Showing ${visibleExcoCount} exco${visibleExcoCount !== 1 ? 's' : ''}`;
+            if (visibleMsrcCount > 0) {
+                counterHTML += ` + ${visibleMsrcCount} MSRC member${visibleMsrcCount !== 1 ? 's' : ''}`;
+            }
+            countText.innerHTML = counterHTML;
+            
             // Show/hide no excos message
-            if (noExcosMessage) {
-                if (visibleCount === 0) {
-                    noExcosMessage.style.display = 'block';
+            if (visibleExcoCount === 0 && visibleMsrcCount === 0) {
+                if (!noExcosMessage) {
+                    const excosContainer = document.getElementById('excosContainer');
+                    const noResultsDiv = document.createElement('div');
+                    noResultsDiv.id = 'noExcosMessage';
+                    noResultsDiv.className = 'col-12';
+                    noResultsDiv.innerHTML = `
+                        <div class="text-center py-4 py-md-5 px-3">
+                            <div class="mb-3 mb-md-4">
+                                <i class="fas fa-user-slash fa-4x fa-md-5x text-muted opacity-50"></i>
+                            </div>
+                            <h4 class="text-muted mb-2 fs-5 fs-md-4">No Excos Found</h4>
+                            <p class="text-muted small">No executive council members available for the selected session.</p>
+                            <button class="btn btn-primary mt-3" onclick="document.getElementById('sessionFilter').value='all'; document.getElementById('sessionFilter').dispatchEvent(new Event('change'));">
+                                <i class="fas fa-redo me-2"></i>Show All Sessions
+                            </button>
+                        </div>
+                    `;
+                    excosContainer.appendChild(noResultsDiv);
                 } else {
+                    noExcosMessage.style.display = 'block';
+                }
+            } else {
+                if (noExcosMessage) {
                     noExcosMessage.style.display = 'none';
                 }
             }
         }, 200);
-        
-        // Update URL with selected session
-        const url = new URL(window.location);
-        if (selectedSession === 'all') {
-            url.searchParams.delete('session');
-        } else {
-            url.searchParams.set('session', selectedSession);
-        }
-        window.history.pushState({}, '', url);
     });
-    
-    // Trigger filter on page load if URL has session parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionParam = urlParams.get('session');
-    if (sessionParam) {
-        sessionFilter.value = sessionParam;
-        sessionFilter.dispatchEvent(new Event('change'));
-    }
-    
-    // Lazy loading for images
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.classList.add('loaded');
-                    observer.unobserve(img);
-                }
-            });
-        });
-        
-        document.querySelectorAll('.exco-image').forEach(img => {
-            imageObserver.observe(img);
-        });
-    }
 });
 </script>
+
 {% endblock %}

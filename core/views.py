@@ -399,10 +399,10 @@ def staff_list(request):
     return render(request, 'core/staff.html', {'staff': staff})
 
 def exco_list(request):
-    """Display excos with session filtering"""
+    """Display excos with session filtering - separated by MSRC status"""
     
     # Get all excos
-    excos = Exco.objects.all().order_by('-session', 'order', 'name')
+    all_excos = Exco.objects.all().order_by('-session', 'order', 'name')
     
     # Get all unique sessions and sort them (most recent first)
     available_sessions = Exco.objects.values_list('session', flat=True).distinct().order_by('-session')
@@ -416,12 +416,17 @@ def exco_list(request):
     # Filter excos based on selected session
     if selected_session and selected_session != 'all':
         if selected_session == 'current':
-            excos = excos.filter(session=current_session)
+            all_excos = all_excos.filter(session=current_session)
         else:
-            excos = excos.filter(session=selected_session)
+            all_excos = all_excos.filter(session=selected_session)
+    
+    # Separate MSRC from regular excos
+    excos = all_excos.filter(is_msrc=False)
+    msrc_members = all_excos.filter(is_msrc=True)
     
     context = {
         'excos': excos,
+        'msrc_members': msrc_members,
         'available_sessions': available_sessions,
         'current_session': current_session,
         'selected_session': selected_session,
