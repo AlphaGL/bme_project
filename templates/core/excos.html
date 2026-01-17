@@ -63,6 +63,133 @@
     </div>
 </section>
 
+
+<!-- MSRC Section -->
+{% if msrc_members %}
+<section class="py-4 py-md-5 bg-light">
+    <div class="container">
+        <!-- MSRC Section Title -->
+        <div class="row mb-3 mb-md-4">
+            <div class="col-12 px-3">
+                <div class="text-center mb-4">
+                    <div class="d-inline-block position-relative mb-3">
+                        <i class="fas fa-landmark fa-3x" style="color: var(--secondary-color);"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                            MSRC
+                        </span>
+                    </div>
+                    <h2 class="fw-bold fs-4 fs-md-3 fs-lg-2" id="msrcTitle">
+                        Student Representative Council
+                    </h2>
+                    <p class="text-muted">Member{{ msrc_members.count|pluralize }} of Student Representative Council</p>
+                    <div class="mx-auto" style="width: 80px; height: 3px; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MSRC Grid -->
+        <div class="row g-3 g-md-4 px-2 px-md-0 justify-content-center" id="msrcContainer">
+            {% for msrc in msrc_members %}
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-3 msrc-card" data-session="{{ msrc.session }}" data-msrc-id="{{ forloop.counter }}">
+                <div class="card h-100 border-0 shadow-hover position-relative" style="border-top: 4px solid var(--secondary-color) !important;">
+                    <!-- MSRC Badge (Floating) -->
+                    <div class="position-absolute top-0 start-0 m-2 m-md-3" style="z-index: 10;">
+                        <span class="badge bg-warning text-dark shadow-sm fs-7">
+                            <i class="fas fa-landmark me-1"></i>MSRC
+                        </span>
+                    </div>
+                    
+                    <!-- Session Badge (Floating Right) -->
+                    <div class="position-absolute top-0 end-0 m-2 m-md-3" style="z-index: 10;">
+                        {% if msrc.session == current_session %}
+                        <span class="badge bg-success shadow-sm fs-7">
+                            <i class="fas fa-star me-1"></i>Current
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary bg-opacity-75 shadow-sm fs-7">
+                            {{ msrc.session }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Image Section -->
+                    <div class="position-relative overflow-hidden exco-image-container">
+                        {% if msrc.image %}
+                        <img src="{{ msrc.image.url }}" 
+                             class="card-img-top w-100 h-100 object-fit-cover exco-image" 
+                             alt="{{ msrc.name }}"
+                             loading="lazy">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient" 
+                             style="background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);">
+                            <i class="fas fa-landmark fa-4x text-white opacity-75"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Gradient Overlay -->
+                        <div class="position-absolute bottom-0 start-0 end-0 p-2 p-md-3" 
+                             style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                            <h5 class="text-white mb-0 fw-bold fs-6 fs-md-5">{{ msrc.name }}</h5>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="card-body p-3 p-md-4">
+                        <!-- Position -->
+                        <div class="mb-3">
+                            <span class="badge bg-warning bg-opacity-20 text-warning px-2 px-md-3 py-1 py-md-2 rounded-pill fs-7">
+                                <i class="fas fa-certificate me-1" style="color: var(--secondary-color);"></i>
+                                <span class="position-text" style="color: #000;">{{ msrc.position }}</span>
+                            </span>
+                        </div>
+                        
+                        <!-- Bio -->
+                        <div class="bio-container mb-3">
+                            <p class="card-text text-muted bio-text bio-short small" id="msrcBioShort{{ forloop.counter }}">
+                                {{ msrc.bio|truncatewords:12 }}
+                            </p>
+                            <p class="card-text text-muted bio-text bio-full small" id="msrcBioFull{{ forloop.counter }}" style="display: none;">
+                                {{ msrc.bio }}
+                            </p>
+                            {% if msrc.bio|wordcount > 12 %}
+                            <button class="btn btn-link btn-sm p-0 text-warning text-decoration-none read-more-btn" 
+                                    data-target="msrc{{ forloop.counter }}"
+                                    onclick="toggleMsrcBio({{ forloop.counter }})">
+                                <i class="fas fa-chevron-down me-1" style="font-size: 0.7rem;"></i>
+                                <span class="read-more-text" style="font-size: 0.8rem;">Read More</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Contact Info -->
+                        <div class="border-top pt-2 pt-md-3">
+                            {% if msrc.email %}
+                            <div class="mb-2">
+                                <a href="mailto:{{ msrc.email }}" class="text-decoration-none d-flex align-items-start text-muted hover-warning">
+                                    <i class="fas fa-envelope text-warning me-2 mt-1 flex-shrink-0" style="font-size: 0.85rem;"></i>
+                                    <small class="text-break" style="font-size: 0.8rem;">{{ msrc.email }}</small>
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            {% if msrc.phone %}
+                            <div>
+                                <a href="tel:{{ msrc.phone }}" class="text-decoration-none d-flex align-items-center text-muted hover-warning">
+                                    <i class="fas fa-phone text-warning me-2 flex-shrink-0" style="font-size: 0.85rem;"></i>
+                                    <small style="font-size: 0.8rem;">{{ msrc.phone }}</small>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- Executive Council Section -->
 <section class="py-4 py-md-5">
     <div class="container">
@@ -191,132 +318,6 @@
         </div>
     </div>
 </section>
-
-<!-- MSRC Section -->
-{% if msrc_members %}
-<section class="py-4 py-md-5 bg-light">
-    <div class="container">
-        <!-- MSRC Section Title -->
-        <div class="row mb-3 mb-md-4">
-            <div class="col-12 px-3">
-                <div class="text-center mb-4">
-                    <div class="d-inline-block position-relative mb-3">
-                        <i class="fas fa-landmark fa-3x" style="color: var(--secondary-color);"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-                            MSRC
-                        </span>
-                    </div>
-                    <h2 class="fw-bold fs-4 fs-md-3 fs-lg-2" id="msrcTitle">
-                        Student Representative Council
-                    </h2>
-                    <p class="text-muted">Member{{ msrc_members.count|pluralize }} of Student Representative Council</p>
-                    <div class="mx-auto" style="width: 80px; height: 3px; background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MSRC Grid -->
-        <div class="row g-3 g-md-4 px-2 px-md-0 justify-content-center" id="msrcContainer">
-            {% for msrc in msrc_members %}
-            <div class="col-12 col-sm-6 col-lg-4 col-xl-3 msrc-card" data-session="{{ msrc.session }}" data-msrc-id="{{ forloop.counter }}">
-                <div class="card h-100 border-0 shadow-hover position-relative" style="border-top: 4px solid var(--secondary-color) !important;">
-                    <!-- MSRC Badge (Floating) -->
-                    <div class="position-absolute top-0 start-0 m-2 m-md-3" style="z-index: 10;">
-                        <span class="badge bg-warning text-dark shadow-sm fs-7">
-                            <i class="fas fa-landmark me-1"></i>MSRC
-                        </span>
-                    </div>
-                    
-                    <!-- Session Badge (Floating Right) -->
-                    <div class="position-absolute top-0 end-0 m-2 m-md-3" style="z-index: 10;">
-                        {% if msrc.session == current_session %}
-                        <span class="badge bg-success shadow-sm fs-7">
-                            <i class="fas fa-star me-1"></i>Current
-                        </span>
-                        {% else %}
-                        <span class="badge bg-secondary bg-opacity-75 shadow-sm fs-7">
-                            {{ msrc.session }}
-                        </span>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Image Section -->
-                    <div class="position-relative overflow-hidden exco-image-container">
-                        {% if msrc.image %}
-                        <img src="{{ msrc.image.url }}" 
-                             class="card-img-top w-100 h-100 object-fit-cover exco-image" 
-                             alt="{{ msrc.name }}"
-                             loading="lazy">
-                        {% else %}
-                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient" 
-                             style="background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);">
-                            <i class="fas fa-landmark fa-4x text-white opacity-75"></i>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Gradient Overlay -->
-                        <div class="position-absolute bottom-0 start-0 end-0 p-2 p-md-3" 
-                             style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
-                            <h5 class="text-white mb-0 fw-bold fs-6 fs-md-5">{{ msrc.name }}</h5>
-                        </div>
-                    </div>
-                    
-                    <!-- Card Body -->
-                    <div class="card-body p-3 p-md-4">
-                        <!-- Position -->
-                        <div class="mb-3">
-                            <span class="badge bg-warning bg-opacity-20 text-warning px-2 px-md-3 py-1 py-md-2 rounded-pill fs-7">
-                                <i class="fas fa-certificate me-1" style="color: var(--secondary-color);"></i>
-                                <span class="position-text" style="color: #000;">{{ msrc.position }}</span>
-                            </span>
-                        </div>
-                        
-                        <!-- Bio -->
-                        <div class="bio-container mb-3">
-                            <p class="card-text text-muted bio-text bio-short small" id="msrcBioShort{{ forloop.counter }}">
-                                {{ msrc.bio|truncatewords:12 }}
-                            </p>
-                            <p class="card-text text-muted bio-text bio-full small" id="msrcBioFull{{ forloop.counter }}" style="display: none;">
-                                {{ msrc.bio }}
-                            </p>
-                            {% if msrc.bio|wordcount > 12 %}
-                            <button class="btn btn-link btn-sm p-0 text-warning text-decoration-none read-more-btn" 
-                                    data-target="msrc{{ forloop.counter }}"
-                                    onclick="toggleMsrcBio({{ forloop.counter }})">
-                                <i class="fas fa-chevron-down me-1" style="font-size: 0.7rem;"></i>
-                                <span class="read-more-text" style="font-size: 0.8rem;">Read More</span>
-                            </button>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Contact Info -->
-                        <div class="border-top pt-2 pt-md-3">
-                            {% if msrc.email %}
-                            <div class="mb-2">
-                                <a href="mailto:{{ msrc.email }}" class="text-decoration-none d-flex align-items-start text-muted hover-warning">
-                                    <i class="fas fa-envelope text-warning me-2 mt-1 flex-shrink-0" style="font-size: 0.85rem;"></i>
-                                    <small class="text-break" style="font-size: 0.8rem;">{{ msrc.email }}</small>
-                                </a>
-                            </div>
-                            {% endif %}
-                            
-                            {% if msrc.phone %}
-                            <div>
-                                <a href="tel:{{ msrc.phone }}" class="text-decoration-none d-flex align-items-center text-muted hover-warning">
-                                    <i class="fas fa-phone text-warning me-2 flex-shrink-0" style="font-size: 0.85rem;"></i>
-                                    <small style="font-size: 0.8rem;">{{ msrc.phone }}</small>
-                                </a>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
 
 <style>
 /* ==================== MOBILE-FIRST RESPONSIVE STYLES ==================== */
