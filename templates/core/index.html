@@ -77,9 +77,9 @@
                             <a href="{% url 'exco_list' %}" class="btn btn-light btn-lg me-2 mb-2">
                                 <i class="fas fa-user-tie me-2"></i>Student Leaders
                             </a>
-                            <a href="{% url 'research_hub' %}" class="btn btn-warning btn-lg mb-2">
+                            <!-- <a href="{% url 'research_hub' %}" class="btn btn-warning btn-lg mb-2">
                                 <i class="fas fa-flask me-2"></i>Research Club
-                            </a>
+                            </a> -->
                         </div>
                         <div class="col-lg-7">
                             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhhBiluu1l4JHVG76I4UwW6uzX7hd5FoTQapUZKBgY9S80PwuW4olN4a_1XfIibNU9v4sdMrrMadi6iFt7LlSOAVWuCKfuu6zqhkgo32PrQ1BjzEfVckAZSHgSE84Y5478xxgUwu6bO1A5hG1vXXauiO5a0LKkzQ6LZmNvmaE_n2eh96Id0wWt9R1JrhOY/s1600/image.png" 
@@ -173,7 +173,7 @@
 {% endif %}
 
 <!-- Quick Stats -->
-<section class="py-4 bg-light">
+<!-- <section class="py-4 bg-light">
     <div class="container">
         <div class="row text-center g-4">
             <div class="col-6 col-md-3">
@@ -192,7 +192,7 @@
             </div>
         </div>
     </div>
-</section>
+</section> -->
 
 <!-- About Section -->
 <section class="py-5">
@@ -288,18 +288,6 @@
             <div class="col-md-3 col-6">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
-                        <i class="fas fa-video fa-3x mb-3" style="color: var(--primary-color);"></i>
-                        <h6 class="card-title">Virtual Tour</h6>
-                        <p class="card-text small">
-                            360° tour of our facilities
-                        </p>
-                        <a href="{% url 'virtual_tour' %}" class="btn btn-sm btn-outline-primary">Explore</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6">
-                <div class="card h-100 border-0 shadow-sm hover-lift">
-                    <div class="card-body text-center p-4">
                         <i class="fas fa-file-alt fa-3x mb-3" style="color: var(--accent-purple);"></i>
                         <h6 class="card-title">Past Questions</h6>
                         <p class="card-text small">
@@ -310,6 +298,18 @@
                         {% else %}
                         <a href="{% url 'student_login' %}" class="btn btn-sm btn-outline-primary">Browse</a>
                         {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-calendar-alt fa-3x mb-3" style="color: var(--warning-color);"></i>
+                        <h6 class="card-title">Timetables</h6>
+                        <p class="card-text small">
+                            Class & Exam schedules
+                        </p>
+                        <a href="{% url 'view_timetables' %}" class="btn btn-sm btn-outline-primary">Check</a>
                     </div>
                 </div>
             </div>
@@ -340,18 +340,6 @@
             <div class="col-md-3 col-6">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
-                        <i class="fas fa-calendar-alt fa-3x mb-3" style="color: var(--warning-color);"></i>
-                        <h6 class="card-title">Timetables</h6>
-                        <p class="card-text small">
-                            Class & Exam schedules
-                        </p>
-                        <a href="{% url 'view_timetables' %}" class="btn btn-sm btn-outline-primary">Check</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6">
-                <div class="card h-100 border-0 shadow-sm hover-lift">
-                    <div class="card-body text-center p-4">
                         <i class="fas fa-calendar fa-3x mb-3" style="color: var(--danger-color);"></i>
                         <h6 class="card-title">Academic Calendar</h6>
                         <p class="card-text small">
@@ -364,6 +352,18 @@
             <div class="col-md-3 col-6">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
+                        <i class="fas fa-video fa-3x mb-3" style="color: var(--primary-color);"></i>
+                        <h6 class="card-title">Virtual Tour</h6>
+                        <p class="card-text small">
+                            360° tour of our facilities
+                        </p>
+                        <a href="{% url 'virtual_tour' %}" class="btn btn-sm btn-outline-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
                         <i class="fas fa-flask fa-3x mb-3" style="color: var(--success-color);"></i>
                         <h6 class="card-title">Research Club</h6>
                         <p class="card-text small">
@@ -372,8 +372,8 @@
                         <a href="{% url 'research_hub' %}" class="btn btn-sm btn-outline-primary">Explore</a>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3 col-6">
+            </div> -->
+            <!-- <div class="col-md-3 col-6">
                 <div class="card h-100 border-0 shadow-sm hover-lift">
                     <div class="card-body text-center p-4">
                         <i class="fas fa-comment-dots fa-3x mb-3" style="color: var(--accent-purple);"></i>
@@ -384,7 +384,7 @@
                         <a href="{% url 'submit_testimonial' %}" class="btn btn-sm btn-outline-primary">Submit</a>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </section>
@@ -637,7 +637,7 @@
 </section>
 
 <!-- Additional Features Section -->
-<section class="py-5">
+<!-- <section class="py-5">
     <div class="container">
         <div class="row text-center mb-4">
             <div class="col">
@@ -700,6 +700,6 @@
             </div>
         </div>
     </div>
-</section>
+</section> -->
 
 {% endblock %}

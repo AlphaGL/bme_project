@@ -1036,7 +1036,7 @@ class AccessPin(models.Model):
         ('expired', 'Expired'),
     ]
     
-    pin = models.CharField(max_length=12, unique=True, primary_key=True)
+    pin = models.CharField(max_length=20, unique=True, primary_key=True)
     generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='generated_pins')
     generated_at = models.DateTimeField(auto_now_add=True)
     

@@ -62,7 +62,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-2 col-md-3 col-6">
+            <!-- <div class="col-lg-2 col-md-3 col-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center p-3">
                         <i class="fas fa-users fa-3x text-danger mb-2"></i>
@@ -70,8 +70,8 @@
                         <small class="text-muted">Teams</small>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-2 col-md-3 col-6">
+            </div> -->
+            <!-- <div class="col-lg-2 col-md-3 col-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center p-3">
                         <i class="fas fa-trophy fa-3x text-secondary mb-2"></i>
@@ -79,51 +79,14 @@
                         <small class="text-muted">Points</small>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </section>
 
 <!-- Main Content -->
 <section class="py-5">
-    <div class="container">
-        <!-- Recommendations -->
-        {% if recommendations %}
-        <div class="row mb-4">
-            <div class="col-12">
-                <h4 class="fw-bold mb-3">
-                    <i class="fas fa-lightbulb me-2 text-warning"></i>Recommendations for You
-                </h4>
-                <div class="row g-3">
-                    {% for rec in recommendations %}
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow-sm h-100 alert-{{ rec.type }}">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start">
-                                    <i class="fas fa-{{ rec.icon }} fa-2x me-3"></i>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-bold mb-1">{{ rec.title }}</h6>
-                                        <p class="small mb-2">{{ rec.message }}</p>
-                                        {% if rec.url == "#" %}
-                                            <a href="#" class="btn btn-sm btn-{{ rec.type }}">
-                                                {{ rec.action }} <i class="fas fa-arrow-right ms-1"></i>
-                                            </a>
-                                        {% else %}
-                                            <a href="{% url rec.url %}" class="btn btn-sm btn-{{ rec.type }}">
-                                                {{ rec.action }} <i class="fas fa-arrow-right ms-1"></i>
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
+    <div class="container">  
         <div class="row g-4">
             <!-- Quick Actions -->
             <div class="col-lg-8">
@@ -166,7 +129,7 @@
                     </div>
 
                     <!-- Research Club Status -->
-                    <div class="col-md-6">
+                    <!-- <div class="col-md-6">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body">
                                 <h6 class="fw-bold mb-3">
@@ -204,7 +167,7 @@
                                 {% endif %}
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <!-- Quick Actions Grid -->
@@ -304,7 +267,7 @@
                                     </div>
                                 </a>
                             </div>
-                            <div class="col-md-4 col-6">
+                            <!-- <div class="col-md-4 col-6">
                                 <a href="{% url 'research_hub' %}" class="text-decoration-none">
                                     <div class="card border-secondary h-100 hover-lift">
                                         <div class="card-body text-center p-3">
@@ -313,8 +276,8 @@
                                         </div>
                                     </div>
                                 </a>
-                            </div>
-                            <div class="col-md-4 col-6">
+                            </div> -->
+                            <!-- <div class="col-md-4 col-6">
                                 <a href="{% url 'research_quizzes' %}" class="text-decoration-none">
                                     <div class="card border-danger h-100 hover-lift">
                                         <div class="card-body text-center p-3">
@@ -323,7 +286,7 @@
                                         </div>
                                     </div>
                                 </a>
-                            </div>
+                            </div> -->
                             <div class="col-md-4 col-6">
                                 <a href="{% url 'change_password' %}" class="text-decoration-none">
                                     <div class="card border-dark h-100 hover-lift">
@@ -420,7 +383,7 @@
                 </div>
 
                 <!-- Research Activities -->
-                {% if research_status.is_approved %}
+                <!-- {% if research_status.is_approved %}
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-3">
@@ -447,7 +410,7 @@
                         </a>
                     </div>
                 </div>
-                {% endif %}
+                {% endif %} -->
 
                 <!-- Announcements -->
                 {% if announcements %}
@@ -479,6 +442,43 @@
                 {% endif %}
             </div>
         </div>
+
+        <!-- Recommendations -->
+        <!-- {% if recommendations %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="fw-bold mb-3">
+                    <i class="fas fa-lightbulb me-2 text-warning"></i>Recommendations for You
+                </h4>
+                <div class="row g-3">
+                    {% for rec in recommendations %}
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100 alert-{{ rec.type }}">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-{{ rec.icon }} fa-2x me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-1">{{ rec.title }}</h6>
+                                        <p class="small mb-2">{{ rec.message }}</p>
+                                        {% if rec.url == "#" %}
+                                            <a href="#" class="btn btn-sm btn-{{ rec.type }}">
+                                                {{ rec.action }} <i class="fas fa-arrow-right ms-1"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url rec.url %}" class="btn btn-sm btn-{{ rec.type }}">
+                                                {{ rec.action }} <i class="fas fa-arrow-right ms-1"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %} -->
     </div>
 </section>
 

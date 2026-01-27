@@ -27,7 +27,39 @@ from functools import wraps
 logger = logging.getLogger(__name__)
 
 
-# Add this to your views.py
+
+def student_login_required(view_func):
+    """Decorator to check if student is logged in"""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if 'student_reg_number' not in request.session:
+            messages.warning(request, 'Please login to access this page.')
+            return redirect('student_login')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+@student_login_required
+def virtual_id_card(request):
+    """
+    Display virtual ID card for logged-in student
+    """
+    try:
+        # Get the logged-in student
+        reg_number = request.session.get('student_reg_number')
+        student = get_object_or_404(Student, reg_number=reg_number)
+        
+        context = {
+            'student': student,
+        }
+        
+        return render(request, 'core/student/virtual_id.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error displaying virtual ID card: {str(e)}")
+        messages.error(request, 'Error loading virtual ID card.')
+        return redirect('student_dashboard')
+
 
 def verify_receipt(request):
     """

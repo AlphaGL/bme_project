@@ -25,6 +25,9 @@ urlpatterns = [
     path('student/profile/', views.student_profile, name='student_profile'),
     path('student/change-password/', views.change_password, name='change_password'),
     path('student/delete-account/', views.delete_student_account, name='delete_student_account'),
+
+    # Virtual ID Card URL
+    path('student/virtual-id/', views.virtual_id_card, name='virtual_id_card'),
     
     # CGPA Calculator
     path('student/cgpa-calculator/', views.cgpa_calculator, name='cgpa_calculator'),
