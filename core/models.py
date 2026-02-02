@@ -30,7 +30,7 @@ class Staff(models.Model):
 class Exco(models.Model):
     name = models.CharField(max_length=200)
     position = models.CharField(max_length=200)
-    bio = models.TextField()
+    bio = models.TextField(blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     image = CloudinaryField('image', blank=True, null=True)
