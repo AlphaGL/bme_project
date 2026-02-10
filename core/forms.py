@@ -872,7 +872,7 @@ class ArticleCommentForm(forms.ModelForm):
 class PinRegistrationForm(forms.ModelForm):
     """Registration form using PIN"""
     access_pin = forms.CharField(
-        max_length=12,
+        max_length=14,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'BME-XXXX-XXXX',

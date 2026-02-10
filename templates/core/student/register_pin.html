@@ -24,14 +24,14 @@
                                 <i class="fas fa-info-circle me-2"></i>About Your PIN
                             </h6>
                             <ul class="small mb-0">
-                                <li>PIN format: <strong>BME-XXXX-XXXX</strong></li>
+                                <li>PIN format: <strong>BME-XXXX-XXXX</strong> (13 characters)</li>
                                 <li>Each PIN can only be used <strong>once</strong></li>
                                 <li>PIN is case-insensitive</li>
                                 <li>Keep your PIN secure and don't share it</li>
                             </ul>
                         </div>
 
-                        <form method="post">
+                        <form method="post" id="pinRegistrationForm">
                             {% csrf_token %}
                             
                             {% if form.non_field_errors %}
@@ -46,11 +46,13 @@
                                     <i class="fas fa-key me-2"></i>Access PIN <span class="text-danger">*</span>
                                 </label>
                                 {{ form.access_pin }}
-                                <small class="form-text text-muted d-block">
-                                    Enter the 12-character PIN you purchased from the department
-                                </small>
+                                <div class="form-text">
+                                    <span id="pinCharCount" class="badge bg-secondary">0/13 characters</span>
+                                    <span class="ms-2">Enter the 13-character PIN you purchased from the department</span>
+                                </div>
                                 {% if form.access_pin.errors %}
                                     <div class="alert alert-danger mt-2">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
                                         {{ form.access_pin.errors }}
                                     </div>
                                 {% endif %}
@@ -189,7 +191,8 @@
                             </p>
                             <ul class="small mb-0">
                                 <li>Double-check the PIN format (BME-XXXX-XXXX)</li>
-                                <li>Ensure the PIN hasn't been used before</li>
+                                <li>Ensure all 13 characters are entered correctly</li>
+                                <li>Verify the PIN hasn't been used before</li>
                                 <li>Contact the department office if purchased recently</li>
                             </ul>
                         </div>
@@ -224,14 +227,74 @@ function togglePassword(fieldId, button) {
     }
 }
 
-// Auto-uppercase PIN input
+// Enhanced PIN input handling
 document.addEventListener('DOMContentLoaded', function() {
     const pinInput = document.getElementById('id_access_pin');
-    if (pinInput) {
+    const charCountBadge = document.getElementById('pinCharCount');
+    
+    if (pinInput && charCountBadge) {
+        // Auto-uppercase and update character count
         pinInput.addEventListener('input', function() {
+            // Convert to uppercase
             this.value = this.value.toUpperCase();
+            
+            // Update character count
+            const length = this.value.length;
+            charCountBadge.textContent = `${length}/13 characters`;
+            
+            // Visual feedback on character count
+            if (length === 13) {
+                charCountBadge.classList.remove('bg-secondary', 'bg-warning');
+                charCountBadge.classList.add('bg-success');
+            } else if (length > 10) {
+                charCountBadge.classList.remove('bg-secondary', 'bg-success');
+                charCountBadge.classList.add('bg-warning');
+            } else {
+                charCountBadge.classList.remove('bg-warning', 'bg-success');
+                charCountBadge.classList.add('bg-secondary');
+            }
+        });
+        
+        // Initial character count
+        if (pinInput.value) {
+            const length = pinInput.value.length;
+            charCountBadge.textContent = `${length}/13 characters`;
+        }
+        
+        // Prevent paste of overly long content
+        pinInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                if (this.value.length > 14) {
+                    this.value = this.value.substring(0, 14);
+                }
+            }, 10);
         });
     }
 });
+
+// Form validation feedback
+document.getElementById('pinRegistrationForm')?.addEventListener('submit', function(e) {
+    const pinInput = document.getElementById('id_access_pin');
+    
+    if (pinInput && pinInput.value.length < 13) {
+        e.preventDefault();
+        alert('Please enter the complete 13-character PIN (format: BME-XXXX-XXXX)');
+        pinInput.focus();
+        return false;
+    }
+});
 </script>
+
+<style>
+/* Highlight PIN input when focused */
+#id_access_pin:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Character count badge transitions */
+#pinCharCount {
+    transition: all 0.3s ease;
+}
+</style>
 {% endblock %}
