@@ -28,7 +28,7 @@
                                 <i class="fas fa-file-alt me-2"></i>Resources
                             </a>
                             {% else %}
-                            <a href="{% url 'student_register_pin' %}" class="btn btn-warning btn-lg mb-2">
+                            <a href="{% url 'student_login' %}" class="btn btn-warning btn-lg mb-2">
                                 <i class="fas fa-file-alt me-2"></i>Resources
                             </a>
                             {% endif %}
@@ -296,7 +296,7 @@
                         {% if request.session.student_reg_number %}
                         <a href="{% url 'past_questions' %}" class="btn btn-sm btn-outline-primary">Browse</a>
                         {% else %}
-                        <a href="{% url 'student_register_pin' %}" class="btn btn-sm btn-outline-primary">Browse</a>
+                        <a href="{% url 'student_login' %}" class="btn btn-sm btn-outline-primary">Browse</a>
                         {% endif %}
                     </div>
                 </div>
@@ -417,7 +417,7 @@
                             <i class="fas fa-external-link-alt me-1"></i>Access
                         </a>
                         {% else %}
-                        <a href="{% url 'student_register_pin' %}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <a href="{% url 'student_login' %}" target="_blank" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-external-link-alt me-1"></i>Access
                         </a>
                         {% endif %}
@@ -483,7 +483,7 @@
                     View All <i class="fas fa-arrow-right ms-2"></i>
                 </a>
                 {% else %}
-                <a href="{% url 'student_register_pin' %}" class="btn btn-primary">
+                <a href="{% url 'student_login' %}" class="btn btn-primary">
                     View All <i class="fas fa-arrow-right ms-2"></i>
                 </a>
                 {% endif %}
@@ -517,7 +517,7 @@
                                 </td>
                                 {% else %}
                                 <td>
-                                    <a href="{% url 'student_register_pin' %}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <a href="{% url 'student_login' %}" target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-download"></i>
                                     </a>
                                 </td>
@@ -583,10 +583,10 @@
             </div>
             <div class="col-md-4 text-md-end">
                 {% if not request.session.student_reg_number %}
-                    <a href="{% url 'student_register_pin' %}" class="btn btn-primary btn-lg me-2 mb-2">
+                    <a href="{% url 'student_login' %}" class="btn btn-primary btn-lg me-2 mb-2">
                         <i class="fas fa-sign-in-alt me-2"></i>Login
                     </a>
-                    <a href="{% url 'student_register' %}" class="btn btn-warning btn-lg mb-2">
+                    <a href="{% url 'student_register_pin' %}" class="btn btn-warning btn-lg mb-2">
                         <i class="fas fa-user-plus me-2"></i>Register
                     </a>
                 {% else %}
@@ -627,7 +627,7 @@
                     <i class="fas fa-download me-2"></i>Get Resources
                 </a>
                 {% else %}
-                <a href="{% url 'student_register_pin' %}" class="btn btn-warning btn-lg mb-2">
+                <a href="{% url 'student_login' %}" class="btn btn-warning btn-lg mb-2">
                     <i class="fas fa-download me-2"></i>Get Resources
                 </a>
                 {% endif %}
@@ -657,7 +657,7 @@
                         {% if request.session.student_reg_number %}
                             <a href="{% url 'student_dashboard' %}" class="btn btn-sm btn-outline-primary">Access</a>
                         {% else %}
-                            <a href="{% url 'student_register_pin' %}" class="btn btn-sm btn-outline-primary">Login</a>
+                            <a href="{% url 'student_login' %}" class="btn btn-sm btn-outline-primary">Login</a>
                         {% endif %}
                     </div>
                 </div>
