@@ -386,7 +386,7 @@ class CGPACalculation(models.Model):
 
 class DepartmentalDues(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='departmental_dues')
-    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=5000.00)
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
     payment_reference = models.CharField(max_length=100, unique=True, blank=True)
     is_approved = models.BooleanField(default=False, help_text="Admin approval required")
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_dues')
