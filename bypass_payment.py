@@ -8,7 +8,7 @@ django.setup()
 from core.models import Student  # adjust 'core' if needed
 
 REG_NUMBERS = [
-    "20251569013",
+    "20241452483",
 ]
 
 for reg in REG_NUMBERS:

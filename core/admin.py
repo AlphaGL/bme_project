@@ -3,7 +3,7 @@ from .models import (
     Staff, Exco, PastQuestion, LibraryResource, 
     Testimonial, Announcement, Student, Semester, 
     Course, CGPACalculation, DepartmentalDues, CourseHandbook, Timetable, AcademicCalendar,    ResearchTeam, ResearchArticle, GuestContributor, ResearchContribution,
-    ResearchQuiz, QuizSubmission, TeamMembership, ArticleLike, AccessPin, PinUsageLog
+    ResearchQuiz, QuizSubmission, TeamMembership, ArticleLike, AccessPin, PinUsageLog, IDCardApplication
 )
 
 @admin.register(Staff)
@@ -358,3 +358,71 @@ class PinUsageLogAdmin(admin.ModelAdmin):
     
     def has_change_permission(self, request, obj=None):
         return False
+
+
+@admin.register(IDCardApplication)
+class IDCardApplicationAdmin(admin.ModelAdmin):
+    list_display = [
+        'student', 'academic_session', 'status',
+        'has_photo', 'applied_at', 'reviewed_by', 'reviewed_at',
+    ]
+    list_filter = ['status', 'academic_session', 'applied_at']
+    search_fields = [
+        'student__reg_number', 'student__full_name',
+        'student__email', 'academic_session',
+    ]
+    readonly_fields = ['applied_at', 'updated_at', 'reviewed_at']
+    ordering = ['-applied_at']
+ 
+    fieldsets = (
+        ('Student', {
+            'fields': ('student',)
+        }),
+        ('Application Details', {
+            'fields': ('passport_photo', 'academic_session')
+        }),
+        ('Admin Review', {
+            'fields': ('status', 'reviewed_by', 'reviewed_at', 'admin_notes')
+        }),
+        ('Timestamps', {
+            'fields': ('applied_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+ 
+    actions = ['mark_approved', 'mark_printed', 'mark_rejected']
+ 
+    def has_photo(self, obj):
+        return bool(obj.passport_photo)
+    has_photo.boolean = True
+    has_photo.short_description = 'Photo uploaded'
+ 
+    def mark_approved(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(
+            status='approved',
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        self.message_user(request, f'{updated} application(s) approved.')
+    mark_approved.short_description = 'Approve selected applications'
+ 
+    def mark_printed(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(
+            status='printed',
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        self.message_user(request, f'{updated} application(s) marked as printed.')
+    mark_printed.short_description = 'Mark selected as printed'
+ 
+    def mark_rejected(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(
+            status='rejected',
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        self.message_user(request, f'{updated} application(s) rejected.')
+    mark_rejected.short_description = 'Reject selected applications'

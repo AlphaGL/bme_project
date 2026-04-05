@@ -219,4 +219,23 @@ urlpatterns = [
     path('encrypted/admin/futobme/pins/download/', views.download_pins_csv, name='download_pins_csv'),
     path('encrypted/admin/futobme/pins/logs/', views.pin_usage_logs, name='pin_usage_logs'),
     path('encrypted/admin/futobme/pins/<str:pin>/deactivate/', views.deactivate_pin, name='deactivate_pin'),
+
+
+
+    # ── Student-facing ───────────────────────────────────────────────────────────
+    path('student/id-card/apply/', views.apply_id_card, name='apply_id_card'),
+    path('student/id-card/status/', views.id_card_application_status, name='id_card_application_status'),
+    
+    # ── Admin ────────────────────────────────────────────────────────────────────
+    path(
+        'encrypted/admin/futobme/id-card-applications/',
+        views.manage_id_card_applications,
+        name='manage_id_card_applications',
+    ),
+    path(
+        'encrypted/admin/futobme/id-card-applications/<int:pk>/update/',
+        views.update_id_card_status,
+        name='update_id_card_status',
+    ),
+ 
 ]

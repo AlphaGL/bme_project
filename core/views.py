@@ -61,6 +61,137 @@ def virtual_id_card(request):
         return redirect('student_dashboard')
 
 
+@student_login_required
+def apply_id_card(request):
+    """Student submits an ID card application with their passport photo."""
+    reg_number = request.session.get('student_reg_number')
+    student = Student.objects.get(reg_number=reg_number)
+
+    # Check for an existing application
+    existing = IDCardApplication.objects.filter(student=student).first()
+
+    if request.method == 'POST':
+        if existing and existing.status in ('pending', 'approved', 'printed'):
+            messages.warning(
+                request,
+                'You already have an active ID card application. '
+                'Please wait for it to be processed.'
+            )
+            return redirect('id_card_application_status')
+
+        form = IDCardApplicationForm(request.POST, request.FILES, instance=existing)
+        if form.is_valid():
+            application = form.save(commit=False)
+            application.student = student
+            # Reset status to pending if re-applying after rejection
+            application.status = 'pending'
+            application.reviewed_by = None
+            application.reviewed_at = None
+            application.save()
+            messages.success(
+                request,
+                'Your ID card application has been submitted successfully! '
+                'The admin will review it shortly.'
+            )
+            return redirect('id_card_application_status')
+    else:
+        form = IDCardApplicationForm(instance=existing)
+
+    context = {
+        'form': form,
+        'student': student,
+        'existing': existing,
+    }
+    return render(request, 'core/student/id_card_apply.html', context)
+
+
+@student_login_required
+def id_card_application_status(request):
+    """Student views the current status of their ID card application."""
+    reg_number = request.session.get('student_reg_number')
+    student = Student.objects.get(reg_number=reg_number)
+
+    application = IDCardApplication.objects.filter(student=student).first()
+
+    context = {
+        'student': student,
+        'application': application,
+    }
+    return render(request, 'core/student/id_card_status.html', context)
+
+
+# ── Admin views ──────────────────────────────────────────────────────────────
+
+@login_required
+def manage_id_card_applications(request):
+    """Admin view: list of all ID card applications, filterable by status."""
+    status_filter = request.GET.get('status', '')
+    search = request.GET.get('search', '')
+
+    applications = IDCardApplication.objects.select_related(
+        'student', 'reviewed_by'
+    ).order_by('-applied_at')
+
+    if status_filter:
+        applications = applications.filter(status=status_filter)
+
+    if search:
+        applications = applications.filter(
+            models.Q(student__reg_number__icontains=search) |
+            models.Q(student__full_name__icontains=search)
+        )
+
+    # Counts for summary cards
+    counts = {
+        'all': IDCardApplication.objects.count(),
+        'pending': IDCardApplication.objects.filter(status='pending').count(),
+        'approved': IDCardApplication.objects.filter(status='approved').count(),
+        'printed': IDCardApplication.objects.filter(status='printed').count(),
+        'rejected': IDCardApplication.objects.filter(status='rejected').count(),
+        # Students who have uploaded their passport photo (any application)
+        'with_photo': IDCardApplication.objects.exclude(
+            passport_photo=''
+        ).exclude(passport_photo__isnull=True).count(),
+    }
+
+    context = {
+        'applications': applications,
+        'counts': counts,
+        'status_filter': status_filter,
+        'search': search,
+    }
+    return render(request, 'core/admin/manage_id_card_applications.html', context)
+
+
+@login_required
+def update_id_card_status(request, pk):
+    """Admin approves, marks as printed, or rejects an ID card application."""
+    application = get_object_or_404(IDCardApplication, pk=pk)
+
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        notes = request.POST.get('admin_notes', '')
+
+        if new_status not in ('approved', 'printed', 'rejected', 'pending'):
+            messages.error(request, 'Invalid status.')
+            return redirect('manage_id_card_applications')
+
+        application.status = new_status
+        application.admin_notes = notes
+        application.reviewed_by = request.user
+        application.reviewed_at = timezone.now()
+        application.save()
+
+        messages.success(
+            request,
+            f'ID card application for {application.student.full_name} '
+            f'marked as {application.get_status_display()}.'
+        )
+        return redirect('manage_id_card_applications')
+
+    context = {'application': application}
+    return render(request, 'core/admin/id_card_update_status.html', context)
+
 def verify_receipt(request):
     """
     Public receipt verification page
@@ -645,297 +776,6 @@ def admin_logout(request):
     logout(request)
     return redirect('index')
 
-# Admin Dashboard
-# @login_required
-# def admin_dashboard(request):
-#     """Comprehensive admin dashboard with all statistics"""
-#     from django.db.models import Sum, Avg, Count, Q
-#     from datetime import timedelta
-    
-#     # ==================== CONTENT MANAGEMENT STATS ====================
-#     content_stats = {
-#         'staff_count': Staff.objects.count(),
-#         'excos_count': Exco.objects.count(),
-#         'past_questions_count': PastQuestion.objects.count(),
-#         'library_count': LibraryResource.objects.count(),
-#         'testimonials_total': Testimonial.objects.count(),
-#         'testimonials_pending': Testimonial.objects.filter(is_approved=False).count(),
-#         'testimonials_approved': Testimonial.objects.filter(is_approved=True).count(),
-#         'announcements_total': Announcement.objects.count(),
-#         'announcements_active': Announcement.objects.filter(is_active=True).count(),
-#     }
-    
-#     # ==================== STUDENT PORTAL STATS ====================
-#     student_stats = {
-#         'total_registered': Student.objects.count(),
-#         'paid_students': Student.objects.filter(has_paid=True).count(),
-#         'pending_payments': Student.objects.filter(has_paid=False).count(),
-#         'registered_numbers': RegisteredRegNumber.objects.filter(is_active=True).count(),
-#         'registration_requests_pending': RegistrationRequest.objects.filter(status='pending').count(),
-#         'registration_requests_total': RegistrationRequest.objects.count(),
-#     }
-    
-#     # Payment Statistics
-#     payment_stats = {
-#         'total_payments': StudentPayment.objects.count(),
-#         'successful_payments': StudentPayment.objects.filter(status='success').count(),
-#         'pending_payments': StudentPayment.objects.filter(status='pending').count(),
-#         'failed_payments': StudentPayment.objects.filter(status='failed').count(),
-#         'total_revenue': StudentPayment.objects.filter(
-#             status='success'
-#         ).aggregate(Sum('department_amount'))['department_amount__sum'] or 0,
-#         'total_charges': StudentPayment.objects.filter(
-#             status='success'
-#         ).aggregate(Sum('charges'))['charges__sum'] or 0,
-#     }
-    
-#     # ==================== ACADEMIC RESOURCES STATS ====================
-#     academic_stats = {
-#         'course_handbook_total': CourseHandbook.objects.count(),
-#         'course_handbook_by_level': CourseHandbook.objects.values('level').annotate(
-#             count=Count('id')
-#         ).order_by('level'),
-#         'timetables_total': Timetable.objects.count(),
-#         'timetables_active': Timetable.objects.filter(is_active=True).count(),
-#         'exam_timetables': Timetable.objects.filter(timetable_type='Exam').count(),
-#         'class_timetables': Timetable.objects.filter(timetable_type='Class').count(),
-#         'calendars_total': AcademicCalendar.objects.count(),
-#         'calendars_active': AcademicCalendar.objects.filter(is_active=True).count(),
-#     }
-    
-#     # ==================== DEPARTMENTAL DUES STATS ====================
-#     dues_stats = {
-#         'total_dues': DepartmentalDues.objects.count(),
-#         'approved_dues': DepartmentalDues.objects.filter(is_approved=True).count(),
-#         'pending_dues': DepartmentalDues.objects.filter(is_approved=False).count(),
-#         'dues_revenue': DepartmentalDues.objects.filter(
-#             is_approved=True
-#         ).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0,
-#         'recent_prints': ReceiptPrintLog.objects.count(),
-#         'verification_attempts': ReceiptVerification.objects.count(),
-#         'valid_verifications': ReceiptVerification.objects.filter(is_valid=True).count(),
-#     }
-    
-#     # ==================== RESEARCH CLUB STATS ====================
-#     research_stats = {
-#         # Teams
-#         'teams_total': ResearchTeam.objects.count(),
-#         'teams_active': ResearchTeam.objects.filter(is_active=True).count(),
-#         'total_team_members': TeamMembership.objects.count(),
-        
-#         # Articles
-#         'articles_total': ResearchArticle.objects.count(),
-#         'articles_draft': ResearchArticle.objects.filter(status='Draft').count(),
-#         'articles_in_progress': ResearchArticle.objects.filter(status='In Progress').count(),
-#         'articles_under_review': ResearchArticle.objects.filter(status='Under Review').count(),
-#         'articles_published': ResearchArticle.objects.filter(status='Published').count(),
-#         'total_article_views': ResearchArticle.objects.aggregate(Sum('views_count'))['views_count__sum'] or 0,
-#         'total_article_likes': ResearchArticle.objects.aggregate(Sum('likes_count'))['likes_count__sum'] or 0,
-        
-#         # Contributions
-#         'contributions_total': ResearchContribution.objects.count(),
-#         'contributions_pending': ResearchContribution.objects.filter(is_approved=False).count(),
-#         'contributions_approved': ResearchContribution.objects.filter(is_approved=True).count(),
-#         'student_contributions': ResearchContribution.objects.filter(
-#             student_contributor__isnull=False
-#         ).count(),
-#         'guest_contributions': ResearchContribution.objects.filter(
-#             guest_contributor__isnull=False
-#         ).count(),
-        
-#         # Registrations
-#         'club_registrations_total': ResearchClubRegistration.objects.count(),
-#         'club_registrations_pending': ResearchClubRegistration.objects.filter(
-#             payment_status='pending'
-#         ).count(),
-#         'club_registrations_verified': ResearchClubRegistration.objects.filter(
-#             payment_status='verified'
-#         ).count(),
-#         'club_registrations_approved': ResearchClubRegistration.objects.filter(
-#             is_approved=True
-#         ).count(),
-#         'club_revenue': ResearchClubRegistration.objects.filter(
-#             payment_status='verified'
-#         ).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0,
-        
-#         # Guest Contributors
-#         'guests_total': GuestContributor.objects.count(),
-#         'guests_pending': GuestContributor.objects.filter(payment_status='pending').count(),
-#         'guests_verified': GuestContributor.objects.filter(payment_status='verified').count(),
-#         'guests_approved': GuestContributor.objects.filter(is_approved=True).count(),
-#         'guest_revenue': GuestContributor.objects.filter(
-#             payment_status='verified'
-#         ).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0,
-        
-#         # Quizzes
-#         'quizzes_total': ResearchQuiz.objects.count(),
-#         'quizzes_active': ResearchQuiz.objects.filter(is_active=True).count(),
-#         'quiz_submissions_total': QuizSubmission.objects.count(),
-#         'quiz_submissions_pending': QuizSubmission.objects.filter(is_awarded=False).count(),
-#         'quiz_submissions_awarded': QuizSubmission.objects.filter(is_awarded=True).count(),
-#     }
-    
-#     # ==================== FINANCIAL SUMMARY ====================
-#     financial_summary = {
-#         'portal_fees': payment_stats['total_revenue'],
-#         'departmental_dues': dues_stats['dues_revenue'],
-#         'research_club': research_stats['club_revenue'],
-#         'guest_contributors': research_stats['guest_revenue'],
-#         'platform_charges': payment_stats['total_charges'],
-#     }
-#     financial_summary['total_revenue'] = sum([
-#         financial_summary['portal_fees'],
-#         financial_summary['departmental_dues'],
-#         financial_summary['research_club'],
-#         financial_summary['guest_contributors'],
-#     ])
-#     financial_summary['net_revenue'] = (
-#         financial_summary['total_revenue'] - financial_summary['platform_charges']
-#     )
-    
-#     # ==================== RECENT ACTIVITIES ====================
-#     # Get recent items (last 7 days for some, all-time top 5 for others)
-#     seven_days_ago = timezone.now() - timedelta(days=7)
-    
-#     recent_activities = {
-#         'students': Student.objects.order_by('-created_at')[:5],
-#         'payments': StudentPayment.objects.filter(
-#             status='success'
-#         ).order_by('-created_at')[:5],
-#         'registration_requests': RegistrationRequest.objects.filter(
-#             status='pending'
-#         ).order_by('-created_at')[:5],
-#         'dues_pending': DepartmentalDues.objects.filter(
-#             is_approved=False
-#         ).order_by('-created_at')[:5],
-#         'testimonials_pending': Testimonial.objects.filter(
-#             is_approved=False
-#         ).order_by('-created_at')[:5],
-#         'club_registrations_pending': ResearchClubRegistration.objects.filter(
-#             payment_status='pending'
-#         ).order_by('-registered_at')[:5],
-#         'guests_pending': GuestContributor.objects.filter(
-#             payment_status='pending'
-#         ).order_by('-created_at')[:5],
-#         'contributions_pending': ResearchContribution.objects.filter(
-#             is_approved=False
-#         ).select_related('article', 'student_contributor', 'guest_contributor').order_by('-created_at')[:5],
-#         'quiz_submissions_pending': QuizSubmission.objects.filter(
-#             is_awarded=False
-#         ).select_related('quiz', 'student_submitter', 'guest_submitter').order_by('-created_at')[:5],
-#     }
-    
-#     # ==================== CHARTS DATA ====================
-#     # Student registration trend (last 30 days)
-#     from django.db.models.functions import TruncDate
-#     thirty_days_ago = timezone.now() - timedelta(days=30)
-    
-#     registration_trend = Student.objects.filter(
-#         created_at__gte=thirty_days_ago
-#     ).annotate(
-#         date=TruncDate('created_at')
-#     ).values('date').annotate(
-#         count=Count('reg_number')
-#     ).order_by('date')
-    
-#     # Payment status distribution
-#     payment_distribution = {
-#         'success': StudentPayment.objects.filter(status='success').count(),
-#         'pending': StudentPayment.objects.filter(status='pending').count(),
-#         'failed': StudentPayment.objects.filter(status='failed').count(),
-#     }
-    
-#     # Research articles by status
-#     article_distribution = {
-#         'draft': research_stats['articles_draft'],
-#         'in_progress': research_stats['articles_in_progress'],
-#         'under_review': research_stats['articles_under_review'],
-#         'published': research_stats['articles_published'],
-#     }
-    
-#     # Top contributors
-#     top_contributors = ResearchContribution.objects.filter(
-#         is_approved=True,
-#         student_contributor__isnull=False
-#     ).values(
-#         'student_contributor__full_name',
-#         'student_contributor__reg_number'
-#     ).annotate(
-#         contribution_count=Count('id')
-#     ).order_by('-contribution_count')[:5]
-    
-#     # ==================== ALERTS & WARNINGS ====================
-#     alerts = []
-    
-#     # Check for pending items
-#     if recent_activities['registration_requests'].count() > 0:
-#         alerts.append({
-#             'type': 'warning',
-#             'message': f"{recent_activities['registration_requests'].count()} registration requests pending approval",
-#             'url': 'manage_registration_requests'
-#         })
-    
-#     if recent_activities['dues_pending'].count() > 0:
-#         alerts.append({
-#             'type': 'info',
-#             'message': f"{recent_activities['dues_pending'].count()} departmental dues pending approval",
-#             'url': 'manage_departmental_dues'
-#         })
-    
-#     if recent_activities['testimonials_pending'].count() > 0:
-#         alerts.append({
-#             'type': 'info',
-#             'message': f"{recent_activities['testimonials_pending'].count()} testimonials pending review",
-#             'url': 'manage_testimonials'
-#         })
-    
-#     if research_stats['contributions_pending'] > 0:
-#         alerts.append({
-#             'type': 'warning',
-#             'message': f"{research_stats['contributions_pending']} research contributions pending approval",
-#             'url': 'manage_contributions'
-#         })
-    
-#     if research_stats['club_registrations_pending'] > 0:
-#         alerts.append({
-#             'type': 'warning',
-#             'message': f"{research_stats['club_registrations_pending']} research club registrations pending verification",
-#             'url': 'manage_research_registrations'
-#         })
-    
-#     if research_stats['guests_pending'] > 0:
-#         alerts.append({
-#             'type': 'info',
-#             'message': f"{research_stats['guests_pending']} guest contributor applications pending",
-#             'url': 'manage_guest_contributors'
-#         })
-    
-#     if research_stats['quiz_submissions_pending'] > 0:
-#         alerts.append({
-#             'type': 'info',
-#             'message': f"{research_stats['quiz_submissions_pending']} quiz submissions pending review",
-#             'url': 'manage_quiz_submissions'
-#         })
-    
-#     # Compile all data
-#     context = {
-#         'content_stats': content_stats,
-#         'student_stats': student_stats,
-#         'payment_stats': payment_stats,
-#         'academic_stats': academic_stats,
-#         'dues_stats': dues_stats,
-#         'research_stats': research_stats,
-#         'financial_summary': financial_summary,
-#         'recent_activities': recent_activities,
-#         'registration_trend': list(registration_trend),
-#         'payment_distribution': payment_distribution,
-#         'article_distribution': article_distribution,
-#         'top_contributors': list(top_contributors),
-#         'alerts': alerts,
-#     }
-    
-#     return render(request, 'core/admin/dashboard.html', context)
-
 @login_required
 def admin_dashboard(request):
     """Comprehensive admin dashboard with all statistics"""
@@ -1211,6 +1051,24 @@ def admin_dashboard(request):
             'message': f"{research_stats['quiz_submissions_pending']} quiz submissions pending review",
             'url': 'manage_quiz_submissions'
         })
+    # ==================== ID CARD STATS ====================
+    id_card_stats = {
+        'total':      IDCardApplication.objects.count(),
+        'pending':    IDCardApplication.objects.filter(status='pending').count(),
+        'approved':   IDCardApplication.objects.filter(status='approved').count(),
+        'printed':    IDCardApplication.objects.filter(status='printed').count(),
+        'rejected':   IDCardApplication.objects.filter(status='rejected').count(),
+        'with_photo': IDCardApplication.objects.exclude(
+            passport_photo=''
+        ).exclude(passport_photo__isnull=True).count(),
+    }
+
+    if id_card_stats['pending'] > 0:
+        alerts.append({
+            'type': 'info',
+            'message': f"{id_card_stats['pending']} ID card application(s) pending review",
+            'url': 'manage_id_card_applications',
+        })
     
     # Compile context
     context = {
@@ -1228,6 +1086,7 @@ def admin_dashboard(request):
         'top_contributors': list(top_contributors),
         'alerts': alerts,
         'has_financial_access': has_financial_access,
+        'id_card_stats': id_card_stats,
     }
     
     return render(request, 'core/admin/dashboard.html', context)

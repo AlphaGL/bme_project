@@ -1104,6 +1104,7 @@ class PinUsageLog(models.Model):
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
     error_message = models.TextField(blank=True)
+    others = models.CharField(null=True, blank=True)
     
     class Meta:
         ordering = ['-attempted_at']
@@ -1112,3 +1113,56 @@ class PinUsageLog(models.Model):
     def __str__(self):
         status = "Success" if self.attempt_successful else "Failed"
         return f"{self.pin.pin} - {status} - {self.attempted_at}"
+
+
+# ==================== ADD THIS BLOCK TO THE BOTTOM OF models.py ====================
+
+class IDCardApplication(models.Model):
+    """Students apply for a physical ID card by uploading their passport photo"""
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('printed', 'Printed'),
+        ('rejected', 'Rejected'),
+    ]
+
+    student = models.OneToOneField(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='id_card_application',
+    )
+    passport_photo = CloudinaryField(
+        'image',
+        help_text='Upload a clear passport photograph (white background, face visible)',
+    )
+    academic_session = models.CharField(
+        max_length=20,
+        help_text='e.g., 2024/2025',
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+    )
+    # Admin fields
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_id_applications',
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    admin_notes = models.TextField(blank=True, null=True)
+
+    applied_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-applied_at']
+        verbose_name = 'ID Card Application'
+        verbose_name_plural = 'ID Card Applications'
+
+    def __str__(self):
+        return f'{self.student.reg_number} – {self.status}'

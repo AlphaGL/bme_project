@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Update ID Card Status – Admin{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:620px;">
+  <a href="{% url 'manage_id_card_applications' %}" class="btn btn-outline-secondary btn-sm mb-3">
+    <i class="fas fa-arrow-left me-1"></i> Back to List
+  </a>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-1">
+        <i class="fas fa-id-card me-2 text-primary"></i>
+        Update Application Status
+      </h5>
+      <p class="text-muted mb-4">
+        Student: <strong>{{ application.student.full_name }}</strong>
+        ({{ application.student.reg_number }})
+      </p>
+
+      <!-- Current passport photo -->
+      {% if application.passport_photo %}
+        <div class="text-center mb-4">
+          <img src="{{ application.passport_photo.url }}"
+               alt="Passport photo"
+               class="rounded border shadow"
+               style="max-height:200px;">
+          <p class="small text-muted mt-1">
+            Submitted passport photo –
+            <a href="{{ application.passport_photo.url }}" target="_blank">Open full size</a>
+          </p>
+        </div>
+      {% endif %}
+
+      <!-- Student contact info for printing reference -->
+      <table class="table table-sm table-borderless mb-4">
+        <tr><th class="text-muted">Name</th><td>{{ application.student.full_name }}</td></tr>
+        <tr><th class="text-muted">Reg. Number</th><td>{{ application.student.reg_number }}</td></tr>
+        <tr><th class="text-muted">Level</th><td>{{ application.student.get_level_display }}</td></tr>
+        <tr><th class="text-muted">Session</th><td>{{ application.academic_session }}</td></tr>
+        <tr><th class="text-muted">Email</th><td>{{ application.student.email|default:"—" }}</td></tr>
+        <tr><th class="text-muted">Phone</th><td>{{ application.student.phone|default:"—" }}</td></tr>
+        <tr>
+          <th class="text-muted">Current Status</th>
+          <td>
+            <span class="badge bg-{% if application.status == 'approved' %}success{% elif application.status == 'printed' %}secondary{% elif application.status == 'rejected' %}danger{% else %}warning text-dark{% endif %}">
+              {{ application.get_status_display }}
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Update form -->
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">New Status</label>
+          <select name="status" class="form-select" required>
+            <option value="pending"  {% if application.status == 'pending'  %}selected{% endif %}>Pending</option>
+            <option value="approved" {% if application.status == 'approved' %}selected{% endif %}>Approved</option>
+            <option value="printed"  {% if application.status == 'printed'  %}selected{% endif %}>Printed</option>
+            <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Rejected</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold">Admin Notes <span class="text-muted fw-normal">(optional)</span></label>
+          <textarea name="admin_notes" class="form-control" rows="3"
+                    placeholder="e.g., rejection reason or print batch reference">{{ application.admin_notes|default:'' }}</textarea>
+          <small class="text-muted">Only visible to admins; shown to student only if rejected.</small>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-save me-2"></i>Save Changes
+          </button>
+          <a href="{% url 'manage_id_card_applications' %}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -82,6 +82,50 @@
 
                         <hr class="my-4">
 
+                        <!-- ── ID Card Application Section ── -->
+                        <div class="alert alert-primary">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-id-card-alt me-2"></i>Student ID Card
+                            </h6>
+
+                            {% with app=student.id_card_application %}
+                            {% if app %}
+                                <p class="mb-1">
+                                    Status:
+                                    {% if app.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark">Pending Review</span>
+                                    {% elif app.status == 'approved' %}
+                                        <span class="badge bg-success">Approved – Ready to Print</span>
+                                    {% elif app.status == 'printed' %}
+                                        <span class="badge bg-secondary">Printed – Collect from Dept.</span>
+                                    {% elif app.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </p>
+                                {% if app.status == 'rejected' and app.admin_notes %}
+                                    <p class="small text-danger mb-2">Reason: {{ app.admin_notes }}</p>
+                                {% endif %}
+                                <div class="d-flex gap-2 mt-2 flex-wrap">
+                                    <a href="{% url 'id_card_application_status' %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Application
+                                    </a>
+                                    {% if app.status == 'rejected' %}
+                                        <a href="{% url 'apply_id_card' %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-redo me-1"></i>Re-apply
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <p class="mb-3">Apply for your official NABES-FUTO student ID card by uploading your <strong>ID CARD IMAGE On the Virtual ID Card.</strong> The admin will review and print it for you.</p>
+                                <a href="{% url 'apply_id_card' %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-id-card me-2"></i>Apply for ID Card
+                                </a>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+
+                        <hr class="my-4">
+
                         <!-- Virtual ID Card Section -->
                         <div class="alert alert-info">
                             <h6 class="fw-bold mb-2">
@@ -106,18 +150,6 @@
                             </a>
                         </div>
 
-                        <hr class="my-4">
-
-                        <!-- Danger Zone -->
-                        <!-- <div class="alert alert-danger">
-                            <h6 class="fw-bold mb-2">
-                                <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
-                            </h6>
-                            <p class="small mb-2">Deleting your account will permanently remove all your data including semesters, courses, and CGPA calculations.</p>
-                            <a href="{% url 'delete_student_account' %}" class="btn btn-sm btn-danger">
-                                <i class="fas fa-trash me-2"></i>Delete Account
-                            </a>
-                        </div> -->
                     </div>
                 </div>
             </div>

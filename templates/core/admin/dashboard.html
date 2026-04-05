@@ -43,71 +43,6 @@
     </div>
     {% endif %}
 
-    <!-- Financial Summary (Only for ibeawuchi and finsec - no indication shown) -->
-    <!-- {% if has_financial_access and financial_summary %}
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <h5 class="fw-bold text-muted mb-3">
-                <i class="fas fa-money-bill-wave me-2"></i>Financial Overview
-            </h5>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100 bg-success text-white">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-coins fa-2x mb-2"></i>
-                    <h3 class="fw-bold mb-0">₦{{ financial_summary.total_revenue|floatformat:2 }}</h3>
-                    <small>Total Revenue</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-user-graduate fa-2x text-primary mb-2"></i>
-                    <h3 class="fw-bold mb-0">₦{{ financial_summary.portal_fees|floatformat:2 }}</h3>
-                    <small>Portal Fees</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-receipt fa-2x text-info mb-2"></i>
-                    <h3 class="fw-bold mb-0">₦{{ financial_summary.departmental_dues|floatformat:2 }}</h3>
-                    <small>Dept. Dues</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-flask fa-2x text-warning mb-2"></i>
-                    <h3 class="fw-bold mb-0">₦{{ financial_summary.research_club|floatformat:2 }}</h3>
-                    <small>Research Club</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-user-tie fa-2x text-secondary mb-2"></i>
-                    <h3 class="fw-bold mb-0">₦{{ financial_summary.guest_contributors|floatformat:2 }}</h3>
-                    <small>Guest Fees</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100 bg-danger text-white">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-credit-card fa-2x mb-2"></i>
-                    <h3 class="fw-bold mb-0">₦{{ financial_summary.platform_charges|floatformat:2 }}</h3>
-                    <small>Charges</small>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %} -->
-
     <!-- Student Portal Stats -->
     <div class="row g-3 mb-4">
         <div class="col-12">
@@ -171,68 +106,80 @@
         </div>
     </div>
 
-    <!-- Research Club Stats -->
-    <!-- <div class="row g-3 mb-4">
+    <!-- ID Card Stats Row -->
+    <div class="row g-3 mb-4">
         <div class="col-12">
             <h5 class="fw-bold text-muted mb-3">
-                <i class="fas fa-flask me-2"></i>Research Club Statistics
+                <i class="fas fa-id-card me-2"></i>ID Card Applications
             </h5>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-users-cog fa-2x text-primary mb-2"></i>
-                    <h3 class="fw-bold mb-0">{{ research_stats.teams_active }}</h3>
-                    <small>Active Teams</small>
+            <a href="{% url 'manage_id_card_applications' %}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-id-card fa-2x text-primary mb-2"></i>
+                        <h3 class="fw-bold mb-0">{{ id_card_stats.total }}</h3>
+                        <small class="text-muted">Total Applied</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-newspaper fa-2x text-success mb-2"></i>
-                    <h3 class="fw-bold mb-0">{{ research_stats.articles_published }}</h3>
-                    <small>Published</small>
+            <a href="{% url 'manage_id_card_applications' %}?status=pending" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card border-start border-warning border-3">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                        <h3 class="fw-bold mb-0 text-warning">{{ id_card_stats.pending }}</h3>
+                        <small class="text-muted">Pending</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-pen fa-2x text-info mb-2"></i>
-                    <h3 class="fw-bold mb-0">{{ research_stats.contributions_pending }}</h3>
-                    <small>Pending</small>
+            <a href="{% url 'manage_id_card_applications' %}?status=approved" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card border-start border-success border-3">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h3 class="fw-bold mb-0 text-success">{{ id_card_stats.approved }}</h3>
+                        <small class="text-muted">Approved</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-user-check fa-2x text-warning mb-2"></i>
-                    <h3 class="fw-bold mb-0">{{ research_stats.club_registrations_pending }}</h3>
-                    <small>Reg Pending</small>
+            <a href="{% url 'manage_id_card_applications' %}?status=printed" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card border-start border-secondary border-3">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-print fa-2x text-secondary mb-2"></i>
+                        <h3 class="fw-bold mb-0 text-secondary">{{ id_card_stats.printed }}</h3>
+                        <small class="text-muted">Printed</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-user-tie fa-2x text-danger mb-2"></i>
-                    <h3 class="fw-bold mb-0">{{ research_stats.guests_pending }}</h3>
-                    <small>Guests</small>
+            <a href="{% url 'manage_id_card_applications' %}?status=rejected" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card border-start border-danger border-3">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                        <h3 class="fw-bold mb-0 text-danger">{{ id_card_stats.rejected }}</h3>
+                        <small class="text-muted">Rejected</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center p-3">
-                    <i class="fas fa-trophy fa-2x text-secondary mb-2"></i>
-                    <h3 class="fw-bold mb-0">{{ research_stats.quiz_submissions_pending }}</h3>
-                    <small>Quiz Review</small>
+            <a href="{% url 'manage_id_card_applications' %}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-card border-start border-primary border-3">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-portrait fa-2x text-primary mb-2"></i>
+                        <h3 class="fw-bold mb-0 text-primary">{{ id_card_stats.with_photo }}</h3>
+                        <small class="text-muted">With Photo</small>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
-    </div> -->
+    </div>
 
     <!-- Content & Academic Stats -->
     <div class="row g-3 mb-4">
@@ -324,33 +271,12 @@
                     <a href="{% url 'manage_library' %}" class="list-group-item list-group-item-action">
                         <i class="fas fa-book me-2"></i>Library ({{ content_stats.library_count }})
                     </a>
-                    <!-- <a href="{% url 'manage_testimonials' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-comment-dots me-2"></i>Testimonials
-                        {% if content_stats.testimonials_pending > 0 %}
-                        <span class="badge bg-danger">{{ content_stats.testimonials_pending }}</span>
-                        {% endif %}
-                    </a> -->
                     <a href="{% url 'manage_announcements' %}" class="list-group-item list-group-item-action">
                         <i class="fas fa-bullhorn me-2"></i>Announcements ({{ content_stats.announcements_active }})
                     </a>
                 </div>
             </div>
         </div>
-
-        {% if user.username == 'ibeawuchi' or user.username == 'finsec' %}
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <h6 class="fw-bold mb-3">
-                    <i class="fas fa-key me-2 text-warning"></i>PIN Management
-                </h6>
-                <div class="d-grid gap-2">
-                    <a href="{% url 'manage_access_pins' %}" class="btn btn-sm btn-outline-warning">
-                        <i class="fas fa-cog me-2"></i>Manage PINs
-                    </a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
 
         <!-- Student Management -->
         <div class="col-xl-3 col-lg-4 col-md-6">
@@ -368,8 +294,6 @@
                         <span class="badge bg-danger">{{ student_stats.registration_requests_pending }}</span>
                         {% endif %}
                     </a>
-                    
-                    <!-- Departmental Dues - Only visible to ibeawuchi and finsec (no indication) -->
                     {% if has_financial_access %}
                     <a href="{% url 'manage_departmental_dues' %}" class="list-group-item list-group-item-action">
                         <i class="fas fa-receipt me-2"></i>Dues
@@ -402,49 +326,61 @@
             </div>
         </div>
 
-        <!-- Research Management -->
-        <!-- <div class="col-xl-3 col-lg-4 col-md-6">
+        <!-- ID Card Management -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-warning text-dark">
-                    <i class="fas fa-flask me-2"></i>Research
+                <div class="card-header text-white" style="background-color:#6f42c1;">
+                    <i class="fas fa-id-card me-2"></i>ID Cards
                 </div>
                 <div class="list-group list-group-flush">
-                    <a href="{% url 'manage_research_teams' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-users-cog me-2"></i>Teams ({{ research_stats.teams_total }})
+                    <a href="{% url 'manage_id_card_applications' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-th-list me-2"></i>All Applications
+                        <span class="badge bg-secondary float-end">{{ id_card_stats.total }}</span>
                     </a>
-                    <a href="{% url 'manage_research_articles' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-newspaper me-2"></i>Articles ({{ research_stats.articles_total }})
-                    </a>
-                    <a href="{% url 'manage_contributions' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-pen me-2"></i>Contributions
-                        {% if research_stats.contributions_pending > 0 %}
-                        <span class="badge bg-danger">{{ research_stats.contributions_pending }}</span>
+                    <a href="{% url 'manage_id_card_applications' %}?status=pending" class="list-group-item list-group-item-action">
+                        <i class="fas fa-clock me-2"></i>Pending Review
+                        {% if id_card_stats.pending > 0 %}
+                        <span class="badge bg-warning text-dark float-end">{{ id_card_stats.pending }}</span>
                         {% endif %}
                     </a>
-                    <a href="{% url 'manage_research_registrations' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-user-check me-2"></i>Registrations
-                        {% if research_stats.club_registrations_pending > 0 %}
-                        <span class="badge bg-warning">{{ research_stats.club_registrations_pending }}</span>
+                    <a href="{% url 'manage_id_card_applications' %}?status=approved" class="list-group-item list-group-item-action">
+                        <i class="fas fa-check-circle me-2"></i>Approved
+                        {% if id_card_stats.approved > 0 %}
+                        <span class="badge bg-success float-end">{{ id_card_stats.approved }}</span>
                         {% endif %}
                     </a>
-                    <a href="{% url 'manage_guest_contributors' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-user-tie me-2"></i>Guests
-                        {% if research_stats.guests_pending > 0 %}
-                        <span class="badge bg-info">{{ research_stats.guests_pending }}</span>
+                    <a href="{% url 'manage_id_card_applications' %}?status=printed" class="list-group-item list-group-item-action">
+                        <i class="fas fa-print me-2"></i>Ready / Printed
+                        {% if id_card_stats.printed > 0 %}
+                        <span class="badge bg-secondary float-end">{{ id_card_stats.printed }}</span>
                         {% endif %}
                     </a>
-                    <a href="{% url 'manage_research_quizzes' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-trophy me-2"></i>Quizzes ({{ research_stats.quizzes_total }})
-                    </a>
-                    <a href="{% url 'manage_quiz_submissions' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-award me-2"></i>Submissions
-                        {% if research_stats.quiz_submissions_pending > 0 %}
-                        <span class="badge bg-secondary">{{ research_stats.quiz_submissions_pending }}</span>
+                    <a href="{% url 'manage_id_card_applications' %}?status=rejected" class="list-group-item list-group-item-action">
+                        <i class="fas fa-times-circle me-2"></i>Rejected
+                        {% if id_card_stats.rejected > 0 %}
+                        <span class="badge bg-danger float-end">{{ id_card_stats.rejected }}</span>
                         {% endif %}
                     </a>
                 </div>
             </div>
-        </div> -->
+        </div>
+
+        <!-- PIN Management (financial users only) -->
+        {% if user.username == 'ibeawuchi' or user.username == 'finsec' %}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-warning text-dark">
+                    <i class="fas fa-key me-2"></i>PIN Management
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'manage_access_pins' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-cog me-2"></i>Manage PINs
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
     </div>
 </div>
 

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Apply for ID Card – FUTO BME{% endblock %}
+
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+
+        <!-- Page header -->
+        <div class="text-center mb-4">
+          <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+               style="width:80px;height:80px;">
+            <i class="fas fa-id-card-alt fa-2x text-primary"></i>
+          </div>
+          <h3 class="fw-bold">Apply for Student ID Card</h3>
+          <p class="text-muted">Upload your ID CARD You saved from the Virtual ID CARD and we will print your official NABES-FUTO ID card.</p>
+        </div>
+
+        {% if existing and existing.status in 'pending approved printed' %}
+          <!-- Already has an active application -->
+          <div class="alert alert-info d-flex align-items-center gap-3">
+            <i class="fas fa-info-circle fa-2x"></i>
+            <div>
+              <strong>You already have an active application.</strong><br>
+              Status: <span class="badge bg-{% if existing.status == 'approved' %}success{% elif existing.status == 'printed' %}secondary{% else %}warning text-dark{% endif %}">
+                {{ existing.get_status_display }}
+              </span>
+              <br>
+              <a href="{% url 'id_card_application_status' %}" class="btn btn-sm btn-outline-primary mt-2">
+                <i class="fas fa-eye me-1"></i> View Status
+              </a>
+            </div>
+          </div>
+        {% else %}
+
+          <!-- Instructions -->
+          <div class="alert alert-warning mb-4">
+            <h6 class="fw-bold"><i class="fas fa-camera me-2"></i>How to get your IDCARD PHOTO</h6>
+            <ul class="mb-0 small">
+              <li>Make sure you have added a good picture on your profile</li> 
+              <li>On your <strong>Profile Page</strong></li>
+              <li>Scroll down till you see <strong>Virtual ID Card</strong></li>
+              <li>Cick on it, then save the image on your phone <strong></strong></li>
+              <li>Upload the image save below </li>
+            </ul>
+          </div>
+
+          <!-- Form -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if existing and existing.status == 'rejected' %}
+                  <div class="alert alert-danger mb-3">
+                    <strong>Previous application rejected.</strong>
+                    {% if existing.admin_notes %}
+                      <br>Reason: {{ existing.admin_notes }}
+                    {% endif %}
+                    <br>You may re-apply below.
+                  </div>
+                {% endif %}
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">
+                    <i class="fas fa-calendar-alt me-2"></i>Academic Session
+                  </label>
+                  {{ form.academic_session }}
+                  {% if form.academic_session.errors %}
+                    <div class="text-danger small">{{ form.academic_session.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">
+                    <i class="fas fa-portrait me-2"></i>ID CARD IMAGE
+                  </label>
+                  {{ form.passport_photo }}
+                  <small class="text-muted d-block mt-1">{{ form.passport_photo.help_text }}</small>
+                  {% if form.passport_photo.errors %}
+                    <div class="text-danger small">{{ form.passport_photo.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <!-- Preview existing photo if re-applying -->
+                {% if existing and existing.passport_photo %}
+                  <div class="mb-3 text-center">
+                    <p class="small text-muted">Your previously uploaded photo:</p>
+                    <img src="{{ existing.passport_photo.url }}" alt="Current photo"
+                         class="rounded border" style="max-height:150px;">
+                  </div>
+                {% endif %}
+
+                <div class="d-grid gap-2">
+                  <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-paper-plane me-2"></i>Submit Application
+                  </button>
+                  <a href="{% url 'student_profile' %}" class="btn btn-outline-secondary">
+                    Cancel
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

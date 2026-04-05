@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}ID Card Status – FUTO BME{% endblock %}
+
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <div class="text-center mb-4">
+          <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+               style="width:80px;height:80px;">
+            <i class="fas fa-id-card fa-2x text-primary"></i>
+          </div>
+          <h3 class="fw-bold">ID Card Application Status</h3>
+        </div>
+
+        {% if not application %}
+          <!-- No application yet -->
+          <div class="card border-0 shadow-sm text-center p-5">
+            <i class="fas fa-id-card-alt fa-4x text-muted mb-3"></i>
+            <h5 class="fw-bold">No Application Yet</h5>
+            <p class="text-muted">You have not applied for an ID card yet.</p>
+            <a href="{% url 'apply_id_card' %}" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i>Apply Now
+            </a>
+          </div>
+
+        {% else %}
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+
+              <!-- Status badge -->
+              <div class="text-center mb-4">
+                {% if application.status == 'pending' %}
+                  <span class="badge bg-warning text-dark fs-6 px-4 py-2">
+                    <i class="fas fa-clock me-2"></i>Pending Review
+                  </span>
+                  <p class="text-muted mt-2">Your application is awaiting admin review.</p>
+                {% elif application.status == 'approved' %}
+                  <span class="badge bg-success fs-6 px-4 py-2">
+                    <i class="fas fa-check-circle me-2"></i>Approved – Ready to Print
+                  </span>
+                  <p class="text-muted mt-2">Your ID card has been approved and will be printed soon.</p>
+                {% elif application.status == 'printed' %}
+                  <span class="badge bg-secondary fs-6 px-4 py-2">
+                    <i class="fas fa-print me-2"></i>Printed
+                  </span>
+                  <p class="text-muted mt-2">Your ID card has been printed. Collect it from the department.</p>
+                {% elif application.status == 'rejected' %}
+                  <span class="badge bg-danger fs-6 px-4 py-2">
+                    <i class="fas fa-times-circle me-2"></i>Rejected
+                  </span>
+                  <p class="text-muted mt-2">Your application was rejected. You may re-apply.</p>
+                {% endif %}
+              </div>
+
+              <!-- Details -->
+              <table class="table table-borderless">
+                <tbody>
+                  <tr>
+                    <th class="text-muted" style="width:40%">Name</th>
+                    <td>{{ student.full_name }}</td>
+                  </tr>
+                  <tr>
+                    <th class="text-muted">Reg. Number</th>
+                    <td>{{ student.reg_number }}</td>
+                  </tr>
+                  <tr>
+                    <th class="text-muted">Level</th>
+                    <td>{{ student.get_level_display }}</td>
+                  </tr>
+                  <tr>
+                    <th class="text-muted">Academic Session</th>
+                    <td>{{ application.academic_session }}</td>
+                  </tr>
+                  <tr>
+                    <th class="text-muted">Applied On</th>
+                    <td>{{ application.applied_at|date:"d M Y, g:i A" }}</td>
+                  </tr>
+                  {% if application.reviewed_at %}
+                  <tr>
+                    <th class="text-muted">Reviewed On</th>
+                    <td>{{ application.reviewed_at|date:"d M Y, g:i A" }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if application.admin_notes %}
+                  <tr>
+                    <th class="text-muted">Admin Note</th>
+                    <td class="text-danger">{{ application.admin_notes }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+
+              <!-- Passport photo preview -->
+              {% if application.passport_photo %}
+                <div class="text-center mt-3">
+                  <p class="text-muted small mb-1">Submitted passport photo:</p>
+                  <img src="{{ application.passport_photo.url }}" alt="Passport photo"
+                       class="rounded border shadow-sm" style="max-height:160px;">
+                </div>
+              {% endif %}
+
+              <!-- Actions -->
+              <div class="d-grid gap-2 mt-4">
+                {% if application.status == 'rejected' %}
+                  <a href="{% url 'apply_id_card' %}" class="btn btn-primary">
+                    <i class="fas fa-redo me-2"></i>Re-apply
+                  </a>
+                {% endif %}
+                <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary">
+                  <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+              </div>
+
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

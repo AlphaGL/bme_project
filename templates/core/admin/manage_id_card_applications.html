@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% block title %}ID Card Applications – Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Page header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-0"><i class="fas fa-id-card me-2 text-primary"></i>ID Card Applications</h4>
+      <p class="text-muted mb-0">Review student applications and manage printing</p>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-2">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <div class="fs-4 fw-bold">{{ counts.all }}</div>
+        <div class="text-muted small">Total</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="card border-0 shadow-sm text-center p-3 border-start border-warning border-3">
+        <div class="fs-4 fw-bold text-warning">{{ counts.pending }}</div>
+        <div class="text-muted small">Pending</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="card border-0 shadow-sm text-center p-3 border-start border-success border-3">
+        <div class="fs-4 fw-bold text-success">{{ counts.approved }}</div>
+        <div class="text-muted small">Approved</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="card border-0 shadow-sm text-center p-3 border-start border-secondary border-3">
+        <div class="fs-4 fw-bold text-secondary">{{ counts.printed }}</div>
+        <div class="text-muted small">Printed</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="card border-0 shadow-sm text-center p-3 border-start border-danger border-3">
+        <div class="fs-4 fw-bold text-danger">{{ counts.rejected }}</div>
+        <div class="text-muted small">Rejected</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="card border-0 shadow-sm text-center p-3 border-start border-primary border-3">
+        <div class="fs-4 fw-bold text-primary">{{ counts.with_photo }}</div>
+        <div class="text-muted small">With Photo</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" class="card border-0 shadow-sm p-3 mb-4">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small fw-bold">Search</label>
+        <input type="text" name="search" value="{{ search }}" class="form-control"
+               placeholder="Name or reg. number">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-bold">Status</label>
+        <select name="status" class="form-select">
+          <option value="">All Statuses</option>
+          <option value="pending"  {% if status_filter == 'pending'  %}selected{% endif %}>Pending</option>
+          <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+          <option value="printed"  {% if status_filter == 'printed'  %}selected{% endif %}>Printed</option>
+          <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="fas fa-filter me-1"></i> Filter
+        </button>
+      </div>
+      <div class="col-md-2">
+        <a href="{% url 'manage_id_card_applications' %}" class="btn btn-outline-secondary w-100">
+          <i class="fas fa-times me-1"></i> Reset
+        </a>
+      </div>
+    </div>
+  </form>
+
+  <!-- Applications table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      {% if applications %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Photo</th>
+              <th>Student</th>
+              <th>Reg. Number</th>
+              <th>Level</th>
+              <th>Contact</th>
+              <th>Session</th>
+              <th>Applied</th>
+              <th>Status</th>
+              <th class="text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for app in applications %}
+            <tr>
+              <!-- Passport photo thumbnail -->
+              <td>
+                {% if app.passport_photo %}
+                  <a href="{{ app.passport_photo.url }}" target="_blank">
+                    <img src="{{ app.passport_photo.url }}"
+                         alt="{{ app.student.full_name }}"
+                         class="rounded border"
+                         style="width:54px;height:54px;object-fit:cover;"
+                         title="Click to open full size">
+                  </a>
+                {% else %}
+                  <div class="bg-secondary bg-opacity-10 rounded d-flex align-items-center justify-content-center"
+                       style="width:54px;height:54px;">
+                    <i class="fas fa-user text-muted"></i>
+                  </div>
+                {% endif %}
+              </td>
+
+              <td>
+                <span class="fw-bold">{{ app.student.full_name }}</span>
+              </td>
+              <td><code>{{ app.student.reg_number }}</code></td>
+              <td>{{ app.student.get_level_display }}</td>
+              <td>
+                {% if app.student.email %}
+                  <a href="mailto:{{ app.student.email }}" class="text-muted small">
+                    <i class="fas fa-envelope me-1"></i>{{ app.student.email }}
+                  </a><br>
+                {% endif %}
+                {% if app.student.phone %}
+                  <span class="text-muted small">
+                    <i class="fas fa-phone me-1"></i>{{ app.student.phone }}
+                  </span>
+                {% endif %}
+              </td>
+              <td>{{ app.academic_session }}</td>
+              <td class="text-muted small">{{ app.applied_at|date:"d M Y" }}</td>
+
+              <!-- Status badge -->
+              <td>
+                {% if app.status == 'pending' %}
+                  <span class="badge bg-warning text-dark">Pending</span>
+                {% elif app.status == 'approved' %}
+                  <span class="badge bg-success">Approved</span>
+                {% elif app.status == 'printed' %}
+                  <span class="badge bg-secondary">Printed</span>
+                {% elif app.status == 'rejected' %}
+                  <span class="badge bg-danger">Rejected</span>
+                {% endif %}
+              </td>
+
+              <!-- Quick-action form -->
+              <td class="text-center">
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                          type="button" data-bs-toggle="dropdown">
+                    Update
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <form method="post"
+                            action="{% url 'update_id_card_status' app.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="approved">
+                        <button class="dropdown-item text-success" type="submit">
+                          <i class="fas fa-check me-2"></i>Approve
+                        </button>
+                      </form>
+                    </li>
+                    <li>
+                      <form method="post"
+                            action="{% url 'update_id_card_status' app.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="printed">
+                        <button class="dropdown-item text-secondary" type="submit">
+                          <i class="fas fa-print me-2"></i>Mark as Printed
+                        </button>
+                      </form>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a class="dropdown-item text-danger"
+                         href="{% url 'update_id_card_status' app.pk %}">
+                        <i class="fas fa-times me-2"></i>Reject / Add Note
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="text-center py-5">
+          <i class="fas fa-id-card fa-3x text-muted mb-3"></i>
+          <p class="text-muted">No applications found.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

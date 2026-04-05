@@ -1071,3 +1071,25 @@ class PinAccessVerifyForm(forms.Form):
             raise forms.ValidationError('Incorrect password. Access denied.')
         
         return password
+
+
+class IDCardApplicationForm(forms.ModelForm):
+    class Meta:
+        model = IDCardApplication
+        fields = ['passport_photo', 'academic_session']
+        widgets = {
+            'academic_session': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., 2024/2025',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['passport_photo'].widget.attrs.update({'class': 'form-control'})
+        self.fields['academic_session'].label = 'Academic Session'
+        self.fields['passport_photo'].label = 'Passport Photograph'
+        self.fields['passport_photo'].help_text = (
+            'Upload a ID CARD IMAGE. '
+            'Your face must be clearly visible. Max size: 2 MB.'
+        )
