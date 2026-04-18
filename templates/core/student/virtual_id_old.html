@@ -51,7 +51,7 @@
         /* ============================================================
            SHARED CARD BASE
         ============================================================ */
-        .id-card {
+        .id-card, .id-card-back {
             width: 700px;
             border-radius: 16px;
             overflow: hidden;
@@ -88,6 +88,7 @@
             border: 16px solid rgba(201,168,76,0.1); border-radius: 50%;
         }
 
+        /* UPDATED: Left logos — plain images, no circles */
         .left-logos {
             display: flex; gap: 12px; align-items: center; z-index: 1;
             margin-bottom: 16px;
@@ -98,6 +99,7 @@
             filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
         }
 
+        /* Thin gold divider between logos */
         .logo-divider {
             width: 1px; height: 30px;
             background: linear-gradient(180deg, transparent, var(--gold), transparent);
@@ -165,6 +167,7 @@
             padding: 16px 18px 12px 20px; position: relative; z-index: 1;
         }
 
+        /* UPDATED: NABES bigger than FUTO */
         .org-name-top {
             font-family: 'Rajdhani', sans-serif; font-weight: 700;
             letter-spacing: 1.5px; color: rgba(255,255,255,0.95);
@@ -250,6 +253,7 @@
             color: var(--crimson); letter-spacing: 1.5px; display: block; margin-top: 3px;
         }
 
+        /* Signature area */
         .sig-area {
             display: flex; align-items: flex-end; justify-content: flex-end;
             gap: 20px; margin-top: 8px;
@@ -265,6 +269,7 @@
             font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
         }
 
+        /* UPDATED: name under NABES President */
         .sig-name {
             font-size: 8.5px; color: var(--crimson); font-family: 'Rajdhani', sans-serif;
             font-weight: 700; letter-spacing: 0.5px; margin-top: 2px;
@@ -295,10 +300,145 @@
             font-family: 'Rajdhani', sans-serif; letter-spacing: 0.5px; font-weight: 500;
         }
 
+        /* ============================================================
+           BACK CARD
+        ============================================================ */
+        .back-left {
+            width: 210px; min-width: 210px;
+            background: linear-gradient(175deg, #3d0000 0%, var(--crimson) 50%, #3d0000 100%);
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: space-between;
+            padding: 20px 14px;
+            position: relative; overflow: hidden;
+        }
+
+        .back-left::before {
+            content: ''; position: absolute; top: -20px; left: -20px;
+            width: 110px; height: 110px;
+            border: 16px solid rgba(255,255,255,0.04); border-radius: 50%;
+        }
+        .back-left::after {
+            content: ''; position: absolute; bottom: -20px; right: -25px;
+            width: 100px; height: 100px;
+            border: 14px solid rgba(201,168,76,0.1); border-radius: 50%;
+        }
+
+        /* UPDATED: Two logos side by side, closer together, no NABES text between */
+        .back-logos-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            z-index: 1;
+        }
+
+        .back-logo-big {
+            width: 60px; height: 60px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 3px solid var(--gold); overflow: hidden;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5); z-index: 1;
+        }
+        .back-logo-big img { width: 44px; height: 44px; object-fit: contain; }
+
+        /* Thin vertical gold line between the two back logos */
+        .back-logo-divider {
+            width: 1px; height: 36px;
+            background: linear-gradient(180deg, transparent, var(--gold), transparent);
+        }
+
+        .back-nabes-block { text-align: center; z-index: 1; }
+        .back-nabes-text {
+            font-family: 'Bebas Neue', sans-serif; font-size: 30px;
+            color: var(--gold); letter-spacing: 4px; line-height: 1;
+            display: block;
+        }
+        .back-nabes-sub {
+            font-family: 'Rajdhani', sans-serif; font-size: 8px; font-weight: 600;
+            color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase;
+            display: block; margin-top: 2px;
+        }
+
+        .back-left-quote {
+            font-family: 'Rajdhani', sans-serif; font-size: 8px; font-weight: 600;
+            color: rgba(255,255,255,0.35); text-align: center; letter-spacing: 1.5px;
+            text-transform: uppercase; line-height: 1.8; z-index: 1;
+        }
+
+        /* BACK RIGHT */
+        .back-right {
+            flex: 1; background: var(--off-white);
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+        }
+
+        .back-right::before {
+            content: ''; position: absolute; top: 0; right: 0;
+            width: 0; height: 0;
+            border-top: 80px solid var(--crimson);
+            border-left: 80px solid transparent; z-index: 0;
+        }
+
+        .back-right-inner {
+            flex: 1; padding: 20px 24px 16px; z-index: 1; position: relative;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .back-title {
+            font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+            color: var(--crimson); letter-spacing: 2px;
+            border-bottom: 2px solid var(--gold); padding-bottom: 7px;
+        }
+
+        .back-items { display: flex; flex-direction: column; gap: 7px; }
+
+        .back-item {
+            display: flex; align-items: flex-start; gap: 9px;
+            font-size: 10.5px; font-family: 'Rajdhani', sans-serif; font-weight: 600;
+            color: var(--dark); letter-spacing: 0.4px; line-height: 1.4;
+        }
+        .back-item i { color: var(--crimson); font-size: 13px; margin-top: 1px; min-width: 15px; }
+
+        .back-rules-title {
+            font-family: 'Bebas Neue', sans-serif; font-size: 13px;
+            color: var(--crimson); letter-spacing: 1.5px; margin-top: 4px;
+        }
+
+        .back-rules { display: flex; flex-direction: column; gap: 4px; }
+        .back-rule {
+            display: flex; align-items: flex-start; gap: 8px;
+            font-size: 9.5px; font-family: 'Rajdhani', sans-serif; font-weight: 600;
+            color: #555; line-height: 1.4; letter-spacing: 0.3px;
+        }
+        .back-rule::before {
+            content: '▸'; color: var(--crimson); font-size: 9px; margin-top: 1px; flex-shrink: 0;
+        }
+
+        .back-cert-box {
+            background: var(--crimson); color: white;
+            padding: 9px 12px; border-radius: 7px;
+            font-size: 8.5px; font-family: 'Rajdhani', sans-serif; font-weight: 600;
+            letter-spacing: 0.7px; line-height: 1.7; text-align: center;
+        }
+
+        .back-footer {
+            background: linear-gradient(90deg, var(--crimson), var(--crimson-mid));
+            padding: 9px 24px; display: flex; align-items: center;
+            justify-content: space-between; z-index: 1; position: relative;
+        }
+        .back-footer-text {
+            font-size: 7.5px; font-family: 'Rajdhani', sans-serif; font-weight: 600;
+            letter-spacing: 1px; color: rgba(255,255,255,0.65); text-transform: uppercase;
+        }
+        .gold-badge {
+            background: var(--gold); color: var(--dark);
+            font-family: 'Bebas Neue', sans-serif; font-size: 11px;
+            letter-spacing: 2px; padding: 4px 12px; border-radius: 4px;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 740px) {
-            .id-card { width: 100%; max-width: 700px; }
-            .card-left { width: 150px; min-width: 150px; padding: 14px 10px; }
+            .id-card, .id-card-back { width: 100%; max-width: 700px; }
+            .card-left, .back-left { width: 150px; min-width: 150px; padding: 14px 10px; }
             .photo-ring-outer { width: 95px; height: 95px; }
             .photo-ring-inner { width: 83px; height: 83px; }
             .student-name-display { font-size: 18px; }
@@ -308,7 +448,7 @@
         @media print {
             body { background: white; padding: 10mm; }
             .action-buttons { display: none !important; }
-            .id-card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+            .id-card, .id-card-back { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; margin-bottom: 18mm; }
             .card-label { color: #333; }
             @page { size: A4 landscape; margin: 10mm; }
         }
@@ -334,6 +474,7 @@
 
                 <!-- LEFT -->
                 <div class="card-left">
+                    <!-- UPDATED: Plain logo images, no circles -->
                     <div class="left-logos">
                         <img class="logo-img" src="https://upload.wikimedia.org/wikipedia/en/thumb/1/16/FUTO_logo.png/250px-FUTO_logo.png" alt="FUTO">
                         <div class="logo-divider"></div>
@@ -364,6 +505,7 @@
                 <!-- RIGHT -->
                 <div class="card-right">
                     <div class="card-right-top">
+                        <!-- UPDATED: NABES bigger than FUTO -->
                         <div class="org-name-top">
                             <span class="org-nabes">NABES</span>
                             <span class="org-separator">·</span>
@@ -420,7 +562,8 @@
                             </p>
                         </div>
 
-                        <!-- <div class="sig-area">
+                        <!-- UPDATED: Staff Adviser + NABES President with name underneath -->
+                        <div class="sig-area">
                             <div class="sig-box">
                                 <div class="sig-line"></div>
                                 <div class="sig-label">Staff Adviser</div>
@@ -430,7 +573,7 @@
                                 <div class="sig-label">NABES President</div>
                                 <div class="sig-name">High Comr. Okechukwu Mmesoma</div>
                             </div>
-                        </div> -->
+                        </div>
                     </div>
 
                     <div class="card-right-footer">
@@ -445,6 +588,76 @@
                                 School of Engineering &amp; Engineering Technology
                             </div>
                         </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============= BACK ============= -->
+        <div>
+            <div class="card-label">▸ BACK</div>
+            <div class="id-card-back" id="id-card-back">
+
+                <!-- LEFT -->
+                <div class="back-left">
+
+                    <!-- UPDATED: Two logos side by side, closer, NO NABES text between them -->
+                    <div class="back-logos-row">
+                        <div class="back-logo-big">
+                            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/1/16/FUTO_logo.png/250px-FUTO_logo.png" alt="FUTO">
+                        </div>
+                        <div class="back-logo-divider"></div>
+                        <div class="back-logo-big">
+                            <img src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" alt="BME">
+                        </div>
+                    </div>
+
+                    <!-- NABES text block stays but moved below logos -->
+                    <div class="back-nabes-block">
+                        <span class="back-nabes-text">NABES</span>
+                        <span class="back-nabes-sub">Est. FUTO</span>
+                    </div>
+
+                    <div class="back-left-quote">
+                        <strong>NABES: ENGINEERING FOR MEDICAL ADVANCEMENT</strong>
+                    </div>
+                </div>
+
+                <!-- RIGHT -->
+                <div class="back-right">
+                    <div class="back-right-inner">
+
+                        <div>
+                            <div class="back-title">Important Information</div>
+                            <div class="back-items">
+                                <br>
+                                <div class="back-item"><i class="fas fa-university"></i><span>National Association of Biomedical Engineering Students (NABES)</span></div>
+                                <div class="back-item"><i class="fas fa-building"></i><span>School of Engineering and Engineering Technology (SEET)</span></div>
+                                <div class="back-item"><i class="fas fa-landmark"></i><span>Federal University of Technology Owerri (FUTO)</span></div>
+                                <div class="back-item"><i class="fas fa-map-marker-alt"></i><span>PMB 1526, Owerri, Imo State, Nigeria</span></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="back-rules-title">Card Usage Rules</div>
+                            <div class="back-rules">
+                                <div class="back-rule">This card is valid only for the registered holder and is non-transferable.</div>
+                                <div class="back-rule">Must be presented on request by authorised personnel.</div>
+                                <div class="back-rule">Report loss immediately to the NABES secretariat.</div>
+                            </div>
+                        </div>
+
+                        <div class="back-cert-box">
+                            IF FOUND, PLEASE RETURN TO: THE DEPT. OF BIOMEDICAL ENGINEERING,<br>
+                            FEDERAL UNIVERSITY OF TECHNOLOGY OWERRI, OR THE NEAREST POLICE STATION.
+                        </div>
+
+                    </div>
+
+                    <div class="back-footer">
+                        <div class="back-footer-text">NABES · SEET · FUTO · Imo State · Nigeria</div>
+                        <div class="gold-badge">VALID MEMBER</div>
                     </div>
                 </div>
 
@@ -509,12 +722,23 @@
 
                 if (profileImg && origSrc) profileImg.src = origSrc;
 
+                const backCanvas = await html2canvas(document.getElementById('id-card-back'), {
+                    scale: 2, logging: false, backgroundColor: null, useCORS: true, allowTaint: true
+                });
+
                 const fLink = document.createElement('a');
                 fLink.download = 'id-card-front-{{ student.reg_number }}.png';
                 fLink.href = frontCanvas.toDataURL('image/png');
                 fLink.click();
 
-                setTimeout(() => alert('ID card image saved!'), 600);
+                setTimeout(() => {
+                    const bLink = document.createElement('a');
+                    bLink.download = 'id-card-back-{{ student.reg_number }}.png';
+                    bLink.href = backCanvas.toDataURL('image/png');
+                    bLink.click();
+                }, 600);
+
+                setTimeout(() => alert('ID card images saved!'), 1200);
             } catch (err) {
                 console.error(err);
                 alert('Error generating image. Check console.');
