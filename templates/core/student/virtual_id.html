@@ -538,24 +538,17 @@
                     useCORS: true,
                     allowTaint: true,
                     onclone: (doc) => {
-                        // ── THE REAL FIX ──────────────────────────────────────────
-                        // html2canvas creates a 0×0 canvas when it tries to convert
-                        // a CSS radial-gradient() background-image into a pattern.
-                        // This crashes with "createPattern: canvas width or height is 0"
-                        // in deployed (non-localhost) environments.
-                        // Solution: strip every background-image from every element
-                        // in the cloned DOM before html2canvas processes it.
-                        // The visual is re-drawn from solid background-color instead,
-                        // which looks identical for this card design.
-                        doc.querySelectorAll('*').forEach(el => {
-                            const style = el.style;
-                            // Remove inline background-image
-                            style.backgroundImage = 'none';
-                            // Also fix any 0-size canvases just in case
-                        });
-                        // Inject a <style> that overrides ALL stylesheet background-images
+                        // The ONLY element causing the crash is .card-right::after
+                        // which uses radial-gradient() as a dot pattern background-image.
+                        // html2canvas creates a 0×0 canvas for it on production,
+                        // then crashes on createPattern(). Fix: remove ONLY that
+                        // background-image by targeting .card-right directly.
+                        // All other gradients (left panel, header, footer) are preserved.
                         const style = doc.createElement('style');
-                        style.textContent = '* { background-image: none !important; }';
+                        style.textContent = `
+                            #id-card-front .card-right::after { display: none !important; }
+                            #id-card-front .card-right::before { display: none !important; }
+                        `;
                         doc.head.appendChild(style);
 
                         // Guard any 0-size canvases
