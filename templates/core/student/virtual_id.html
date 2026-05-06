@@ -341,9 +341,9 @@
                 <div class="card-left">
                     <!-- UPDATED: Plain logo images, no circles -->
                     <div class="left-logos">
-                        <img class="logo-img" src="https://upload.wikimedia.org/wikipedia/en/thumb/1/16/FUTO_logo.png/250px-FUTO_logo.png" alt="FUTO">
+                        <img class="logo-img" src="https://upload.wikimedia.org/wikipedia/en/thumb/1/16/FUTO_logo.png/250px-FUTO_logo.png" alt="FUTO" crossorigin="anonymous">
                         <div class="logo-divider"></div>
-                        <img class="logo-img" src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" alt="BME">
+                        <img class="logo-img" src="https://res.cloudinary.com/dasmnlwnm/image/upload/v1760695706/logo_yjajyk.jpg" alt="BME" crossorigin="anonymous">
                     </div>
 
                     <div class="photo-ring-outer">
@@ -462,7 +462,7 @@
     </div><!-- end cards-stack -->
 
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         function scaleCard() {
             const wrapper = document.getElementById('card-scale-wrapper');
@@ -470,6 +470,26 @@
             const scale = Math.min(1, vw / 700);
             wrapper.style.transform = `scale(${scale})`;
             wrapper.parentElement.style.height = (wrapper.offsetHeight * scale) + 'px';
+        }
+
+        // Convert any image URL to base64 via a temporary canvas (bypasses CORS for same-origin, or uses crossOrigin for others)
+        function toBase64(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function () {
+                    try {
+                        const c = document.createElement('canvas');
+                        c.width = this.naturalWidth || this.width;
+                        c.height = this.naturalHeight || this.height;
+                        c.getContext('2d').drawImage(this, 0, 0);
+                        resolve(c.toDataURL('image/png'));
+                    } catch(e) { resolve(null); }
+                };
+                img.onerror = () => resolve(null);
+                // Cache-bust to help with CORS
+                img.src = url + (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -489,27 +509,67 @@
             btn.disabled = true;
 
             const wrapper = document.getElementById('card-scale-wrapper');
-            const cardEl = document.getElementById('id-card-front');
 
             try {
-                // Temporarily reset scale so capture sees the full 700px card
+                // Reset scale so html2canvas sees the full 700px card
                 wrapper.style.transform = 'scale(1)';
                 wrapper.parentElement.style.height = '';
                 await new Promise(r => setTimeout(r, 200));
 
-                // dom-to-image-more renders CSS gradients & pseudo-elements correctly
-                // in production without the createPattern 0x0 canvas bug
-                const dataUrl = await domtoimage.toPng(cardEl, {
-                    width: cardEl.offsetWidth,
-                    height: cardEl.offsetHeight,
+                const cardEl = document.getElementById('id-card-front');
+
+                const canvas = await html2canvas(cardEl, {
                     scale: 2,
                     useCORS: true,
-                    corsImg: true
+                    allowTaint: false,
+                    backgroundColor: null,
+                    logging: false,
+                    imageTimeout: 15000,
+                    onclone: async (doc, el) => {
+                        // ── FIX: Replace every background-image gradient with a solid
+                        //    background-color equivalent so html2canvas never tries to
+                        //    call createPattern() on a 0×0 canvas.
+                        //    We only do this for the elements that use background-image
+                        //    with radial-gradient (the dot pattern and decorative rings).
+                        //    Linear-gradient backgrounds on .card-left, .card-right-top,
+                        //    .card-right-footer are KEPT because html2canvas renders those fine.
+                        const problemSelectors = [
+                            '.card-right',   // has radial-gradient dot pattern via ::after
+                            '.card-left',    // has decorative rings via ::before/::after
+                        ];
+                        const styleEl = doc.createElement('style');
+                        styleEl.textContent = `
+                            .card-left::before, .card-left::after,
+                            .card-right::before, .card-right::after {
+                                display: none !important;
+                            }
+                            .photo-ring-outer {
+                                background: #c9a84c !important;
+                            }
+                        `;
+                        doc.head.appendChild(styleEl);
+
+                        // ── FIX: Embed all <img> tags as base64 so CORS never blocks them
+                        const imgs = el.querySelectorAll('img');
+                        await Promise.all(Array.from(imgs).map(async (img) => {
+                            if (!img.src || img.src.startsWith('data:')) return;
+                            const b64 = await toBase64(img.src);
+                            if (b64) img.src = b64;
+                        }));
+
+                        // ── FIX: Guard any 0-size canvases
+                        doc.querySelectorAll('canvas').forEach(c => {
+                            if (!c.width || !c.height) {
+                                c.width = Math.max(c.width, 1);
+                                c.height = Math.max(c.height, 1);
+                            }
+                        });
+                    }
                 });
 
                 const link = document.createElement('a');
                 link.download = 'NABES-ID-{{ student.reg_number }}.png';
-                link.href = dataUrl;
+                link.href = canvas.toDataURL('image/png');
                 link.click();
 
             } catch (err) {
