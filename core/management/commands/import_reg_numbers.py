@@ -26,7 +26,7 @@ class Command(BaseCommand):
                 reader = csv.DictReader(file)
                 
                 # Expected CSV format: reg_number,full_name,level
-                # Example: 2020/1/12345,John Doe,100
+                # Example: 202X1234567,John Doe,100
                 
                 for row in reader:
                     try:

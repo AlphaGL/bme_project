@@ -1409,6 +1409,75 @@ def student_logout(request):
     return redirect('student_login')
 
 
+
+# ==================== FORGOT PASSWORD ====================
+
+def forgot_password(request):
+    """
+    Step 1 – Verify student identity using reg_number, email, and phone.
+    On success, store verified reg_number in session and redirect to reset step.
+    """
+    # Already logged in? Go to dashboard
+    if request.session.get('student_reg_number'):
+        return redirect('student_dashboard')
+
+    if request.method == 'POST':
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            student = form.verified_student
+            # Store reg_number temporarily in session to authorise the reset step
+            request.session['password_reset_reg'] = student.reg_number
+            messages.success(
+                request,
+                'Identity verified! You can now set a new password.'
+            )
+            return redirect('reset_password')
+    else:
+        form = ForgotPasswordForm()
+
+    return render(request, 'core/student/forgot_password.html', {'form': form})
+
+
+def reset_password(request):
+    """
+    Step 2 – Allow the student to set a new password.
+    Only accessible after passing the forgot_password verification step.
+    """
+    reg_number = request.session.get('password_reset_reg')
+    if not reg_number:
+        messages.error(request, 'Please verify your identity first.')
+        return redirect('forgot_password')
+
+    try:
+        student = Student.objects.get(reg_number=reg_number)
+    except Student.DoesNotExist:
+        messages.error(request, 'Session expired. Please try again.')
+        return redirect('forgot_password')
+
+    if request.method == 'POST':
+        form = ResetPasswordForm(request.POST)
+        if form.is_valid():
+            new_password = form.cleaned_data['new_password']
+            student.set_password(new_password)
+            student.save()
+
+            # Clear the reset session key so it can't be reused
+            del request.session['password_reset_reg']
+
+            messages.success(
+                request,
+                'Your password has been reset successfully! Please log in with your new password.'
+            )
+            return redirect('student_login')
+    else:
+        form = ResetPasswordForm()
+
+    return render(request, 'core/student/reset_password.html', {
+        'form': form,
+        'student': student,
+    })
+
+
 # STUDENT DECORATOR
 def student_required(view_func):
     def wrapper(request, *args, **kwargs):

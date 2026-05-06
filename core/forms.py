@@ -910,7 +910,7 @@ class PinRegistrationForm(forms.ModelForm):
         widgets = {
             'reg_number': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'e.g., 2020/1/12345'
+                'placeholder': 'e.g., 202X1234567'
             }),
             'full_name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -1093,3 +1093,114 @@ class IDCardApplicationForm(forms.ModelForm):
             'Upload a ID CARD IMAGE. '
             'Your face must be clearly visible. Max size: 2 MB.'
         )
+
+
+
+# ==================== FORGOT PASSWORD ====================
+
+class ForgotPasswordForm(forms.Form):
+    """Step 1: Verify student identity before allowing password reset"""
+    reg_number = forms.CharField(
+        max_length=50,
+        label='Registration Number',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g., 202X1234567',
+            'autofocus': True
+        })
+    )
+    email = forms.EmailField(
+        label='Email Address',
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter the email used during registration'
+        })
+    )
+    phone = forms.CharField(
+        max_length=20,
+        label='Phone Number',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter the phone number used during registration'
+        })
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        reg_number = cleaned_data.get('reg_number')
+        email = cleaned_data.get('email')
+        phone = cleaned_data.get('phone')
+
+        if reg_number and email and phone:
+            try:
+                from .models import Student
+                student = Student.objects.get(reg_number=reg_number)
+
+                # Verify email matches (case-insensitive)
+                if student.email and student.email.lower() != email.lower():
+                    raise forms.ValidationError(
+                        'The details you provided do not match our records. '
+                        'Please check your registration number, email, and phone number.'
+                    )
+
+                # Verify phone matches.
+                # Normalise both numbers to their last 10 digits so that
+                # 2348138582078, 08138582078, and 8138582078 all compare equal.
+                def normalise_phone(p):
+                    digits = ''.join(filter(str.isdigit, p or ''))
+                    # Strip country code prefixes
+                    if digits.startswith('234'):
+                        digits = digits[3:]   # 234XXXXXXXXXX → XXXXXXXXXX
+                    if digits.startswith('0'):
+                        digits = digits[1:]   # 0XXXXXXXXXX  → XXXXXXXXXX
+                    return digits  # last 10 digits (e.g. 8138582078)
+
+                if student.phone and normalise_phone(student.phone) != normalise_phone(phone):
+                    raise forms.ValidationError(
+                        'The details you provided do not match our records. '
+                        'Please check your registration number, email, and phone number.'
+                    )
+
+                # All good – attach student so the view can use it
+                self.verified_student = student
+
+            except Student.DoesNotExist:
+                raise forms.ValidationError(
+                    'No account found with that registration number.'
+                )
+
+        return cleaned_data
+
+
+class ResetPasswordForm(forms.Form):
+    """Step 2: Set a new password after identity has been verified"""
+    new_password = forms.CharField(
+        label='New Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter new password',
+            'id': 'id_reset_new_password'
+        }),
+        help_text='Minimum 6 characters'
+    )
+    confirm_new_password = forms.CharField(
+        label='Confirm New Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Re-enter new password',
+            'id': 'id_reset_confirm_password'
+        })
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get('new_password')
+        confirm = cleaned_data.get('confirm_new_password')
+
+        if new_password and confirm:
+            if new_password != confirm:
+                raise forms.ValidationError('Passwords do not match!')
+            if len(new_password) < 6:
+                raise forms.ValidationError('Password must be at least 6 characters long!')
+
+        return cleaned_data
