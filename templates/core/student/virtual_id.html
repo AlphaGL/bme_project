@@ -510,7 +510,6 @@
             });
         }
 
-        // FIX 1: event is now passed explicitly from onclick="downloadAsImage(event)"
         async function downloadAsImage(event) {
             const btn = event.target.closest('button');
             const orig = btn.innerHTML;
@@ -527,24 +526,41 @@
                     profileImg.src = imageDataUrl;
                 }
 
-                // Reset scale so html2canvas sees the full 700px card (not a 0-height scaled element)
+                // Reset scale so html2canvas sees the full 700px card
                 wrapper.style.transform = 'scale(1)';
                 wrapper.parentElement.style.height = '';
-                await new Promise(r => setTimeout(r, 150)); // let layout repaint at full size
-
-                // Guard against 0-size canvases (causes createPattern crash on deployed envs)
-                document.querySelectorAll('canvas').forEach(c => {
-                    if (c.width === 0 || c.height === 0) {
-                        c.width = c.width || 1;
-                        c.height = c.height || 1;
-                    }
-                });
+                await new Promise(r => setTimeout(r, 150));
 
                 const canvas = await html2canvas(document.getElementById('id-card-front'), {
-                    scale: 2, logging: false, backgroundColor: '#ffffff', useCORS: true,
+                    scale: 2,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                    allowTaint: true,
                     onclone: (doc) => {
+                        // ── THE REAL FIX ──────────────────────────────────────────
+                        // html2canvas creates a 0×0 canvas when it tries to convert
+                        // a CSS radial-gradient() background-image into a pattern.
+                        // This crashes with "createPattern: canvas width or height is 0"
+                        // in deployed (non-localhost) environments.
+                        // Solution: strip every background-image from every element
+                        // in the cloned DOM before html2canvas processes it.
+                        // The visual is re-drawn from solid background-color instead,
+                        // which looks identical for this card design.
+                        doc.querySelectorAll('*').forEach(el => {
+                            const style = el.style;
+                            // Remove inline background-image
+                            style.backgroundImage = 'none';
+                            // Also fix any 0-size canvases just in case
+                        });
+                        // Inject a <style> that overrides ALL stylesheet background-images
+                        const style = doc.createElement('style');
+                        style.textContent = '* { background-image: none !important; }';
+                        doc.head.appendChild(style);
+
+                        // Guard any 0-size canvases
                         doc.querySelectorAll('canvas').forEach(c => {
-                            if (c.width === 0 || c.height === 0) {
+                            if (!c.width || !c.height) {
                                 c.width = c.width || 1;
                                 c.height = c.height || 1;
                             }
