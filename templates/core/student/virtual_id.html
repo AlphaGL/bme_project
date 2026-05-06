@@ -105,12 +105,12 @@
         /* Thin gold divider between logos */
         .logo-divider {
             width: 1px; height: 30px;
-            background: linear-gradient(180deg, transparent, var(--gold), transparent);
+            background: #c9a84c;
         }
 
         .photo-ring-outer {
             width: 128px; height: 128px; border-radius: 50%; z-index: 1;
-            background: conic-gradient(var(--gold) 0deg, var(--gold-light) 90deg, var(--gold) 180deg, var(--crimson-light) 270deg, var(--gold) 360deg);
+            background: #c9a84c;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 22px rgba(201,168,76,0.5);
             margin-bottom: 14px;
@@ -133,7 +133,7 @@
 
         .left-divider {
             width: 80%; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            background: #c9a84c;
             margin-bottom: 14px; z-index: 1;
         }
 
@@ -159,10 +159,7 @@
         }
 
         .card-right::after {
-            content: ''; position: absolute; bottom: 0; right: 0;
-            width: 220px; height: 160px;
-            background-image: radial-gradient(circle, rgba(139,0,0,0.12) 1px, transparent 1px);
-            background-size: 12px 12px; z-index: 0; opacity: 0.8;
+            display: none;
         }
 
         .card-right-top {
@@ -203,7 +200,7 @@
 
         .gold-bar {
             height: 3px;
-            background: linear-gradient(90deg, var(--gold), var(--gold-light), transparent);
+            background: #c9a84c;
             margin-top: 8px; border-radius: 2px; width: 50%;
         }
 
@@ -526,38 +523,14 @@
                     logging: false,
                     imageTimeout: 15000,
                     onclone: async (doc, el) => {
-                        // ── FIX: Replace every background-image gradient with a solid
-                        //    background-color equivalent so html2canvas never tries to
-                        //    call createPattern() on a 0×0 canvas.
-                        //    We only do this for the elements that use background-image
-                        //    with radial-gradient (the dot pattern and decorative rings).
-                        //    Linear-gradient backgrounds on .card-left, .card-right-top,
-                        //    .card-right-footer are KEPT because html2canvas renders those fine.
-                        const problemSelectors = [
-                            '.card-right',   // has radial-gradient dot pattern via ::after
-                            '.card-left',    // has decorative rings via ::before/::after
-                        ];
-                        const styleEl = doc.createElement('style');
-                        styleEl.textContent = `
-                            .card-left::before, .card-left::after,
-                            .card-right::before, .card-right::after {
-                                display: none !important;
-                            }
-                            .photo-ring-outer {
-                                background: #c9a84c !important;
-                            }
-                        `;
-                        doc.head.appendChild(styleEl);
-
-                        // ── FIX: Embed all <img> tags as base64 so CORS never blocks them
+                        // Embed all images as base64 to avoid CORS blocks
                         const imgs = el.querySelectorAll('img');
                         await Promise.all(Array.from(imgs).map(async (img) => {
                             if (!img.src || img.src.startsWith('data:')) return;
                             const b64 = await toBase64(img.src);
                             if (b64) img.src = b64;
                         }));
-
-                        // ── FIX: Guard any 0-size canvases
+                        // Guard any 0-size canvases
                         doc.querySelectorAll('canvas').forEach(c => {
                             if (!c.width || !c.height) {
                                 c.width = Math.max(c.width, 1);
