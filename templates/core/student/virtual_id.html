@@ -515,6 +515,32 @@
 
                 const cardEl = document.getElementById('id-card-front');
 
+                // Pre-fetch Google Fonts CSS and embed as data URLs so the cloned doc has real fonts
+                async function fetchFontFaces() {
+                    try {
+                        const googleUrl = 'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap';
+                        const cssResp = await fetch(googleUrl);
+                        let cssText = await cssResp.text();
+                        // Find all font URLs and replace with base64
+                        const urlMatches = [...cssText.matchAll(/url\((https:\/\/[^)]+)\)/g)];
+                        await Promise.all(urlMatches.map(async ([full, url]) => {
+                            try {
+                                const resp = await fetch(url);
+                                const blob = await resp.blob();
+                                const b64 = await new Promise(res => {
+                                    const r = new FileReader();
+                                    r.onload = () => res(r.result);
+                                    r.readAsDataURL(blob);
+                                });
+                                cssText = cssText.replace(url, b64);
+                            } catch(e) {}
+                        }));
+                        return cssText;
+                    } catch(e) { return ''; }
+                }
+
+                const fontCss = await fetchFontFaces();
+
                 const canvas = await html2canvas(cardEl, {
                     scale: 2,
                     useCORS: true,
@@ -523,6 +549,27 @@
                     logging: false,
                     imageTimeout: 15000,
                     onclone: async (doc, el) => {
+                        // Inject embedded fonts so text renders identically to the live page
+                        if (fontCss) {
+                            const styleEl = doc.createElement('style');
+                            styleEl.textContent = fontCss;
+                            doc.head.insertBefore(styleEl, doc.head.firstChild);
+                        }
+
+                        // Fix all text elements to use explicit nowrap so nothing wraps differently
+                        const fixNoWrap = [
+                            '.role-badge', '.org-nabes', '.org-futo', '.card-type-title',
+                            '.detail-label', '.detail-value', '.detail-sep',
+                            '.student-name-display', '.barcode-num', '.footer-validity',
+                            '.footer-cert-text', '.sig-label', '.sig-name', '.left-footer-text'
+                        ];
+                        fixNoWrap.forEach(sel => {
+                            doc.querySelectorAll(sel).forEach(el => {
+                                el.style.whiteSpace = 'nowrap';
+                                el.style.overflow = 'visible';
+                            });
+                        });
+
                         // Embed all images as base64 to avoid CORS blocks
                         const imgs = el.querySelectorAll('img');
                         await Promise.all(Array.from(imgs).map(async (img) => {
@@ -530,6 +577,7 @@
                             const b64 = await toBase64(img.src);
                             if (b64) img.src = b64;
                         }));
+
                         // Guard any 0-size canvases
                         doc.querySelectorAll('canvas').forEach(c => {
                             if (!c.width || !c.height) {
@@ -537,6 +585,9 @@
                                 c.height = Math.max(c.height, 1);
                             }
                         });
+
+                        // Wait a tick for fonts to register
+                        await new Promise(r => setTimeout(r, 300));
                     }
                 });
 
