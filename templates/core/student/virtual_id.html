@@ -161,8 +161,8 @@
         .card-right::after {
             content: ''; position: absolute; bottom: 0; right: 0;
             width: 220px; height: 160px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='55' viewBox='0 0 48 55'%3E%3Cpath d='M24 0 L48 14 L48 41 L24 55 L0 41 L0 14Z' fill='none' stroke='%238B000014' stroke-width='1.2'/%3E%3C/svg%3E");
-            background-size: 38px 44px; z-index: 0; opacity: 0.8;
+            background-image: radial-gradient(circle, rgba(139,0,0,0.12) 1px, transparent 1px);
+            background-size: 12px 12px; z-index: 0; opacity: 0.8;
         }
 
         .card-right-top {
@@ -531,9 +531,30 @@
                 wrapper.parentElement.style.height = '';
                 await new Promise(r => setTimeout(r, 150)); // let layout repaint at full size
 
+                // Give the barcode SVG explicit pixel dimensions — html2canvas on production
+                // servers fails with "0 width/height" if the SVG only has CSS sizing
+                const barcodeSvg = document.getElementById('barcode-svg');
+                let origW = '', origH = '';
+                if (barcodeSvg) {
+                    const rect = barcodeSvg.getBoundingClientRect();
+                    origW = barcodeSvg.getAttribute('width') || '';
+                    origH = barcodeSvg.getAttribute('height') || '';
+                    barcodeSvg.setAttribute('width', Math.round(rect.width) || 155);
+                    barcodeSvg.setAttribute('height', Math.round(rect.height) || 34);
+                }
+
                 const canvas = await html2canvas(document.getElementById('id-card-front'), {
-                    scale: 2, logging: false, backgroundColor: '#ffffff', useCORS: true
+                    scale: 2, logging: false, backgroundColor: '#ffffff', useCORS: true,
+                    ignoreElements: el => el.tagName === 'SVG' && !el.id  // skip any anonymous SVGs
                 });
+
+                // Restore barcode SVG attributes
+                if (barcodeSvg) {
+                    if (origW) barcodeSvg.setAttribute('width', origW);
+                    else barcodeSvg.removeAttribute('width');
+                    if (origH) barcodeSvg.setAttribute('height', origH);
+                    else barcodeSvg.removeAttribute('height');
+                }
 
                 if (profileImg && origSrc) profileImg.src = origSrc;
 
