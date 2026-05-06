@@ -462,53 +462,25 @@
     </div><!-- end cards-stack -->
 
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js"></script>
     <script>
-        let imageDataUrl = null;
-
-        // Top-level so both DOMContentLoaded and downloadAsImage can call it
         function scaleCard() {
             const wrapper = document.getElementById('card-scale-wrapper');
-            const vw = window.innerWidth - 40; // 20px padding each side
+            const vw = window.innerWidth - 40;
             const scale = Math.min(1, vw / 700);
             wrapper.style.transform = `scale(${scale})`;
-            // Collapse the visual height so the page doesn't leave a gap below the scaled card
             wrapper.parentElement.style.height = (wrapper.offsetHeight * scale) + 'px';
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Render barcode directly to <canvas> — avoids html2canvas SVG sizing bug on production
             JsBarcode('#barcode-canvas', '{{ student.reg_number }}', {
                 format: 'CODE128', width: 1.5, height: 34,
                 displayValue: false, margin: 0,
                 lineColor: '#ffffff', background: '#8B0000'
             });
-
             scaleCard();
             window.addEventListener('resize', scaleCard);
-
-            const profileImg = document.getElementById('profile-img');
-            if (profileImg) {
-                convertImageToBase64(profileImg.src)
-                    .then(d => imageDataUrl = d)
-                    .catch(e => console.warn('Image load fail:', e));
-            }
         });
-
-        function convertImageToBase64(url) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = function () {
-                    const c = document.createElement('canvas');
-                    c.width = this.width; c.height = this.height;
-                    c.getContext('2d').drawImage(this, 0, 0);
-                    resolve(c.toDataURL('image/png'));
-                };
-                img.onerror = reject;
-                img.src = url;
-            });
-        }
 
         async function downloadAsImage(event) {
             const btn = event.target.closest('button');
@@ -517,63 +489,33 @@
             btn.disabled = true;
 
             const wrapper = document.getElementById('card-scale-wrapper');
+            const cardEl = document.getElementById('id-card-front');
 
             try {
-                const profileImg = document.getElementById('profile-img');
-                let origSrc = null;
-                if (profileImg && imageDataUrl) {
-                    origSrc = profileImg.src;
-                    profileImg.src = imageDataUrl;
-                }
-
-                // Reset scale so html2canvas sees the full 700px card
+                // Temporarily reset scale so capture sees the full 700px card
                 wrapper.style.transform = 'scale(1)';
                 wrapper.parentElement.style.height = '';
-                await new Promise(r => setTimeout(r, 150));
+                await new Promise(r => setTimeout(r, 200));
 
-                const canvas = await html2canvas(document.getElementById('id-card-front'), {
+                // dom-to-image-more renders CSS gradients & pseudo-elements correctly
+                // in production without the createPattern 0x0 canvas bug
+                const dataUrl = await domtoimage.toPng(cardEl, {
+                    width: cardEl.offsetWidth,
+                    height: cardEl.offsetHeight,
                     scale: 2,
-                    logging: false,
-                    backgroundColor: '#ffffff',
                     useCORS: true,
-                    allowTaint: true,
-                    onclone: (doc) => {
-                        // The ONLY element causing the crash is .card-right::after
-                        // which uses radial-gradient() as a dot pattern background-image.
-                        // html2canvas creates a 0×0 canvas for it on production,
-                        // then crashes on createPattern(). Fix: remove ONLY that
-                        // background-image by targeting .card-right directly.
-                        // All other gradients (left panel, header, footer) are preserved.
-                        const style = doc.createElement('style');
-                        style.textContent = `
-                            #id-card-front .card-right::after { display: none !important; }
-                            #id-card-front .card-right::before { display: none !important; }
-                        `;
-                        doc.head.appendChild(style);
-
-                        // Guard any 0-size canvases
-                        doc.querySelectorAll('canvas').forEach(c => {
-                            if (!c.width || !c.height) {
-                                c.width = c.width || 1;
-                                c.height = c.height || 1;
-                            }
-                        });
-                    }
+                    corsImg: true
                 });
 
-                if (profileImg && origSrc) profileImg.src = origSrc;
-
-                // Trigger download
                 const link = document.createElement('a');
                 link.download = 'NABES-ID-{{ student.reg_number }}.png';
-                link.href = canvas.toDataURL('image/png');
+                link.href = dataUrl;
                 link.click();
 
             } catch (err) {
                 console.error(err);
                 alert('Error saving ID card: ' + err.message);
             } finally {
-                // Always restore the responsive scale after capture
                 scaleCard();
                 btn.innerHTML = orig;
                 btn.disabled = false;
