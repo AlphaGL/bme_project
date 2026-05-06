@@ -481,7 +481,7 @@
             JsBarcode('#barcode-canvas', '{{ student.reg_number }}', {
                 format: 'CODE128', width: 1.5, height: 34,
                 displayValue: false, margin: 0,
-                lineColor: '#ffffff', background: 'transparent'
+                lineColor: '#ffffff', background: '#8B0000'
             });
 
             scaleCard();
@@ -532,8 +532,24 @@
                 wrapper.parentElement.style.height = '';
                 await new Promise(r => setTimeout(r, 150)); // let layout repaint at full size
 
+                // Guard against 0-size canvases (causes createPattern crash on deployed envs)
+                document.querySelectorAll('canvas').forEach(c => {
+                    if (c.width === 0 || c.height === 0) {
+                        c.width = c.width || 1;
+                        c.height = c.height || 1;
+                    }
+                });
+
                 const canvas = await html2canvas(document.getElementById('id-card-front'), {
-                    scale: 2, logging: false, backgroundColor: '#ffffff', useCORS: true
+                    scale: 2, logging: false, backgroundColor: '#ffffff', useCORS: true,
+                    onclone: (doc) => {
+                        doc.querySelectorAll('canvas').forEach(c => {
+                            if (c.width === 0 || c.height === 0) {
+                                c.width = c.width || 1;
+                                c.height = c.height || 1;
+                            }
+                        });
+                    }
                 });
 
                 if (profileImg && origSrc) profileImg.src = origSrc;
