@@ -5,3 +5,7 @@
 
 
 python manage.py add_reg_number 20221328583 --name "IBEAWUCHI CHUKWUGOZIRIM NZECHUKWU" --level 400
+python manage.py add_reg_number 20251515103 --name "ONYEJI CHUKWUDI EZEKIEL" --level 100
+python manage.py add_reg_number 20251521983 --name "AGHA MIRACLE CHUKWUBUKA" --level 100
+python manage.py add_reg_number 20251509993 --name "IGUARIEDE BEAUTY VWARO" --level 100
+python manage.py add_reg_number 20241522023 --name "UKACHUKWU PROSPER SOMTOCHUKWU" --level 200
